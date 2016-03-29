@@ -24,6 +24,7 @@ child = exec("pwd", function (err, stdout, stderr) {
 
 
 
+
 //1. open server at port 6969
 server.get('/', function(request, response) {
 	console.log('Request at /');
