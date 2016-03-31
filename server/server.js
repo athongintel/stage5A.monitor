@@ -34,7 +34,7 @@ server.get('/', function(request, response) {
 	response.end(JSON.stringify(json));
 });
 
-server.listen(6969);
+server.listen(80);
 
 server.get('/startService', function(request, response){
 	if (!serviceRunning){

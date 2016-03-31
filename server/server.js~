@@ -20,6 +20,9 @@ child = exec("pwd", function (err, stdout, stderr) {
 
 
 
+//0. activate openVPN connection
+
+
 
 //1. open server at port 6969
 server.get('/', function(request, response) {
@@ -33,5 +36,9 @@ server.get('/', function(request, response) {
 
 server.listen(6969);
 
-
+server.get('/startService', function(request, response){
+	if (!serviceRunning){
+		//	
+	}
+});
 

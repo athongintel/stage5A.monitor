@@ -39,7 +39,7 @@ proto udp
 # The hostname/IP and port of the server.
 # You can have multiple remote entries
 # to load balance between the servers.
-remote 192.168.1.1 1194
+remote 172.31.199.193 1194
 ;remote my-server-2 1194
 
 # Choose a random host from the remote
@@ -60,7 +60,6 @@ nobind
 # Downgrade privileges after initialization (non-Windows only)
 ;user nobody
 ;group nobody
-ip
 # Try to preserve some state across restarts.
 persist-key
 persist-tun
@@ -86,8 +85,8 @@ persist-tun
 # for each client.  A single ca
 # file can be used for all clients.
 ca ca.crt
-cert client.crt
-key client.key
+cert client01.crt
+key client01.key
 
 # Verify server certificate by checking
 # that the certicate has the nsCertType

@@ -1,49 +1,104 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+
+var http = require('http');
+
+//====================================VARIABLES DECLARATION=====================================
+//var clientaddress = '192.168.3.1';
+var client_address = '127.0.0.1';
+var client_port = '6969';
+
+
+//====================================UTILITIES FUNCTIONS======================================
+
+var utils = {
+    makeRequest: function(request, callback){
+    	http.get('http://' + client_address + ':' + client_port + request, function(response){
+		var data = "";
+			response.on("data", function(d){
+				data += d;			
+			});
+			response.on("end", function(){
+				var json = JSON.parse(data);
+				callback(json);
+			});	
+		});
+    },
+
+	hasClass: function(element, cls) {
+		return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+	}
+}
+
+//=======================================APPLICATION INSTANCE=================================
 var app = {
     // Application Constructor
     initialize: function() {
         this.bindEvents();
+		//show dev tools
+		require('nw.gui').Window.get().showDevTools();
     },
-    // Bind Event Listeners
-    //
+    
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
+        //document.addEventListener('deviceready', this.onDeviceReady, false);
+		this.onDeviceReady();
     },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
+    
     onDeviceReady: function() {
-        app.receivedEvent('deviceready');
+		//request service status
+		utils.makeRequest('/', function(json){
+			var divServiceRunning = document.getElementById('divServiceRunning');
+				if (json.status){
+					divServiceRunning.innerHTML = "Running";				
+				}
+				else{
+					divServiceRunning.innerHTML = "Stopped";
+				}
+		});
     },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
-        console.log('Received Event: ' + id);
+    controlService: function(status, callback){
+		var service = status? '/start' : '/stop';		
+		utils.makeRequest(service, function(json){
+			callback(!json.error);
+		});	
     }
 };
+
+
+//========================================GLOBAL FUNCTIONS===========================
+
+function startService(){
+	var btStart = document.getElementById("btStartStop");		
+	btStart.className += "disabled";	
+	if (utils.hasClass(btStart, 'btn-danger')){
+		//try to stop service					
+		app.controlService(false, function(success){
+			if (success){
+				//alert('stop success');
+				btStart.innerHTML = "<span class='glyphicon glyphicon-play'></span> Start";
+				btStart.className = "btn btn-success btn-block";
+			}
+			else{
+				//alert('stop fail');
+				btStart.innerHTML = "<span class='glyphicon glyphicon-stop'></span> Stop";
+				btStart.className = "btn btn-danger btn-block";
+			}
+		});
+	}
+	else{
+		//try to start service
+		app.controlService(true, function(success){
+			if (success){
+				//alert('start success');			
+				btStart.innerHTML = "<span class='glyphicon glyphicon-stop'></span> Stop";
+				btStart.className = "btn btn-danger btn-block";
+			}
+			else{
+				//alert('start fail');
+				btStart.innerHTML = "<span class='glyphicon glyphicon-play'></span> Start";
+				btStart.className = "btn btn-success btn-block";
+			}			
+		});							
+	}		
+}
