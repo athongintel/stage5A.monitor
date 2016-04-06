@@ -15,7 +15,6 @@ struct BSS{
 struct Network{
 	std::string ssid;
 	std::vector<struct BSS> aps;
-	
 };
 
 class Iwapi{

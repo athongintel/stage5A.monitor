@@ -10,7 +10,7 @@ int main(){
 		std::vector<std::string> inames = iw->getWlanInterfaceNames();
 		
 		//scan all available networks
-		std::vector<struct Network> networks  = iw->scanNetworks(inames[1]);
+		std::vector<struct Network> networks  = iw->scanNetworks(inames[0]);
 		std::cout<<"network size: "<<networks.size()<<std::endl;
 		for (int i=0; i<networks.size();i++){
 			//printout again
