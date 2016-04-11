@@ -41,56 +41,56 @@ std::vector<struct Network> Iwapi::scanNetworks(std::string  devName){
 	std::vector<struct Network> networks;	
 	
 	std::smatch match;
-	std::regex rgx("BSS\\s((?:[0-9|a-f]{2}:){5}(?:[0-9|a-f]{2}))[\\S\\s]+?(?:signal:)\\s(-[0-9]+.[0-9]+)[\\S\\s]+?(?:SSID:)\\s(.*)[\\S\\s]+?(?=RSN:|\\bBSS)(?:RSN:[\\S\\s]+?(?:Group cipher:\\s(.+)))?");
+	std::regex rgx("BSS\\s((?:[0-9|a-f]{2}:){5}(?:[0-9|a-f]{2}))[\\S\\s]+?(?:freq:)\\s([0-9]+)[\\S\\s]+?(?:signal:)\\s(-[0-9]+.[0-9]+)[\\S\\s]+?(?:SSID:)\\s(.*)[\\S\\s]+?(?=RSN:|\\bBSS)(?:RSN:[\\S\\s]+?(?:Group cipher:\\s(.+)))?");
 	
 	std::string::const_iterator textIterator = result.begin();
 	
 	while (regex_search(textIterator, result.end(), match, rgx)){
 		int count = match.size();
-		for (int i=1; i<count; i++){
-			/*output from match:
-				1: bss id
-				2: signal strength in dBm
-				3: ssid
-				4: encryption method
-				*/
-			std::cout<<match[i]<<" "<<std::endl;
-		}
+		/*for (int i=1; i<count; i++){
+			//output from match:
+				//1: bss id
+				//2: freq
+				//3: signal strength in dBm
+				//4: ssid
+				//5: encryption method				
+				
+			std::cout<<i<<" "<<match[i]<<" "<<std::endl;
+		}*/
 			
 		//find existed network
 		struct Network* net;
 		bool found=false;
 		for  (int i=0;i<networks.size();i++){
 			net = &networks[i];
-			if (net->ssid.compare(match[3])==0){
+			if (net->ssid.compare(match[SSID_REGEX])==0){
 				found = true;
 				break;
 			}
 		}
 		
-		if (!found){
-			//std::cout<<"Network "<<match[3]<<" not found"<<std::endl;
+		if (!found){			
 			net = new Network();
-			net->ssid = match[3];							
+			net->ssid = match[SSID_REGEX];							
 		}
 
-		//std::cout<<"adding bss: "<<match[1]<<std::endl;
 		struct BSS* bss;
 		bss = new BSS();
 		
-		bss->id = match[1];
-		std::string signal = match[2];
+		bss->id = match[BSSID_REGEX];
+		std::string signal = match[SIGNAL_REGEX];
+		std::string freq = match[FREQ_REGEX];
 		bss->signal = atof(signal.c_str());
-		bss->encryption = match[4];
+		bss->encryption = match[CIPHER_REGEX];
+		bss->freq = atof(freq.c_str());
 		net->aps.push_back(*bss);
-		//std::cout<<"length now: "<<net->aps.size()<<std::endl;
-		//std::cout<<"test first element: "<<net->aps[0].id<<std::endl;
 		
 		if (!found){
 			networks.push_back(*net);
 		}
-	
-	   textIterator = match[3].second;
+		
+		//move itertor forward
+	   textIterator = match[0].second;
 	}
 	return networks;
 }
