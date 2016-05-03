@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <vector>
+#include <mutex>
+#include <string>
 
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
@@ -29,9 +31,23 @@ class WifiNetwork{
 
 };
 
+
 class WifiInterface{
+
+	vector<WifiNetwork*> wifiNetworks;
+
+	//handlers
+	
+	
 	public:
+		//properties
 		string name;
+		string address;
+		int ifIndex;
+
+		//methods
+		vector<WifiNetwork*> fullNetworkScan();
+		
 };
 
 
@@ -39,17 +55,18 @@ class WifiController{
 
 	nl_sock* nlSocket;
 	int nlID;
-
+	
+	vector<WifiInterface*> wifiInterfaces;
+	
 	//constructor
-	WifiController();
 	
 	//destructor
 	~WifiController();
 
-	public:
-		static WifiController* instance;
-		static WifiController* getInstance();
-		vector<WifiInterface*> getNetworkInterfaces();
-		vector<WifiNetwork*> fullNetworkScan(string interface);
+	//handlers
+	static int dump_wiphy_list_handler(struct nl_msg *msg, void *args);
 
+	public:
+		WifiController();
+		vector<WifiInterface*> getNetworkInterfaces();		
 };
