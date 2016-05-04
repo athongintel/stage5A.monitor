@@ -36,9 +36,8 @@ class WifiInterface{
 
 	vector<WifiNetwork*> wifiNetworks;
 
-	//handlers
-	
-	
+	//handlers	
+	static int full_network_scan_handler(struct nl_msg* msg, void* args);
 	public:
 		//properties
 		string name;
@@ -47,7 +46,6 @@ class WifiInterface{
 
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
-		
 };
 
 
@@ -64,7 +62,7 @@ class WifiController{
 	~WifiController();
 
 	//handlers
-	static int dump_wiphy_list_handler(struct nl_msg *msg, void *args);
+	static int dump_wiphy_list_handler(struct nl_msg* msg, void* args);
 
 	public:
 		WifiController();
