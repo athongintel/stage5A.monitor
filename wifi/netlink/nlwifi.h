@@ -13,5 +13,6 @@
 //APIs
 
 int dump_wiphy_list(struct nl_sock* socket, int netlinkID, nl_recvmsg_msg_cb_t handler, void* args);
-int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_id);
-int get_network_scan_result();
+int full_network_scan_trigger(struct nl_sock* socket,  int netlinkID, int ifIndex);
+int get_scan_result(struct nl_sock* nlSocket, int netlinkID, int ifIndex, nl_recvmsg_msg_cb_t handler, void* args);
+int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex, void* args);

@@ -107,10 +107,8 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	WifiInterface* wifiInterface = (WifiInterface*) args;
 	
 	
-	// Start printing.
 	//get SSID
 	SSID = string(get_ssid_string(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]), nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS])));
-	//cout<<"SSID:"<<SSID<<" ";
 	//check if SSID is already on the list
 	bool newNetwork = false;
 	WifiNetwork* network;
@@ -128,22 +126,21 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	if (newNetwork){
 		network = new WifiNetwork();
 		network->SSID = SSID;
+		wifiInterface->wifiNetworks.push_back(network);
 	}
+			
 	//create new access point
 	AccessPoint* ap = new AccessPoint();
-	
-	
-	network->accessPoints->push_back();
 	//get BSSID
-
-	//get frequency
-
-	
 	mac_addr_n2a(mac_addr, nla_data(bss[NL80211_BSS_BSSID]));
-	printf("%s, ", mac_addr);
-	printf("%d MHz, ", nla_get_u32(bss[NL80211_BSS_FREQUENCY]));
-
-	printf("\n");
+	ap->BSSID = string(mac_addr);
+	//get frequency
+	ap->frequency = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
+	ap->network = network;
+	
+	//add the new access point to current network
+	network->accessPoints.push_back(ap);
+	
 	return NL_SKIP;
 }
 
@@ -152,33 +149,26 @@ vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 	this->wifiNetworks.clear();
 	int nlID;
 	struct nl_sock* nlSocket = create_genlink_socket(nlID);
-	if (full_network_scan_trigger(nlSocket, this->ifIndex, nlID)<0){
+	if (full_network_scan_trigger(nlSocket, nlID, this->ifIndex)<0){
 		//error
-		cout<<"Error: cannot trigger wifi scan"<<endl;
-		
+		cout<<"Error: cannot trigger wifi scan"<<endl;		
 	}
 	else{
-		struct nl_msg* nlMessage;
-		nlMessage = nlmsg_alloc();  // Allocate a message.
-		if (!nlMessage){
-			cout<<"Error: cannot allocate netlink message"<<endl;
-		}
-		else{
-			genlmsg_put(nlMessage, 0, 0, nlID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);  // Setup which command to run.
-			nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, this->ifIndex);  // Add message attribute, which interface to use.
-			nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, full_network_scan_handler, this);  // Add the callback.
-			int ret = nl_send_auto(nlSocket, nlMessage);  // Send the message.
-
-			ret = nl_recvmsgs_default(nlSocket);
-			nlmsg_free(nlMessage);
-			if (ret < 0) {
-				cout<<"ERROR: nl_recvmsgs_default() returned "<<ret<<" ("<<nl_geterror(-ret)<<" )"<<endl;
-			}
-		}	
+		get_scan_result(nlSocket, nlID, this->ifIndex, full_network_scan_handler, this);			
 	}
 	return this->wifiNetworks;	
 }
 
+
+vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
+}
+
+int WifiInterface::connect(AccessPoint* ap){
+
+	int nlID;
+	struct nl_sock* nlSocket = create_genlink_socket(nlID);
+
+}
 
 
 

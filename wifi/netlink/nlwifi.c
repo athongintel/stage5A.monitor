@@ -6,16 +6,12 @@ int full_network_scan_trigger_callback(struct nl_msg *msg, void *arg) {
     struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
     struct trigger_results *results = arg;
 
-    //printf("Got something.\n");
-    //printf("%d\n", arg);
-    //nl_msg_dump(msg, stdout);
-
     if (gnlh->cmd == NL80211_CMD_SCAN_ABORTED) {
-        printf("Got NL80211_CMD_SCAN_ABORTED.\n");
+        //printf("Got NL80211_CMD_SCAN_ABORTED.\n");
         results->done = 1;
         results->aborted = 1;
     } else if (gnlh->cmd == NL80211_CMD_NEW_SCAN_RESULTS) {
-        printf("Got NL80211_CMD_NEW_SCAN_RESULTS.\n");
+        //printf("Got NL80211_CMD_NEW_SCAN_RESULTS.\n");
         results->done = 1;
         results->aborted = 0;
     }  // else probably an uninteresting multicast message.
@@ -52,40 +48,19 @@ int dump_wiphy_list(struct nl_sock* nlSocket, int nlID,  nl_recvmsg_msg_cb_t han
 	return ret;
 }
 
-int get_network_scan_result(struct nl_sock* nlSocket, int netlinkID, int ifIndex, nl_recvmsg_msg_cb_t callback, void* args){
-	
-	struct nl_msg* nlMessage;
-
-	nlMessage = nlmsg_alloc();
-	if (!nlMessage){
-		fprintf(stderr, "Error: cannot allocate netlink message");
-		return -1;	
-	}
-
-	genlmsg_put(nlMessage, 0, 0, netlinkID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);  // Setup which command to run.
-	nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);  // Add message attribute, which interface to use.
-	nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, callback, args);  // Add the callback.
-	
-	nl_send_auto(nlSocket, nlMessage);  // Send the message.
-	int ret = nl_recvmsgs_default(nlSocket);  // Retrieve the kernel's answer
-	
-	nlmsg_free(nlMessage);
-	return ret;
-}
-
-int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_id) {
+int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
 	// Starts the scan and waits for it to finish. Does not return until the scan is done or has been aborted.
 	struct trigger_results results = { .done = 0, .aborted = 0 };
-	struct nl_msg *msg;
-	struct nl_cb *cb;
-	struct nl_msg *ssids_to_scan;
+	struct nl_msg* msg;
+	struct nl_cb* cb;
+	struct nl_msg* ssids_to_scan;
 	int err;
 	int ret;
 	int mcid;
 
 	//multicast id
-	mcid = nl_get_multicast_id(socket, "nl80211", "scan");
-	nl_socket_add_membership(socket, mcid);  // Without this, callback_trigger() won't be called.
+	mcid = nl_get_multicast_id(nlSocket, "nl80211", "scan");
+	nl_socket_add_membership(nlSocket, mcid);  // Without this, callback_trigger() won't be called.
 
 	// Allocate the messages and callback handler.
 	msg = nlmsg_alloc();
@@ -110,9 +85,9 @@ int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_i
 	}
 
 	// Setup the messages and callback handler.
-	genlmsg_put(msg, 0, 0, driver_id, 0, 0, NL80211_CMD_TRIGGER_SCAN, 0);  // Setup which command to run.
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_index);  // Add message attribute, which interface to use.
-	nla_put(ssids_to_scan, 1, 0, "");  // Scan all SSIDs.
+	genlmsg_put(msg, 0, 0, nlID, 0, 0, NL80211_CMD_TRIGGER_SCAN, 0);  // Setup which command to run.
+	nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifIndex);  // Add message attribute, which interface to use.
+	nla_put(ssids_to_scan, NLA_UNSPEC, 0, "");  // Scan all SSIDs, passing SSID as binary - NLA_UNSPEC, 0 as length of empty string
 	nla_put_nested(msg, NL80211_ATTR_SCAN_SSIDS, ssids_to_scan);  // Add message attribute, which SSIDs to scan for.
 	nlmsg_free(ssids_to_scan);  // Copied to `msg` above, no longer need this.
 	
@@ -125,11 +100,11 @@ int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_i
 	// Send NL80211_CMD_TRIGGER_SCAN to start the scan. The kernel may reply with NL80211_CMD_NEW_SCAN_RESULTS on
 	// success or NL80211_CMD_SCAN_ABORTED if another scan was started by another process.
 	err = 1;
-	ret = nl_send_auto(socket, msg);  // Send the message.
+	ret = nl_send_auto(nlSocket, msg);  // Send the message.
 	
 	//First wait for ack_handler(). This helps with basic errors.
 	while (err > 0)
-		ret = nl_recvmsgs(socket, cb);  
+		ret = nl_recvmsgs(nlSocket, cb);  
 	
 	if (err < 0) {
 		printf("WARNING: err has a value of %d.\n", err);
@@ -140,7 +115,7 @@ int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_i
 	}
 	
 	while (!results.done)
-		nl_recvmsgs(socket, cb);  // Now wait until the scan is done or aborted.
+		nl_recvmsgs(nlSocket, cb);  // Now wait until the scan is done or aborted.
 	
 	if (results.aborted) {
 		printf("ERROR: Kernel aborted scan.\n");
@@ -150,8 +125,46 @@ int full_network_scan_trigger(struct nl_sock* socket, int if_index, int driver_i
 	// Cleanup.
 	nlmsg_free(msg);
 	nl_cb_put(cb);
-	nl_socket_drop_membership(socket, mcid);  // No longer need this.
+	nl_socket_drop_membership(nlSocket, mcid);  // No longer need this.
 	return 0;
+}
+
+int get_scan_result(struct nl_sock* nlSocket, int nlID, int ifIndex, nl_recvmsg_msg_cb_t handler, void* args){
+	struct nl_msg* nlMessage;
+	nlMessage = nlmsg_alloc();  // Allocate a message.
+	if (!nlMessage){
+		fprintf(stderr,"Error: cannot allocate netlink message");
+		return -1;
+	}
+	else{
+		genlmsg_put(nlMessage, 0, 0, nlID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);  // Setup which command to run.
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);  // Add message attribute, which interface to use.
+		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, handler, args);  // Add the callback.
+		int ret = nl_send_auto(nlSocket, nlMessage);  // Send the message.
+
+		ret = nl_recvmsgs_default(nlSocket);
+		nlmsg_free(nlMessage);
+		if (ret < 0) {
+			fprintf(stderr,"ERROR: nl_recvmsgs_default returned %d",ret);
+		}
+		return ret;
+	}	
+}
+
+int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex, void* args){
+		
+	//send connect command
+	struct nl_msg* nlMessage;
+	nlMessage = nlmsg_alloc();
+	if (!nlMessage){
+		cout<<"Error: cannot allocate netlink message"<<endl;
+		return -1;
+	}
+	else{
+		genlmsg_put(nlMessage, 0, 0, nlID, 0, 0, NL80211_CMD_CONNECT, 0);
+		nla_put(nlMessage, NL80211_ATTR_SSID, ap->BSSID.length(), ap->BSSID.c_str());
+		
+	}
 }
 
 

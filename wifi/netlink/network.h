@@ -18,8 +18,8 @@ class AccessPoint{
 	public:
 		WifiNetwork* network;
 		string BSSID; //MAC address
-		float frequency;
-		float strength;
+		int frequency;
+		int strength;
 };
 
 
@@ -46,6 +46,10 @@ class WifiInterface{
 
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
+		vector<WifiNetwork*> freqNetworkScan();
+		
+		int connect(AccessPoint* ap);
+		int disconnect();
 };
 
 
