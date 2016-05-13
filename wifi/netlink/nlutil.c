@@ -2,6 +2,12 @@
 
 /*UTILS IMPLEMENTATION*/
 
+int hex_value(char c){
+	if (c>=97) return c-87;
+	if (c>=65) return c-55;
+	return c-48;
+}
+
 int default_ack_handler(struct nl_msg *msg, void *arg) {
     // Callback for NL_CB_ACK.
     int* ret = (int*) arg;
@@ -117,6 +123,20 @@ int ieee80211_frequency_to_channel(int freq)
 		return 0;
 }
 
+void mac_addr_a2n(unsigned char* raw, char* mac_addr){
+	int i, l;
+    l = 0;
+    for (i = 0; i < 6; i++) {
+        if (l == 0) {
+        	raw[i] = hex_value(mac_addr[l])*16 + hex_value(mac_addr[l+1]);
+            l += 2;
+        } else {
+            raw[i] = hex_value(mac_addr[l+1])*16 + hex_value(mac_addr[l+2]);
+            l += 3;
+        }
+    }
+}
+
 char *channel_width_name(enum nl80211_chan_width width)
 {
 	switch (width) {
@@ -182,6 +202,7 @@ static int nl_get_multicast_id_handler(struct nl_msg *msg, void *arg) {
         nla_parse(tb_mcgrp, CTRL_ATTR_MCAST_GRP_MAX, nla_data(mcgrp), nla_len(mcgrp), NULL);
 
         if (!tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME] || !tb_mcgrp[CTRL_ATTR_MCAST_GRP_ID]) continue;
+        //fprintf(stdout, "nl80211 group: %s\n", nla_data(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]));
         if (strncmp(nla_data(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]), grp->group,
                 nla_len(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]))) {
             continue;

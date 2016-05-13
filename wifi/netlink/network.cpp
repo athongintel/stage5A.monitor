@@ -26,8 +26,8 @@ vector<WifiInterface*> WifiController::getNetworkInterfaces(){
 }
 
 int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
-	struct genlmsghdr *gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
-	struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
+	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
 	
 	//retreive calling instance from args
 	WifiController* instance = (WifiController*)args;
@@ -163,13 +163,33 @@ vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
 }
 
-int WifiInterface::connect(AccessPoint* ap){
+int WifiInterface::connect(AccessPoint* accessPoint){
 
 	int nlID;
 	struct nl_sock* nlSocket = create_genlink_socket(nlID);
+	
+	//construct a backward access point struct
+	struct access_point ap;
+	strcpy(ap.SSID, accessPoint->network->SSID.c_str());
+	mac_addr_a2n(ap.mac_address, accessPoint->BSSID.c_str());
+	ap.frequency = accessPoint->frequency;
 
+	//calling API
+	int ret = connect_to_access_point(nlSocket, nlID, this->ifIndex, &ap, NULL);
+	cout<<"Connect returned with code: "<<ret<<endl;
+	
+	return ret;
 }
 
+int WifiInterface::disconnect(){
+	int nlID;
+	struct nl_sock* nlSocket = create_genlink_socket(nlID);
+	
+	//calling API
+	int ret = disconnect_from_access_point(nlSocket, nlID, this->ifIndex);
+	cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
+	return ret;
+}
 
 
 

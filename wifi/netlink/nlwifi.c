@@ -1,7 +1,10 @@
 #include "nlwifi.h"
 
+int get_wiphy_state_calback(struct nl_msg* msg, void* args){
 
-int full_network_scan_trigger_callback(struct nl_msg *msg, void *arg) {
+}
+
+int full_network_scan_trigger_multicast_callback(struct nl_msg* msg, void* arg) {
     // Called by the kernel when the scan is done or has been aborted.
     struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
     struct trigger_results *results = arg;
@@ -9,14 +12,60 @@ int full_network_scan_trigger_callback(struct nl_msg *msg, void *arg) {
     if (gnlh->cmd == NL80211_CMD_SCAN_ABORTED) {
         //printf("Got NL80211_CMD_SCAN_ABORTED.\n");
         results->done = 1;
-        results->aborted = 1;
+        results->extra = 1;
     } else if (gnlh->cmd == NL80211_CMD_NEW_SCAN_RESULTS) {
         //printf("Got NL80211_CMD_NEW_SCAN_RESULTS.\n");
         results->done = 1;
-        results->aborted = 0;
+        results->extra = 0;
     }  // else probably an uninteresting multicast message.
 
     return NL_SKIP;
+}
+
+int network_connect_multicast_callback(struct nl_msg* msg, void* args){
+	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
+	struct trigger_results* results = (trigger_results*)args;
+	
+	if (gnlh->cmd == NL80211_CMD_CONNECT){
+		nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+		results->done = 1;
+		if (!tb_msg[NL80211_ATTR_STATUS_CODE]){
+			results->extra = 1; 
+		}
+		else if (nla_get_u16(tb_msg[NL80211_ATTR_STATUS_CODE]) == 0){
+			results->extra = 0;		
+		}
+		else{
+			results->extra = 1;
+		}
+	}
+	
+	return NL_SKIP;
+}
+
+int network_disconnect_multicast_callback(struct nl_msg* msg, void* args){
+	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
+	struct trigger_results* results = (trigger_results*)args;
+	
+	//fprintf(stdout, "disconnect multicast callback called\n");
+	if (gnlh->cmd == NL80211_CMD_DISCONNECT){
+		fprintf(stdout, "disconnect multicast callback got DISCONNECT RETURN\n");
+		
+		//parse message data and check for IFINDEX
+		nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+		if (tb_msg[NL80211_ATTR_IFINDEX]){
+			fprintf(stdout,  "OK, get disconnect event from interface %d, required %d\n", nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]), results->extra);
+			if (nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]) == results->extra){
+				results->done = 1;
+				//OK, we got what we want
+				return NL_STOP;
+			}
+		}
+	}
+	
+	return NL_SKIP;
 }
 
 
@@ -49,8 +98,8 @@ int dump_wiphy_list(struct nl_sock* nlSocket, int nlID,  nl_recvmsg_msg_cb_t han
 }
 
 int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
-	// Starts the scan and waits for it to finish. Does not return until the scan is done or has been aborted.
-	struct trigger_results results = { .done = 0, .aborted = 0 };
+	// Starts the scan and waits for it to finish. Does not return until the scan is done or has been aborted (extra).
+	struct trigger_results results = { .done = 0, .extra = 0 };
 	struct nl_msg* msg;
 	struct nl_cb* cb;
 	struct nl_msg* ssids_to_scan;
@@ -59,8 +108,8 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
 	int mcid;
 
 	//multicast id
-	mcid = nl_get_multicast_id(nlSocket, "nl80211", "scan");
-	nl_socket_add_membership(nlSocket, mcid);  // Without this, callback_trigger() won't be called.
+	mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_SCAN);
+	nl_socket_add_membership(nlSocket, mcid); 
 
 	// Allocate the messages and callback handler.
 	msg = nlmsg_alloc();
@@ -91,7 +140,7 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
 	nla_put_nested(msg, NL80211_ATTR_SCAN_SSIDS, ssids_to_scan);  // Add message attribute, which SSIDs to scan for.
 	nlmsg_free(ssids_to_scan);  // Copied to `msg` above, no longer need this.
 	
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, full_network_scan_trigger_callback, &results);  // Add the callback.
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, full_network_scan_trigger_multicast_callback, &results);  // Add the callback.
 	nl_cb_err(cb, NL_CB_CUSTOM, default_error_handler, &err);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, default_finish_handler, &err);
 	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, default_ack_handler, &err);
@@ -115,9 +164,9 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
 	}
 	
 	while (!results.done)
-		nl_recvmsgs(nlSocket, cb);  // Now wait until the scan is done or aborted.
+		nl_recvmsgs(nlSocket, cb);  // Now wait until the scan is done or extra.
 	
-	if (results.aborted) {
+	if (results.extra) {
 		printf("ERROR: Kernel aborted scan.\n");
 		return 1;
 	}
@@ -151,48 +200,158 @@ int get_scan_result(struct nl_sock* nlSocket, int nlID, int ifIndex, nl_recvmsg_
 	}	
 }
 
-int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex, void* args){
-		
-	//send connect command
+int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct access_point* ap, void* args){
+			
 	struct nl_msg* nlMessage;
+	struct nl_cb* nlCallback;
+	int mcid;
+	
 	nlMessage = nlmsg_alloc();
 	if (!nlMessage){
-		cout<<"Error: cannot allocate netlink message"<<endl;
+		fprintf(stderr,"Error: cannot allocate netlink message\n");
 		return -1;
 	}
 	else{
-		genlmsg_put(nlMessage, 0, 0, nlID, 0, 0, NL80211_CMD_CONNECT, 0);
-		nla_put(nlMessage, NL80211_ATTR_SSID, ap->BSSID.length(), ap->BSSID.c_str());
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_CONNECT, 0);
+		nla_put(nlMessage, NL80211_ATTR_SSID, strlen((*ap).SSID), (*ap).SSID);
+		if ((*ap).frequency>0){
+			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, (*ap).frequency);			
+		}
+		if (strlen((*ap).mac_address)>0){
+			nla_put(nlMessage, NL80211_ATTR_MAC, 6, (*ap).mac_address);
+		}
 		
+		//listen to multicast event
+		mcid = nl_get_multicast_id(nlSocket, "nl80211", "mlme");
+		int ret;		
+		if (mcid >= 0) {
+			ret = nl_socket_add_membership(nlSocket, mcid);
+			if (ret){
+				fprintf(stderr,"Cannot listen to multicast connect event");
+				return ret;
+			}
+			//adding callback
+			struct trigger_results results;
+			//alloc and set the callback
+			nlCallback = nl_cb_alloc(NL_CB_DEFAULT);
+			if (!nlCallback) {
+				fprintf(stderr,"Error: Failed to allocate netlink callbacks.\n");
+				nlmsg_free(nlMessage);
+				return -ENOMEM;
+			}
+			nl_cb_set(nlCallback, NL_CB_VALID, NL_CB_CUSTOM, network_connect_multicast_callback, &results);		
+			
+			//send the message and wait for response
+			nl_send_auto(nlSocket, nlMessage);
+			fprintf(stdout, "Connect request sent to %s - %s\n", (*ap).SSID, (*ap).mac_address);
+			
+			//need to loop because nl_recvmsgs only block once message
+			while (!results.done)
+				nl_recvmsgs(nlSocket, nlCallback);
+			
+			//no longer listen to multicast event
+			nl_socket_drop_membership(nlSocket, mcid);
+			nlmsg_free(nlMessage);
+			
+			return !results.extra;
+		}		
+	}		
+}
+
+/* @NL80211_CMD_DISCONNECT: drop a given connection; also used to notify
+ *	userspace that a connection was dropped by the AP or due to other
+ *	reasons, for this the %NL80211_ATTR_DISCONNECTED_BY_AP and
+ *	%NL80211_ATTR_REASON_CODE attributes are used.
+ */
+
+int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex){
+	
+	struct nl_msg* nlMessage;
+	struct nl_cb* nlCallback;
+	int mcid;
+	
+	nlMessage = nlmsg_alloc();
+	if (!nlMessage){
+		return -CANNOT_ALLOCATE_NETLINK_MESSAGE;
+	}
+	else{
+		//check if current interface is in disconnected state
+		//if yes, return error
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_DISCONNECT, 0);
+		//fprintf(stdout, "current if index: %d\n", ifIndex);
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);				
+		//listen to multicast event
+		mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_MLME);
+		//fprintf(stdout, "Disconnect muticast id %d\n", mcid);
+		int ret;		
+		if (mcid >= 0) {
+			ret = nl_socket_add_membership(nlSocket, mcid);
+			if (ret){
+				return -CANNOT_ADD_MULTICAST_MEMBERSHIP;
+			}
+			//adding callback, extra = current ifIndex
+			struct trigger_results results = {.done = 0, .extra = ifIndex};
+			//alloc and set the callback
+			nlCallback = nl_cb_alloc(NL_CB_DEFAULT);
+			if (!nlCallback) {
+				nlmsg_free(nlMessage);
+				return -CANNOT_ALLOCATE_NETLINK_CALLBACK;
+			}
+			
+			//callback won't be called with NL_VB_VALID but with ML_CB_MSG_IN
+			nl_cb_set(nlCallback, NL_CB_MSG_IN, NL_CB_CUSTOM, network_disconnect_multicast_callback, &results);		
+			
+			//send the message and wait for response
+			int ret = nl_send_auto(nlSocket, nlMessage);
+			if (ret<0){
+				return -CANNOT_SEND_NETLINK_MESSAGE;	
+			}
+			//fprintf(stdout, "Disconnect request sent\n");
+			
+			//need to loop because nl_recvmsgs only block once message
+			while (!results.done){
+				//fprintf(stdout, "hanging waiting for callback\n");
+				nl_recvmsgs(nlSocket, nlCallback);
+			}
+			
+			//fprintf(stdout, "OUT OF WHILE LOOP\n");
+			
+			//no longer listen to multicast event
+			nl_socket_drop_membership(nlSocket, mcid);
+			nlmsg_free(nlMessage);
+			
+			return 0;
+		}		
 	}
 }
 
+int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct access_point* accessPoint){
+	
+	struct nl_msg* nlMessage;
+	struct nl_cb* nlCallback;
+	
+	nlMessage = nlmsg_alloc();
+	if (!nlMessage){
+		return -CANNOT_ALLOCATE_NETLINK_MESSAGE;
+	}
+	else{
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_GET_STATION, 0);
+		//fprintf(stdout, "current if index: %d\n", ifIndex);
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);				
+		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, get_wiphy_state_calback, accessPoint);
+		int ret = nl_send_auto(nlSocket, nlMessage);
+		
+		if (ret<0){
+			return -CANNOT_SEND_NETLINK_MESSAGE;	
+		}
+		
+		ret = nl_recvmsgs_default(nlSocket);
+		if (ret<0){
+			return -CANNOT_RECEIVE_NETLINK_MESSAGE;
+		}
+		nlmsg_free(nlMessage);
+		
+		return 0;
+	}		
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

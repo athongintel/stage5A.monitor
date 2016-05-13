@@ -13,6 +13,7 @@
 
 struct nl_sock* create_genlink_socket(int& nlID);
 void mac_addr_n2a(char *mac_addr, unsigned char *arg);
+void mac_addr_a2n(unsigned char* raw, char* mac_addr);
 char* get_ssid_string(unsigned char *ie, int ielen);
 char* channel_width_name(enum nl80211_chan_width width);
 char* channel_type_name(enum nl80211_channel_type channel_type);
@@ -43,8 +44,9 @@ static const char *ifmodes[NL80211_IFTYPE_MAX + 1] = {
 static char modebuf[100];
 
 struct trigger_results {
-    int done;
-    int aborted;
+    
+    int done; //indicate that the current operation is completed
+    int extra; //extra information on the current operation
 };
 
 
