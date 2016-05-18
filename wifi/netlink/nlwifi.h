@@ -20,15 +20,27 @@ enum common_errors {
 };
 
 
-typedef struct access_point {
+enum link_state {
+	ASSOCIATED,
+	AUTHENTICATED,
+	IBSS_JOINED,
+	UNKNOWN
+};
+
+struct access_point {
 	char SSID[255];
 	unsigned char mac_address[6];
 	int frequency;
 };
 
+struct wiphy_state {
+	enum link_state state;
+	struct access_point accessPoint;
+};
+
 //APIs
 
-int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct access_point* accessPoint);
+int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct wiphy_state* state);
 int dump_wiphy_list(struct nl_sock* nlSocket, int netlinkID, nl_recvmsg_msg_cb_t handler, void* args);
 int full_network_scan_trigger(struct nl_sock* nlSocket,  int netlinkID, int ifIndex);
 int get_scan_result(struct nl_sock* nlSocket, int netlinkID, int ifIndex, nl_recvmsg_msg_cb_t handler, void* args);

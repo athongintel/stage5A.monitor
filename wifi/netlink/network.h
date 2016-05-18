@@ -31,14 +31,26 @@ class WifiNetwork{
 
 };
 
+class LinkState{
+	public:
+		int state;
+};
+
 
 class WifiInterface{
 
+	nl_sock* nlSocket;
+	int nlID;
 	vector<WifiNetwork*> wifiNetworks;
+	
+	//destructor
+	~WifiInterface();
+	
 
 	//handlers	
 	static int full_network_scan_handler(struct nl_msg* msg, void* args);
 	public:
+		WifiInterface();
 		//properties
 		string name;
 		string address;
@@ -47,6 +59,7 @@ class WifiInterface{
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
 		vector<WifiNetwork*> freqNetworkScan();
+		LinkState* getState();
 		
 		int connect(AccessPoint* ap);
 		int disconnect();
@@ -59,8 +72,6 @@ class WifiController{
 	int nlID;
 	
 	vector<WifiInterface*> wifiInterfaces;
-	
-	//constructor
 	
 	//destructor
 	~WifiController();

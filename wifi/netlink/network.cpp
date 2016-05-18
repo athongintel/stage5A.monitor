@@ -65,6 +65,15 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 
 //WifiInterface class implementation
 
+WifiInterface::WifiInterface(){
+	this->nlSocket = create_genlink_socket(this->nlID);
+	
+}
+
+WifiInterface::~WifiInterface(){
+	nl_socket_free(this->nlSocket);	
+}
+
 int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	
 	struct genlmsghdr* gnlh = (genlmsghdr*) nlmsg_data(nlmsg_hdr(msg));
@@ -108,7 +117,7 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	
 	
 	//get SSID
-	SSID = string(get_ssid_string(nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]), nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS])));
+	SSID = string(get_ssid_string((unsigned char*)nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]), nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS])));
 	//check if SSID is already on the list
 	bool newNetwork = false;
 	WifiNetwork* network;
@@ -132,7 +141,7 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	//create new access point
 	AccessPoint* ap = new AccessPoint();
 	//get BSSID
-	mac_addr_n2a(mac_addr, nla_data(bss[NL80211_BSS_BSSID]));
+	mac_addr_n2a(mac_addr, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]));
 	ap->BSSID = string(mac_addr);
 	//get frequency
 	ap->frequency = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
@@ -147,14 +156,13 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 	
 	this->wifiNetworks.clear();
-	int nlID;
-	struct nl_sock* nlSocket = create_genlink_socket(nlID);
-	if (full_network_scan_trigger(nlSocket, nlID, this->ifIndex)<0){
+
+	if (full_network_scan_trigger(this->nlSocket, this->nlID, this->ifIndex)<0){
 		//error
 		cout<<"Error: cannot trigger wifi scan"<<endl;		
 	}
 	else{
-		get_scan_result(nlSocket, nlID, this->ifIndex, full_network_scan_handler, this);			
+		get_scan_result(this->nlSocket, this->nlID, this->ifIndex, full_network_scan_handler, this);			
 	}
 	return this->wifiNetworks;	
 }
@@ -163,11 +171,7 @@ vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
 }
 
-int WifiInterface::connect(AccessPoint* accessPoint){
-
-	int nlID;
-	struct nl_sock* nlSocket = create_genlink_socket(nlID);
-	
+int WifiInterface::connect(AccessPoint* accessPoint){	
 	//construct a backward access point struct
 	struct access_point ap;
 	strcpy(ap.SSID, accessPoint->network->SSID.c_str());
@@ -175,20 +179,28 @@ int WifiInterface::connect(AccessPoint* accessPoint){
 	ap.frequency = accessPoint->frequency;
 
 	//calling API
-	int ret = connect_to_access_point(nlSocket, nlID, this->ifIndex, &ap, NULL);
+	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->ifIndex, &ap, NULL);
 	cout<<"Connect returned with code: "<<ret<<endl;
 	
 	return ret;
 }
 
 int WifiInterface::disconnect(){
-	int nlID;
-	struct nl_sock* nlSocket = create_genlink_socket(nlID);
-	
 	//calling API
-	int ret = disconnect_from_access_point(nlSocket, nlID, this->ifIndex);
+	LinkState* state = this->getState();
+	
+	int ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->ifIndex);
 	cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
+	nl_socket_free(nlSocket);
 	return ret;
+}
+
+LinkState* WifiInterface::getState(){
+	
+	struct wiphy_state state;
+	int result = get_wiphy_state(this->nlSocket, this->nlID, this->ifIndex, &state);
+	cout<<"get_wiphy_state returned : "<<result<<endl;
+	
 }
 
 

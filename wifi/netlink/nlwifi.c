@@ -2,12 +2,78 @@
 
 int get_wiphy_state_calback(struct nl_msg* msg, void* args){
 
+	struct nlattr* tb[NL80211_ATTR_MAX + 1];
+	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr* bss[NL80211_BSS_MAX + 1];
+	
+	static struct nla_policy bss_policy[NL80211_BSS_MAX + 1] = {		
+		[__NL80211_BSS_INVALID] = {},
+		[NL80211_BSS_BSSID] = {},
+		[NL80211_BSS_FREQUENCY] = { type : NLA_U32 },
+		[NL80211_BSS_TSF] = { type : NLA_U64 },				
+		[NL80211_BSS_BEACON_INTERVAL] = { type : NLA_U16 },
+		[NL80211_BSS_CAPABILITY] = { type : NLA_U16 },
+		[NL80211_BSS_INFORMATION_ELEMENTS] = {},
+		[NL80211_BSS_SIGNAL_MBM] = { type : NLA_U32 },
+		[NL80211_BSS_SIGNAL_UNSPEC] = { type : NLA_U8 },
+		[NL80211_BSS_STATUS] = { type : NLA_U32 },
+		[NL80211_BSS_SEEN_MS_AGO] = { type : NLA_U32 },
+		[NL80211_BSS_BEACON_IES] = {},
+	};
+	
+	struct wiphy_state* state = (struct wiphy_state*)args;
+	
+	char mac_addr[20];
+
+
+	fprintf(stdout, "get state callback called");
+	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+	if (!tb[NL80211_ATTR_BSS]) {
+		//fprintf(stderr, "bss info missing!\n");
+		return NL_SKIP;
+	}
+	if (nla_parse_nested(bss, NL80211_BSS_MAX, tb[NL80211_ATTR_BSS], bss_policy)) {
+		//fprintf(stderr, "failed to parse nested attributes!\n");
+		return NL_SKIP;
+	}
+
+	if (!bss[NL80211_BSS_BSSID])
+		return NL_SKIP;
+
+	if (!bss[NL80211_BSS_STATUS])
+		return NL_SKIP;	
+
+	switch (nla_get_u32(bss[NL80211_BSS_STATUS])) {
+	case NL80211_BSS_STATUS_ASSOCIATED:
+		state->state=ASSOCIATED;
+		break;
+	case NL80211_BSS_STATUS_AUTHENTICATED:
+		state->state=AUTHENTICATED;
+		return NL_SKIP;
+	case NL80211_BSS_STATUS_IBSS_JOINED:
+		state->state=IBSS_JOINED;
+		break;
+	default:
+		state->state=UNKNOWN;
+		return NL_SKIP;
+	}
+
+	//get access point informations
+	memcpy(state->accessPoint.mac_address, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]), nla_len(bss[NL80211_BSS_BSSID]));
+	strcpy(state->accessPoint.SSID, get_ssid_string((unsigned char*)nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]), nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS])));
+	if (bss[NL80211_BSS_FREQUENCY]){
+		state->accessPoint.frequency = nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
+	}
+
+	return NL_SKIP;
+	
 }
 
 int full_network_scan_trigger_multicast_callback(struct nl_msg* msg, void* arg) {
     // Called by the kernel when the scan is done or has been aborted.
-    struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-    struct trigger_results *results = arg;
+    struct genlmsghdr *gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+    struct trigger_results *results = (trigger_results*)arg;
 
     if (gnlh->cmd == NL80211_CMD_SCAN_ABORTED) {
         //printf("Got NL80211_CMD_SCAN_ABORTED.\n");
@@ -164,7 +230,7 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, int ifIndex) {
 	}
 	
 	while (!results.done)
-		nl_recvmsgs(nlSocket, cb);  // Now wait until the scan is done or extra.
+		nl_recvmsgs(nlSocket, cb);  // Now wait until the scan is done or aborted.
 	
 	if (results.extra) {
 		printf("ERROR: Kernel aborted scan.\n");
@@ -217,7 +283,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex
 		if ((*ap).frequency>0){
 			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, (*ap).frequency);			
 		}
-		if (strlen((*ap).mac_address)>0){
+		if (strlen((const char*)((*ap).mac_address))>0){
 			nla_put(nlMessage, NL80211_ATTR_MAC, 6, (*ap).mac_address);
 		}
 		
@@ -325,28 +391,33 @@ int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, int if
 	}
 }
 
-int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct access_point* accessPoint){
+int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct wiphy_state* state){
 	
 	struct nl_msg* nlMessage;
 	struct nl_cb* nlCallback;
 	
 	nlMessage = nlmsg_alloc();
 	if (!nlMessage){
+		fprintf(stderr, "Cannot allocate netlink message");
 		return -CANNOT_ALLOCATE_NETLINK_MESSAGE;
 	}
 	else{
-		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_GET_STATION, 0);
-		//fprintf(stdout, "current if index: %d\n", ifIndex);
-		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);				
-		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, get_wiphy_state_calback, accessPoint);
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_GET_STATION, 0);		
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);
+		//nla_put(nlMessage, NL80211_ATTR_MAC, 6, (*ap).mac_address);
+		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, get_wiphy_state_calback, state);
 		int ret = nl_send_auto(nlSocket, nlMessage);
 		
 		if (ret<0){
+			fprintf(stderr, "Cannot send netlink message");
+			nlmsg_free(nlMessage);
 			return -CANNOT_SEND_NETLINK_MESSAGE;	
 		}
 		
 		ret = nl_recvmsgs_default(nlSocket);
 		if (ret<0){
+			fprintf(stderr, "Cannot receive netlink message. Error no: %d (%s)\n", ret, nl_geterror(-ret));
+			nlmsg_free(nlMessage);		
 			return -CANNOT_RECEIVE_NETLINK_MESSAGE;
 		}
 		nlmsg_free(nlMessage);

@@ -13,11 +13,11 @@
 
 struct nl_sock* create_genlink_socket(int& nlID);
 void mac_addr_n2a(char *mac_addr, unsigned char *arg);
-void mac_addr_a2n(unsigned char* raw, char* mac_addr);
-char* get_ssid_string(unsigned char *ie, int ielen);
-char* channel_width_name(enum nl80211_chan_width width);
-char* channel_type_name(enum nl80211_channel_type channel_type);
-char* iftype_name(enum nl80211_iftype iftype);
+void mac_addr_a2n(unsigned char* raw, const char* mac_addr);
+const char* get_ssid_string(unsigned char *ie, int ielen);
+const char* channel_width_name(enum nl80211_chan_width width);
+const char* channel_type_name(enum nl80211_channel_type channel_type);
+const char* iftype_name(enum nl80211_iftype iftype);
 int nl_get_multicast_id(struct nl_sock *sock, const char *family, const char *group);
 int ieee80211_frequency_to_channel(int freq);
 

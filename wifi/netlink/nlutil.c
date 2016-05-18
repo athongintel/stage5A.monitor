@@ -50,13 +50,13 @@ void mac_addr_n2a(char *mac_addr, unsigned char *arg) {
 }
 
 
-char* get_ssid_string(unsigned char *ie, int ielen) {
+const char* get_ssid_string(unsigned char *ie, int ielen) {
 	uint8_t len;
 	uint8_t *data;
 	int i;
 	int counter;
 	
-	char* name = malloc(256*sizeof(char));
+	char* name = (char*)malloc(256*sizeof(char));
 	counter=0;
 	
     while (ielen >= 2 && ielen >= ie[1]) {
@@ -83,14 +83,14 @@ char* get_ssid_string(unsigned char *ie, int ielen) {
 	return name;
 }
 
-char *iftype_name(enum nl80211_iftype iftype){	
+const char *iftype_name(enum nl80211_iftype iftype){	
 	if (iftype <= NL80211_IFTYPE_MAX && ifmodes[iftype])
 		return ifmodes[iftype];
 	sprintf(modebuf, "Unknown mode (%d)", iftype);
 	return modebuf;
 }
 
-char *channel_type_name(enum nl80211_channel_type channel_type)
+const char *channel_type_name(enum nl80211_channel_type channel_type)
 {
 	switch (channel_type) {
 	case NL80211_CHAN_NO_HT:
@@ -123,7 +123,7 @@ int ieee80211_frequency_to_channel(int freq)
 		return 0;
 }
 
-void mac_addr_a2n(unsigned char* raw, char* mac_addr){
+void mac_addr_a2n(unsigned char* raw, const char* mac_addr){
 	int i, l;
     l = 0;
     for (i = 0; i < 6; i++) {
@@ -137,7 +137,7 @@ void mac_addr_a2n(unsigned char* raw, char* mac_addr){
     }
 }
 
-char *channel_width_name(enum nl80211_chan_width width)
+const char *channel_width_name(enum nl80211_chan_width width)
 {
 	switch (width) {
 	case NL80211_CHAN_WIDTH_20_NOHT:
@@ -199,14 +199,13 @@ static int nl_get_multicast_id_handler(struct nl_msg *msg, void *arg) {
     nla_for_each_nested(mcgrp, tb[CTRL_ATTR_MCAST_GROUPS], rem_mcgrp) {  // This is a loop.
         struct nlattr *tb_mcgrp[CTRL_ATTR_MCAST_GRP_MAX + 1];
 
-        nla_parse(tb_mcgrp, CTRL_ATTR_MCAST_GRP_MAX, nla_data(mcgrp), nla_len(mcgrp), NULL);
+        nla_parse(tb_mcgrp, CTRL_ATTR_MCAST_GRP_MAX, (nlattr*)nla_data(mcgrp), nla_len(mcgrp), NULL);
 
         if (!tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME] || !tb_mcgrp[CTRL_ATTR_MCAST_GRP_ID]) continue;
         //fprintf(stdout, "nl80211 group: %s\n", nla_data(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]));
-        if (strncmp(nla_data(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]), grp->group,
-                nla_len(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]))) {
+        if (strncmp((const char*)nla_data(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]), grp->group, nla_len(tb_mcgrp[CTRL_ATTR_MCAST_GRP_NAME]))) {
             continue;
-                }
+        }
 
         grp->id = nla_get_u32(tb_mcgrp[CTRL_ATTR_MCAST_GRP_ID]);
         break;
