@@ -191,19 +191,20 @@ int WifiInterface::disconnect(){
 	LinkState* state = this->getState();
 	if (state->state == LinkState::DISCONNECTED){
 		cout<<"Already disconnected"<<endl;
+		return -1;
 	}
 	else{
 		ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->ifIndex);
-		cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
+		//cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
 		nl_socket_free(nlSocket);
+		return ret;
 	}
-	return ret;
 }
 
 //LinkState class implementation
 
 LinkState::LinkState(){
-	this->state = DISCONNECTED;
+	this->state = LinkState::DISCONNECTED;
 }
 
 LinkState* WifiInterface::getState(){
@@ -214,7 +215,6 @@ LinkState* WifiInterface::getState(){
 	unsigned char mac_addr[ETH_ALEN];
 	mac_addr_a2n(mac_addr, this->address.c_str());
 	int ret = get_wiphy_state(this->nlSocket, this->nlID, this->ifIndex, &state);	
-	//cout<<"get_wiphy_state returned : "<<ret<<endl;
 	
 	switch (state.state){
 		case ASSOCIATED:

@@ -115,12 +115,12 @@ int network_disconnect_multicast_callback(struct nl_msg* msg, void* args){
 	
 	//fprintf(stdout, "disconnect multicast callback called\n");
 	if (gnlh->cmd == NL80211_CMD_DISCONNECT){
-		fprintf(stdout, "disconnect multicast callback got DISCONNECT RETURN\n");
+		//fprintf(stdout, "disconnect multicast callback got DISCONNECT RETURN\n");
 		
 		//parse message data and check for IFINDEX
 		nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 		if (tb_msg[NL80211_ATTR_IFINDEX]){
-			fprintf(stdout,  "OK, get disconnect event from interface %d, required %d\n", nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]), results->extra);
+			//fprintf(stdout,  "OK, get disconnect event from interface %d, required %d\n", nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]), results->extra);
 			if (nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]) == results->extra){
 				results->done = 1;
 				//OK, we got what we want
