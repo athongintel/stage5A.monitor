@@ -187,20 +187,46 @@ int WifiInterface::connect(AccessPoint* accessPoint){
 
 int WifiInterface::disconnect(){
 	//calling API
+	int ret;
 	LinkState* state = this->getState();
-	
-	int ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->ifIndex);
-	cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
-	nl_socket_free(nlSocket);
+	if (state->state == LinkState::DISCONNECTED){
+		cout<<"Already disconnected"<<endl;
+	}
+	else{
+		ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->ifIndex);
+		cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
+		nl_socket_free(nlSocket);
+	}
 	return ret;
+}
+
+//LinkState class implementation
+
+LinkState::LinkState(){
+	this->state = DISCONNECTED;
 }
 
 LinkState* WifiInterface::getState(){
 	
-	struct wiphy_state state;
-	int result = get_wiphy_state(this->nlSocket, this->nlID, this->ifIndex, &state);
-	cout<<"get_wiphy_state returned : "<<result<<endl;
+	LinkState* result = new LinkState();
 	
+	struct wiphy_state state = {.state = DISCONNECTED};
+	unsigned char mac_addr[ETH_ALEN];
+	mac_addr_a2n(mac_addr, this->address.c_str());
+	int ret = get_wiphy_state(this->nlSocket, this->nlID, this->ifIndex, &state);	
+	//cout<<"get_wiphy_state returned : "<<ret<<endl;
+	
+	switch (state.state){
+		case ASSOCIATED:
+			result->state = LinkState::CONNECTED;
+			break;
+		case AUTHENTICATED:
+			result->state = LinkState::AUTHENTICATED;
+			break;
+		default:
+			result->state = LinkState::DISCONNECTED;
+	}
+	return result;
 }
 
 

@@ -25,8 +25,6 @@ int get_wiphy_state_calback(struct nl_msg* msg, void* args){
 	
 	char mac_addr[20];
 
-
-	fprintf(stdout, "get state callback called");
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
 	if (!tb[NL80211_ATTR_BSS]) {
@@ -55,7 +53,7 @@ int get_wiphy_state_calback(struct nl_msg* msg, void* args){
 		state->state=IBSS_JOINED;
 		break;
 	default:
-		state->state=UNKNOWN;
+		state->state=DISCONNECTED;
 		return NL_SKIP;
 	}
 
@@ -65,7 +63,7 @@ int get_wiphy_state_calback(struct nl_msg* msg, void* args){
 	if (bss[NL80211_BSS_FREQUENCY]){
 		state->accessPoint.frequency = nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
 	}
-
+			
 	return NL_SKIP;
 	
 }
@@ -402,9 +400,13 @@ int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct
 		return -CANNOT_ALLOCATE_NETLINK_MESSAGE;
 	}
 	else{
-		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_GET_STATION, 0);		
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);		
 		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);
-		//nla_put(nlMessage, NL80211_ATTR_MAC, 6, (*ap).mac_address);
+		//nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, mac_addr);
+		//char mac[20];
+		//mac_addr_n2a(mac, mac_addr);
+		//fprintf(stdout, "mac address: %s", mac);
+		
 		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, get_wiphy_state_calback, state);
 		int ret = nl_send_auto(nlSocket, nlMessage);
 		
@@ -423,6 +425,6 @@ int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct
 		nlmsg_free(nlMessage);
 		
 		return 0;
-	}		
+	}
 
 }

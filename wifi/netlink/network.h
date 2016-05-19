@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+
 class WifiNetwork;
 
 class AccessPoint{ 
@@ -33,7 +35,14 @@ class WifiNetwork{
 
 class LinkState{
 	public:
-		int state;
+		enum LinkStateEnum {
+			DISCONNECTED,
+			AUTHENTICATED,
+			CONNECTED					
+		};
+		
+		LinkState();
+		enum LinkStateEnum state;
 };
 
 

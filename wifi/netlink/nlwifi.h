@@ -9,6 +9,9 @@
 
 #include "nlutil.h"
 
+
+#define ETH_ALEN 6
+
 //ERROR CODE DEFINE
 enum common_errors {
 	INTERFACE_ALREADY_DISCONNECTED,
@@ -24,7 +27,7 @@ enum link_state {
 	ASSOCIATED,
 	AUTHENTICATED,
 	IBSS_JOINED,
-	UNKNOWN
+	DISCONNECTED
 };
 
 struct access_point {
