@@ -91,7 +91,9 @@ int network_connect_multicast_callback(struct nl_msg* msg, void* args){
 	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
 	struct trigger_results* results = (trigger_results*)args;
 	
+	fprintf(stdout, "network_connect_multicast_callback catched some messages. id: %d/%d lol!!!\n", gnlh->cmd, NL80211_CMD_MAX);
 	if (gnlh->cmd == NL80211_CMD_CONNECT){
+		fprintf(stdout, "network_connect_multicast_callback got CMD_CONNECT event\n");
 		nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 		results->done = 1;
 		if (!tb_msg[NL80211_ATTR_STATUS_CODE]){
@@ -246,7 +248,7 @@ int get_scan_result(struct nl_sock* nlSocket, int nlID, int ifIndex, nl_recvmsg_
 	struct nl_msg* nlMessage;
 	nlMessage = nlmsg_alloc();  // Allocate a message.
 	if (!nlMessage){
-		fprintf(stderr,"Error: cannot allocate netlink message");
+		fprintf(stderr,"Error: cannot allocate netlink message\n");
 		return -1;
 	}
 	else{
@@ -258,7 +260,7 @@ int get_scan_result(struct nl_sock* nlSocket, int nlID, int ifIndex, nl_recvmsg_
 		ret = nl_recvmsgs_default(nlSocket);
 		nlmsg_free(nlMessage);
 		if (ret < 0) {
-			fprintf(stderr,"ERROR: nl_recvmsgs_default returned %d",ret);
+			fprintf(stderr,"ERROR: nl_recvmsgs_default returned %d\n",ret);
 		}
 		return ret;
 	}	
@@ -276,17 +278,19 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex
 		return -1;
 	}
 	else{
-		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_CONNECT, 0);
+		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_AUTHENTICATE, 0);
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);
 		nla_put(nlMessage, NL80211_ATTR_SSID, strlen((*ap).SSID), (*ap).SSID);
 		if ((*ap).frequency>0){
 			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, (*ap).frequency);			
 		}
 		if (strlen((const char*)((*ap).mac_address))>0){
-			nla_put(nlMessage, NL80211_ATTR_MAC, 6, (*ap).mac_address);
+			nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, (*ap).mac_address);
 		}
+		nla_put_u32(nlMessage, NL80211_ATTR_AUTH_TYPE, NL80211_AUTHTYPE_OPEN_SYSTEM);
 		
 		//listen to multicast event
-		mcid = nl_get_multicast_id(nlSocket, "nl80211", "mlme");
+		mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_MLME);
 		int ret;		
 		if (mcid >= 0) {
 			ret = nl_socket_add_membership(nlSocket, mcid);
@@ -295,7 +299,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex
 				return ret;
 			}
 			//adding callback
-			struct trigger_results results;
+			struct trigger_results results = {.done = 0};
 			//alloc and set the callback
 			nlCallback = nl_cb_alloc(NL_CB_DEFAULT);
 			if (!nlCallback) {
@@ -303,11 +307,18 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, int ifIndex
 				nlmsg_free(nlMessage);
 				return -ENOMEM;
 			}
-			nl_cb_set(nlCallback, NL_CB_VALID, NL_CB_CUSTOM, network_connect_multicast_callback, &results);		
+			nl_cb_set(nlCallback, NL_CB_MSG_IN, NL_CB_CUSTOM, network_connect_multicast_callback, &results);		
 			
 			//send the message and wait for response
-			nl_send_auto(nlSocket, nlMessage);
-			fprintf(stdout, "Connect request sent to %s - %s\n", (*ap).SSID, (*ap).mac_address);
+			int ret = nl_send_auto(nlSocket, nlMessage);
+			if (ret < 0){
+				fprintf(stderr, "Cannot send connect request");
+				return ret;
+			}
+			
+			char test_mac[20];
+			mac_addr_n2a(test_mac, (*ap).mac_address);
+			fprintf(stdout, "Connect request sent to %s - %s\n", (*ap).SSID, test_mac);
 			
 			//need to loop because nl_recvmsgs only block once message
 			while (!results.done)
@@ -391,40 +402,6 @@ int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, int if
 
 int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, int ifIndex, struct wiphy_state* state){
 	
-	struct nl_msg* nlMessage;
-	struct nl_cb* nlCallback;
-	
-	nlMessage = nlmsg_alloc();
-	if (!nlMessage){
-		fprintf(stderr, "Cannot allocate netlink message");
-		return -CANNOT_ALLOCATE_NETLINK_MESSAGE;
-	}
-	else{
-		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);		
-		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, ifIndex);
-		//nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, mac_addr);
-		//char mac[20];
-		//mac_addr_n2a(mac, mac_addr);
-		//fprintf(stdout, "mac address: %s", mac);
-		
-		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, get_wiphy_state_calback, state);
-		int ret = nl_send_auto(nlSocket, nlMessage);
-		
-		if (ret<0){
-			fprintf(stderr, "Cannot send netlink message");
-			nlmsg_free(nlMessage);
-			return -CANNOT_SEND_NETLINK_MESSAGE;	
-		}
-		
-		ret = nl_recvmsgs_default(nlSocket);
-		if (ret<0){
-			fprintf(stderr, "Cannot receive netlink message. Error no: %d (%s)\n", ret, nl_geterror(-ret));
-			nlmsg_free(nlMessage);		
-			return -CANNOT_RECEIVE_NETLINK_MESSAGE;
-		}
-		nlmsg_free(nlMessage);
-		
-		return 0;
-	}
+	return get_scan_result(nlSocket, netlinkID, ifIndex, get_wiphy_state_calback, state);
 
 }
