@@ -83,7 +83,7 @@ const char* get_ssid_string(unsigned char *ie, int ielen) {
 	return name;
 }
 
-const char *iftype_name(enum nl80211_iftype iftype){	
+const char* iftype_name(enum nl80211_iftype iftype){	
 	if (iftype <= NL80211_IFTYPE_MAX && ifmodes[iftype])
 		return ifmodes[iftype];
 	sprintf(modebuf, "Unknown mode (%d)", iftype);

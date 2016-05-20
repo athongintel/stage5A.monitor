@@ -43,10 +43,9 @@ static const char *ifmodes[NL80211_IFTYPE_MAX + 1] = {
 };
 static char modebuf[100];
 
-struct trigger_results {
-    
-    int done; //indicate that the current operation is completed
-    int extra; //extra information on the current operation
+struct callback_param {
+    const void* input; 
+    void* output;
 };
 
 
