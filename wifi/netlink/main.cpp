@@ -13,7 +13,7 @@ void test_connect(){
 	int networkcount;
 	int apcount;
 	for (auto &i : interfaces){
-		cout<<i->name<<" "<<i->address<<endl;
+		cout<<i->name<<" "<<i->getDisplayableMacAddress()<<endl;
 		cout<<"I'm performing a full scan..."<<endl;
 		networks = i->fullNetworkScan();	
 		for (auto &net : networks){

@@ -12,7 +12,7 @@
 #include "nl80211.h"
 
 struct nl_sock* create_genlink_socket(int& nlID);
-void mac_addr_n2a(char *mac_addr, unsigned char *arg);
+void mac_addr_n2a(char *mac_addr, const unsigned char *arg);
 void mac_addr_a2n(unsigned char* raw, const char* mac_addr);
 const char* get_ssid_string(unsigned char *ie, int ielen);
 const char* channel_width_name(enum nl80211_chan_width width);

@@ -51,19 +51,22 @@ class WifiInterface{
 	nl_sock* nlSocket;
 	int nlID;
 	vector<WifiNetwork*> wifiNetworks;
+	struct wiphy* wiphy;
 	
 	//destructor
 	~WifiInterface();
 	
-
 	//handlers	
 	static int full_network_scan_handler(struct nl_msg* msg, void* args);
+	
 	public:
-		WifiInterface();
+		WifiInterface(string name, int index, const unsigned char* macadrr);
 		//properties
 		string name;
-		string address;
-		int ifIndex;
+		int getIfIndex();
+		void setIfIndex(int index);
+		const unsigned char* getMacAddress();
+		string getDisplayableMacAddress();
 
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
@@ -72,6 +75,8 @@ class WifiInterface{
 		
 		int connect(AccessPoint* ap);
 		int disconnect();
+		
+
 };
 
 

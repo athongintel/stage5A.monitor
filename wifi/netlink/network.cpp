@@ -35,28 +35,35 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 	//parse received data into tb_msg
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
-	//create new interface
-	WifiInterface* interface = new WifiInterface();
-
+	string interfaceName;
+	int interfaceIndex;
+	unsigned char macaddr[ETH_ALEN];
+	
 	//interface name
 	if (tb_msg[NL80211_ATTR_IFNAME])
-		interface->name = string((char*)nla_get_string(tb_msg[NL80211_ATTR_IFNAME]));
+		interfaceName = string((char*)nla_get_string(tb_msg[NL80211_ATTR_IFNAME]));
 	else
-		interface->name = "";
+		interfaceName = "";
+		
 	//interface mac address
-	if (tb_msg[NL80211_ATTR_MAC]){
-		char macaddr[20];
-		mac_addr_n2a(macaddr, (unsigned char*)nla_data(tb_msg[NL80211_ATTR_MAC]));
-		interface->address = string(macaddr);
+	if (tb_msg[NL80211_ATTR_MAC]){		
+		memcpy(macaddr,(unsigned char*)nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
 	}
-	else
-		interface->address = "";	
+	else{
+		//fill zero because we received nothing
+		memset(macaddr, 0, ETH_ALEN);		
+	}	
 	
-	//if index
+	//ifindex
 	if (tb_msg[NL80211_ATTR_IFINDEX])
-		interface->ifIndex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
+		interfaceIndex = nla_get_u32(tb_msg[NL80211_ATTR_IFINDEX]);
 	else
-		interface->ifIndex = -1;
+		interfaceIndex = -1;
+
+	//create new interface
+	WifiInterface* interface = new WifiInterface(interfaceName, interfaceIndex, macaddr);
+
+	
 	//add this new interface into final list
 	instance->wifiInterfaces.push_back(interface);	
 	return NL_SKIP;
@@ -65,13 +72,35 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 
 //WifiInterface class implementation
 
-WifiInterface::WifiInterface(){
+WifiInterface::WifiInterface(string name, int index, const unsigned char* macaddr){
 	this->nlSocket = create_genlink_socket(this->nlID);
-	
+	struct wiphy* wi = new struct wiphy();
+	wi->ifIndex = index;
+	memcpy(wi->mac_addr, macaddr, ETH_ALEN);
+	this->wiphy = wi;
 }
 
 WifiInterface::~WifiInterface(){
-	nl_socket_free(this->nlSocket);	
+	nl_socket_free(this->nlSocket);
+	delete this->wiphy;
+}
+
+int WifiInterface::getIfIndex(){
+	return this->wiphy->ifIndex;
+}
+
+void WifiInterface::setIfIndex(int index){
+	this->wiphy->ifIndex = index;
+}
+
+const unsigned char* WifiInterface::getMacAddress(){
+	return this->wiphy->mac_addr;
+}
+
+string WifiInterface::getDisplayableMacAddress(){
+	char mac[20];
+	mac_addr_n2a(mac, this->wiphy->mac_addr);
+	return string(mac);
 }
 
 int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
@@ -157,14 +186,14 @@ vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 	
 	this->wifiNetworks.clear();
 
-	if (full_network_scan_trigger(this->nlSocket, this->nlID, this->ifIndex)<0){
+	if (full_network_scan_trigger(this->nlSocket, this->nlID, this->wiphy)<0){
 		//error
 		cout<<"Error: cannot trigger wifi scan"<<endl;		
 	}
 	else{
-		get_scan_result(this->nlSocket, this->nlID, this->ifIndex, full_network_scan_handler, this);			
+		get_network_scan_result(this->nlSocket, this->nlID, this->wiphy, full_network_scan_handler, this);			
 	}
-	return this->wifiNetworks;	
+	return this->wifiNetworks;
 }
 
 
@@ -179,7 +208,7 @@ int WifiInterface::connect(AccessPoint* accessPoint){
 	ap.frequency = accessPoint->frequency;
 
 	//calling API
-	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->ifIndex, &ap, NULL);
+	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->wiphy, &ap, NULL);
 	cout<<"Connect returned with code: "<<ret<<endl;
 	
 	return ret;
@@ -194,7 +223,7 @@ int WifiInterface::disconnect(){
 		return -1;
 	}
 	else{
-		ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->ifIndex);
+		ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->wiphy);
 		//cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
 		nl_socket_free(nlSocket);
 		return ret;
@@ -212,9 +241,7 @@ LinkState* WifiInterface::getState(){
 	LinkState* result = new LinkState();
 	
 	struct wiphy_state state = {.state = DISCONNECTED};
-	unsigned char mac_addr[ETH_ALEN];
-	mac_addr_a2n(mac_addr, this->address.c_str());
-	int ret = get_wiphy_state(this->nlSocket, this->nlID, this->ifIndex, &state);	
+	int ret = get_wiphy_state(this->nlSocket, this->nlID, this->wiphy, &state);	
 	
 	switch (state.state){
 		case ASSOCIATED:

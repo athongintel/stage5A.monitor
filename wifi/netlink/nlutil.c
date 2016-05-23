@@ -34,7 +34,7 @@ int default_error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err, void *a
     return NL_STOP;
 }
 
-void mac_addr_n2a(char *mac_addr, unsigned char *arg) {
+void mac_addr_n2a(char *mac_addr, const unsigned char *arg) {
     int i, l;
 
     l = 0;
