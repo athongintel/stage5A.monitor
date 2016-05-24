@@ -5,7 +5,7 @@
 
 WifiController::WifiController(){
 
-	//alloc a netlink socket	
+	//alloc a netlink socket
 	this->nlSocket = create_genlink_socket(nlID);
 }
 
@@ -35,15 +35,15 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 	//parse received data into tb_msg
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
-	string interfaceName;
+	char interfaceName[20];
 	int interfaceIndex;
 	unsigned char macaddr[ETH_ALEN];
 	
 	//interface name
 	if (tb_msg[NL80211_ATTR_IFNAME])
-		interfaceName = string((char*)nla_get_string(tb_msg[NL80211_ATTR_IFNAME]));
+		memcpy(interfaceName, nla_get_string(tb_msg[NL80211_ATTR_IFNAME]), nla_len(tb_msg[NL80211_ATTR_IFNAME]));
 	else
-		interfaceName = "";
+		memset(interfaceName, 0, strlen(interfaceName));
 		
 	//interface mac address
 	if (tb_msg[NL80211_ATTR_MAC]){		
@@ -72,11 +72,14 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 
 //WifiInterface class implementation
 
-WifiInterface::WifiInterface(string name, int index, const unsigned char* macaddr){
+WifiInterface::WifiInterface(const char* name, int index, const unsigned char* macaddr){
+	//show
+	//cout<<"inside constructor: "<<name<<" - "<<index<<" - "<<macaddr<<endl;
 	this->nlSocket = create_genlink_socket(this->nlID);
 	struct wiphy* wi = new struct wiphy();
 	wi->ifIndex = index;
 	memcpy(wi->mac_addr, macaddr, ETH_ALEN);
+	memcpy(wi->name, name, strlen(name));
 	this->wiphy = wi;
 }
 
@@ -89,10 +92,6 @@ int WifiInterface::getIfIndex(){
 	return this->wiphy->ifIndex;
 }
 
-void WifiInterface::setIfIndex(int index){
-	this->wiphy->ifIndex = index;
-}
-
 const unsigned char* WifiInterface::getMacAddress(){
 	return this->wiphy->mac_addr;
 }
@@ -101,6 +100,10 @@ string WifiInterface::getDisplayableMacAddress(){
 	char mac[20];
 	mac_addr_n2a(mac, this->wiphy->mac_addr);
 	return string(mac);
+}
+
+string WifiInterface::getName(){
+	return string(this->wiphy->name);
 }
 
 int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
@@ -125,7 +128,6 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	};
 
 	string SSID;
-	char mac_addr[20];
 
 	// Parse return message and error check.
 	nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
@@ -144,6 +146,9 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	//get instance from args
 	WifiInterface* wifiInterface = (WifiInterface*) args;
 	
+	/*if (bss[NL80211_ATTR_AUTH_TYPE]){
+		cout<<"gotcha!"<<nla_data(bss[NL80211_ATTR_AUTH_TYPE])<<endl;
+	}*/
 	
 	//get SSID
 	SSID = string(get_ssid_string((unsigned char*)nla_data(bss[NL80211_BSS_INFORMATION_ELEMENTS]), nla_len(bss[NL80211_BSS_INFORMATION_ELEMENTS])));
@@ -166,16 +171,15 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 		network->SSID = SSID;
 		wifiInterface->wifiNetworks.push_back(network);
 	}
-			
+		
+	unsigned char mac_addr[ETH_ALEN];
+	memcpy(mac_addr, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]), ETH_ALEN);
+	int freq = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
+	int signal = (int)nla_get_u32(bss[NL80211_BSS_SIGNAL_MBM]);
+
 	//create new access point
-	AccessPoint* accessPoint = new AccessPoint();
-	//get BSSID
-	memcpy(accessPoint->ap, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]), ETH_ALEN);
-	//get frequency
-	accessPoint->ap->frequency = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
-	accessPoint->ap->signal = (int)nla_get_u32(bss[NL80211_BSS_SIGNAL_MBM]);
-	accessPoint->network = network;
-	
+	AccessPoint* accessPoint = new AccessPoint(network, mac_addr, freq, signal);
+	memcpy(accessPoint->ap->SSID, SSID.c_str(), SSID.length());
 	//add the new access point to current network
 	network->accessPoints.push_back(accessPoint);
 	
@@ -202,7 +206,7 @@ vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
 
 int WifiInterface::connect(AccessPoint* accessPoint){	
 
-	//calling API
+	//calling API	
 	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->wiphy, accessPoint->ap, NULL);
 	cout<<"Connect returned with code: "<<ret<<endl;
 	
@@ -227,8 +231,30 @@ int WifiInterface::disconnect(){
 
 
 //AccessPoint class implementation
-AccessPoint::AccessPoint(){
+AccessPoint::AccessPoint(WifiNetwork* network, const unsigned char* mac_addr, int freq, int signal){
 	this->ap = new struct access_point();
+	this->network = network;
+	memcpy(this->ap->mac_address, mac_addr, ETH_ALEN);
+	this->ap->frequency = freq;
+	this->ap->signal = signal;
+}
+
+string AccessPoint::getDisplayableBSSID(){
+	char macbuf[20];
+	mac_addr_n2a(macbuf, this->ap->mac_address);
+	return string(macbuf);
+}
+
+const unsigned char* AccessPoint::getBSSID(){
+	return this->ap->mac_address;
+}
+
+int AccessPoint::getFrequency(){
+	return this->ap->frequency;
+}
+
+int AccessPoint::getSignalStrength(){
+	return this->ap->signal;
 }
 
 AccessPoint::~AccessPoint(){

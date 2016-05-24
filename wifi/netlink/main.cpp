@@ -13,7 +13,7 @@ void test_connect(){
 	int networkcount;
 	int apcount;
 	for (auto &i : interfaces){
-		cout<<i->name<<" "<<i->getDisplayableMacAddress()<<endl;
+		cout<<i->getName()<<" "<<i->getDisplayableMacAddress()<<endl;
 		cout<<"I'm performing a full scan..."<<endl;
 		networks = i->fullNetworkScan();	
 		for (auto &net : networks){
@@ -25,7 +25,7 @@ void test_connect(){
 			}
 			bool connect = false;*/
 			for (auto &ap : net->accessPoints){
-				cout<<" -- "<<apcount<<":  "<<ap->BSSID<<"  "<<ap->frequency<<"  "<<endl;
+				cout<<" -- "<<apcount<<":  "<<ap->getDisplayableBSSID()<<"  "<<ap->getFrequency()<<"  "<<endl;
 				apcount++;
 				/*if (!connect){
 					//connect to first access point
@@ -34,8 +34,8 @@ void test_connect(){
 				}*/
 			}
 		}
-		//i->disconnect();
-		//cout<<"Disconnected!"<<endl;
+		i->disconnect();
+		cout<<"Disconnected!"<<endl;
 	}
 	int selectedInterface;
 	int selectedNetwork;
@@ -49,7 +49,7 @@ void test_connect(){
 	
 	
 	//connect to this ap
-	cout<<"Trying to connect to "<<networks[selectedNetwork]->accessPoints[selectedAP]->BSSID<<" of "<<networks[selectedNetwork]->SSID<<" on "<<interfaces[selectedInterface]->name<<endl;
+	cout<<"Trying to connect to "<<networks[selectedNetwork]->accessPoints[selectedAP]->getDisplayableBSSID()<<" of "<<networks[selectedNetwork]->SSID<<" on "<<interfaces[selectedInterface]->getName()<<endl;
 	
 	interfaces[selectedInterface]->connect(networks[selectedNetwork]->accessPoints[selectedAP]);	
 

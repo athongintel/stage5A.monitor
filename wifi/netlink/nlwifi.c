@@ -89,6 +89,108 @@ int full_network_scan_trigger_multicast_callback(struct nl_msg* msg, void* arg) 
     return NL_SKIP;
 }
 
+int network_associate_multicast_callback(struct nl_msg* msg, void* args){
+struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
+	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
+	struct callback_param* result = (callback_param*)args;
+	const unsigned char** input = (const unsigned char**)result->input;
+	
+	const unsigned char* st_mac_addr = input[0];
+	const unsigned char* ap_mac_addr = input[1];
+	int* done = (int*)result->output;
+	int* status = done+1;
+	
+	fprintf(stdout, "network_authenticate_multicast_callback catched some messages. id: %d/%d\n", gnlh->cmd, NL80211_CMD_MAX);
+	if (gnlh->cmd == NL80211_CMD_ASSOCIATE){
+		fprintf(stdout, "network_authenticate_multicast_callback got CMD_ASSOCIATE event\n");
+		nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+		if (tb_msg[NL80211_ATTR_TIMED_OUT]){
+			//operation timed out, maybe we moved away from the ap
+			//see this came from which AP, get NL80211_ATTR_MAC from the returned
+			char msg_mac_addr[20];
+			memcpy(msg_mac_addr, (unsigned char*)nla_data(tb_msg[NL80211_ATTR_MAC]), nla_len(tb_msg[NL80211_ATTR_MAC]));
+			fprintf(stdout, "Mac address from message: %s\n", msg_mac_addr);
+			if (strcmp(msg_mac_addr, (char*)st_mac_addr) == 0){
+				//ok, our request had timed out
+				*done = 1;
+				*status = 1; //0: success, 1: timed out				
+			}
+			else{
+				//this is not our request, just ignores			
+			}		
+			return NL_SKIP;	
+		}
+		else if(tb_msg[NL80211_ATTR_FRAME]){
+			//see what's inside this frame
+			//the frame is just an array of bits which contains the information under a convention of order
+		
+			uint8_t *frame;
+			size_t len;
+			int i;
+			unsigned char macbuf[ETH_ALEN];
+			uint16_t tmp;			
+		
+			frame = (uint8_t*)nla_data(tb_msg[NL80211_ATTR_FRAME]);
+			len = nla_len(tb_msg[NL80211_ATTR_FRAME]);
+
+			if (len < 26) {
+				printf(" [invalid frame: ");
+				return NL_SKIP;
+				//this is a bad frame. just ignore			
+			}
+			else{
+				//check if we are the destination of this messsage
+				memcpy(macbuf, frame + 4, ETH_ALEN);				
+				char mactmp1[20]; 
+				char mactmp2[20]; 
+				mac_addr_n2a(mactmp1, macbuf);
+				mac_addr_n2a(mactmp2, st_mac_addr);				
+				fprintf(stdout, "macbuf %s and st_mac_addr %s\n", mactmp1, mactmp2);
+				if (strcmp((const char*)macbuf, (const char*)st_mac_addr)==0){					
+					fprintf(stdout, "yes we are the destination\n");
+					//check the source of this message
+					memcpy(macbuf, frame + 10, ETH_ALEN);
+					mac_addr_n2a(mactmp1, macbuf);
+					mac_addr_n2a(mactmp2, ap_mac_addr);
+					fprintf(stdout, "macbuf %s and ap_mac_addr %s\n", mactmp1, mactmp2);
+					if (strcmp((const char*)macbuf, (const char*)ap_mac_addr)==0){					
+						fprintf(stdout, "yes this is from the ap we wanted to connect\n");
+						*done = 1; //ok, we got what we wanted
+						//check status
+						switch (frame[0] & 0xfc) {
+							case 0x10: /* assoc resp */
+							case 0x30: /* reassoc resp */
+								/* status */
+								*status = (frame[27] << 8) + frame[26];
+								//printf(" status: %d\n", tmp);
+								break;
+							case 0x00: /* assoc req */
+							case 0x20: /* reassoc req */
+								break;
+							case 0xb0: /* auth */
+								/* status */
+								*status = (frame[29] << 8) + frame[28];
+								//printf(" status: %d\n", tmp);
+								break;
+							case 0xa0: /* disassoc */
+							case 0xc0: /* deauth */
+								/* reason */
+								*status = (frame[25] << 8) + frame[24];
+								//printf(" reason %d\n", tmp);
+								break;
+						}
+					}
+					else{
+						//Just skip. This came from an other AP, maybe a network lag??
+					}					
+				}
+			}	
+		}
+	}	
+	
+	return NL_SKIP;
+}
+
 int network_authenticate_multicast_callback(struct nl_msg* msg, void* args){
 	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
 	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
@@ -369,14 +471,14 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 	else{
 		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_AUTHENTICATE, 0);
 		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);
-		nla_put(nlMessage, NL80211_ATTR_SSID, strlen((*ap).SSID), (*ap).SSID);
-		if ((*ap).frequency>0){
-			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, (*ap).frequency);			
+		nla_put(nlMessage, NL80211_ATTR_SSID, strlen(ap->SSID), ap->SSID);
+		if (ap->frequency>0){
+			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, ap->frequency);			
 		}
-		if (strlen((const char*)((*ap).mac_address))>0){
-			nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, (*ap).mac_address);
+		if (strlen((const char*)(ap->mac_address))>0){
+			nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, ap->mac_address);
 		}
-		nla_put_u32(nlMessage, NL80211_ATTR_AUTH_TYPE, NL80211_AUTHTYPE_OPEN_SYSTEM);
+		nla_put_u32(nlMessage, NL80211_ATTR_AUTH_TYPE, ap->authType);
 		
 		//listen to multicast event
 		mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_MLME);
@@ -390,7 +492,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 			//adding callback
 			unsigned char* input[2];
 			input[0] = wiphy->mac_addr; //source's mac address
-			input[1] = (*ap).mac_address; //access point's mac address
+			input[1] = ap->mac_address; //access point's mac address
 			
 			int connect_result[2];
 			connect_result[0] = 0; //done
@@ -414,8 +516,8 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 			}
 			
 			char test_mac[20];
-			mac_addr_n2a(test_mac, (*ap).mac_address);
-			fprintf(stdout, "Authenticate request sent to %s - %s\n", (*ap).SSID, test_mac);
+			mac_addr_n2a(test_mac, ap->mac_address);
+			fprintf(stdout, "Authenticate request sent to %s - %s\n", ap->SSID, test_mac);
 			
 			//need to loop because nl_recvmsgs only block once message
 			while (!connect_result[0])
@@ -423,7 +525,68 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 			
 			if (connect_result[1]==0){
 				fprintf(stdout, "Authenticated, sending associate request...\n");
-				
+				nlMessage = nlmsg_alloc();
+				if (!nlMessage){
+					fprintf(stderr,"Error: cannot allocate netlink message\n");
+					return -1;
+				}
+				else{
+					genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_ASSOCIATE, 0);
+					nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);
+					nla_put(nlMessage, NL80211_ATTR_SSID, strlen(ap->SSID), ap->SSID);
+					if (ap->frequency>0){
+						nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, ap->frequency);			
+					}
+					if (strlen((const char*)(ap->mac_address))>0){
+						nla_put(nlMessage, NL80211_ATTR_MAC, ETH_ALEN, ap->mac_address);
+					}
+					nla_put_u32(nlMessage, NL80211_ATTR_AUTH_TYPE, NL80211_AUTHTYPE_SHARED_KEY);
+		
+					//listen to multicast event
+					//mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_MLME);
+					/*int ret;		
+					if (mcid >= 0) {
+						ret = nl_socket_add_membership(nlSocket, mcid);
+						if (ret){
+							fprintf(stderr,"Cannot listen to multicast connect event");
+							return ret;
+						}*/
+						//adding callback
+					//unsigned char* input[2];
+					input[0] = wiphy->mac_addr; //source's mac address
+					input[1] = ap->mac_address; //access point's mac address
+		
+					//int connect_result[2];
+					connect_result[0] = 0; //done
+					connect_result[1] = -1; //status, 0 means success
+					
+					//struct callback_param results;
+					results = {.input = input, .output = connect_result};
+					//alloc and set the callback
+					nlCallback = nl_cb_alloc(NL_CB_DEFAULT);
+					if (!nlCallback) {
+						fprintf(stderr,"Error: Failed to allocate netlink callbacks.\n");
+						nlmsg_free(nlMessage);
+						return -ENOMEM;
+					}
+					nl_cb_set(nlCallback, NL_CB_MSG_IN, NL_CB_CUSTOM, network_associate_multicast_callback, &results);		
+		
+					//send the message and wait for response
+					//int 
+					ret = nl_send_auto(nlSocket, nlMessage);
+					if (ret < 0){
+						fprintf(stderr, "Cannot send authenticate request\n");
+						return ret;
+					}
+		
+					//char test_mac[20];
+					mac_addr_n2a(test_mac, ap->mac_address);
+					fprintf(stdout, "Authenticate request sent to %s - %s\n", ap->SSID, test_mac);
+		
+					//need to loop because nl_recvmsgs only block once message
+					while (!connect_result[0])
+						nl_recvmsgs(nlSocket, nlCallback);
+				}
 			}
 			else{
 				nl_socket_drop_membership(nlSocket, mcid);

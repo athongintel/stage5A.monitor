@@ -25,11 +25,13 @@ class AccessPoint{
 	
 	
 	//private constructor
-	AccessPoint();
+	AccessPoint(WifiNetwork* network, const unsigned char* mac_addr, int freq, int signal);
+	~AccessPoint();
 
 	public:
 		WifiNetwork* network;
-		string getBSSID(); //MAC address
+		string getDisplayableBSSID(); //MAC address
+		const unsigned char* getBSSID();
 		int getFrequency();
 		int getSignalStrength();
 };
@@ -58,23 +60,24 @@ class LinkState{
 
 class WifiInterface{
 
+	friend class WifiController;
+
 	nl_sock* nlSocket;
 	int nlID;
 	vector<WifiNetwork*> wifiNetworks;
 	struct wiphy* wiphy;
 	
 	//destructor
+	WifiInterface(const char* name, int index, const unsigned char* macadrr);
 	~WifiInterface();
 	
 	//handlers	
 	static int full_network_scan_handler(struct nl_msg* msg, void* args);
 	
-	public:
-		WifiInterface(string name, int index, const unsigned char* macadrr);
+	public:		
 		//properties
-		string name;
+		string getName();
 		int getIfIndex();
-		void setIfIndex(int index);
 		const unsigned char* getMacAddress();
 		string getDisplayableMacAddress();
 
@@ -85,8 +88,6 @@ class WifiInterface{
 		
 		int connect(AccessPoint* ap);
 		int disconnect();
-		
-
 };
 
 
