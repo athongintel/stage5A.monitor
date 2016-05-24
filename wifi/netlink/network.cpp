@@ -168,16 +168,16 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	}
 			
 	//create new access point
-	AccessPoint* ap = new AccessPoint();
+	AccessPoint* accessPoint = new AccessPoint();
 	//get BSSID
-	mac_addr_n2a(mac_addr, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]));
-	ap->BSSID = string(mac_addr);
+	memcpy(accessPoint->ap, (unsigned char*)nla_data(bss[NL80211_BSS_BSSID]), ETH_ALEN);
 	//get frequency
-	ap->frequency = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
-	ap->network = network;
+	accessPoint->ap->frequency = (int)nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
+	accessPoint->ap->signal = (int)nla_get_u32(bss[NL80211_BSS_SIGNAL_MBM]);
+	accessPoint->network = network;
 	
 	//add the new access point to current network
-	network->accessPoints.push_back(ap);
+	network->accessPoints.push_back(accessPoint);
 	
 	return NL_SKIP;
 }
@@ -201,14 +201,9 @@ vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
 }
 
 int WifiInterface::connect(AccessPoint* accessPoint){	
-	//construct a backward access point struct
-	struct access_point ap;
-	strcpy(ap.SSID, accessPoint->network->SSID.c_str());
-	mac_addr_a2n(ap.mac_address, accessPoint->BSSID.c_str());
-	ap.frequency = accessPoint->frequency;
 
 	//calling API
-	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->wiphy, &ap, NULL);
+	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->wiphy, accessPoint->ap, NULL);
 	cout<<"Connect returned with code: "<<ret<<endl;
 	
 	return ret;
@@ -228,6 +223,16 @@ int WifiInterface::disconnect(){
 		nl_socket_free(nlSocket);
 		return ret;
 	}
+}
+
+
+//AccessPoint class implementation
+AccessPoint::AccessPoint(){
+	this->ap = new struct access_point();
+}
+
+AccessPoint::~AccessPoint(){
+	delete this->ap;
 }
 
 //LinkState class implementation

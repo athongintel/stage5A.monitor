@@ -12,16 +12,26 @@
 using namespace std;
 
 
-
+class WifiController;
 class WifiNetwork;
+class WifiInterface;
+class AccessPoint;
+
 
 class AccessPoint{ 
+	friend class WifiInterface;
+
+	struct access_point* ap;
+	
+	
+	//private constructor
+	AccessPoint();
 
 	public:
 		WifiNetwork* network;
-		string BSSID; //MAC address
-		int frequency;
-		int strength;
+		string getBSSID(); //MAC address
+		int getFrequency();
+		int getSignalStrength();
 };
 
 

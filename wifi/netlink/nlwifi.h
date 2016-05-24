@@ -31,9 +31,11 @@ enum link_state {
 };
 
 struct access_point {
-	char SSID[255];
+	char SSID[256];
 	unsigned char mac_address[ETH_ALEN];
 	int frequency;
+	enum nl80211_auth_type authType;
+	int signal;
 };
 
 struct wiphy {
