@@ -20,7 +20,8 @@ LIB_OBJS= \
 	hw_features_common.o \
 	ieee802_11_common.o \
 	sae.o \
-	wpa_common.o
+	wpa_common.o \
+	wpa_ctrl.o
 
 libcommon.a: $(LIB_OBJS)
 	$(AR) crT $@ $?
