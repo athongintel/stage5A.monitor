@@ -1,11 +1,17 @@
-#include "network.h"
+//#include "network.h"
+#include "geo.h"
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
+using namespace rapidjson;
 
-
-void test_connect(){
+/*void test_connect(){
 	WifiController* netController = new WifiController();
 	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
 	vector<WifiNetwork*> networks;
@@ -23,7 +29,7 @@ void test_connect(){
 			/*if (strcmp(net->SSID, "(Aix*Marseille universite")==0){
 				cout<<"Trying to connect to "<<net->SSID<<" access point..."<<endl;				
 			}
-			bool connect = false;*/
+			bool connect = false;
 			for (auto &ap : net->accessPoints){
 				cout<<" -- "<<apcount<<":  "<<ap->getDisplayableBSSID()<<"  "<<ap->getFrequency()<<"  "<<endl;
 				apcount++;
@@ -31,7 +37,7 @@ void test_connect(){
 					//connect to first access point
 					connect = true;
 					i->connect(ap);
-				}*/
+				}
 			}
 		}
 		i->disconnect();
@@ -53,8 +59,67 @@ void test_connect(){
 	
 	interfaces[selectedInterface]->connect(networks[selectedNetwork]->accessPoints[selectedAP]);	
 
+}*/
+
+const char* SAVED_NETWORK_JSON_PATH = "./saved-network.json";
+const int MAX_RANGE = 50;
+
+void report(){
+	
+	//1. load saved network
+	ifstream file(SAVED_NETWORK_JSON_PATH);
+	string contents = string(istreambuf_iterator<char>(file), istreambuf_iterator<char>());
+	Document doc;
+	doc.Parse(contents.c_str());
+	
+	//2. get current location
+	GeoTracker* geoTracker = GeoTracker::getInstance();
+	struct GeoLocation* currentLocation = geoTracker->getCurrentLocation();
+	//std::cout<<"Current location: "<<currentLocation->latitude<<", "<<currentLocation->longitude<<std::endl;
+	
+	//3. launch packet capturing and analysing module
+	
+	//4. iterate through access points and check for distance
+	Value &networks = doc["networks"];
+	if (networks.IsNull() || !networks.IsArray()){
+		cout<<"Error: Bad saved network file!"<<endl;
+		return;		
+	}
+	else{
+		for (SizeType i=0; i<networks.Size(); i++){
+			Value& net = networks[i];			
+			if (!net.IsNull()){
+				Value& aps = net["aps"];
+				cout<<"Into network: "<<net["ssid"].GetString()<<endl;
+				if (!aps.IsNull() && aps.IsArray()){
+					for (SizeType j=0; j<aps.Size(); j++){
+						//4.1 iterate through access point to get those in range
+						Value& ap = aps[j];
+						if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
+							GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
+							float distance = geoTracker->getDistance(apLocation, currentLocation);
+							if (distance <= MAX_RANGE){
+								//4.2 try to connect to this access point
+								cout<<"got this ap:"<<ap["mac"].GetString()<<endl;							
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 }
 
 int main(int argc, char** argv){
-	test_connect();
+	report();
 }
+
+
+
+
+
+
+
+
+

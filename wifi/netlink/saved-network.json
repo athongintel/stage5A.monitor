@@ -12,15 +12,15 @@
 					"mac" : "3C:46:D8:BC:A2:F8",
 					"frequency" : 2472,
 					"lat" : 0,
-					"long" : 0,
+					"long" : 0
 				},
 				{
 					"mac" : "3C:46:D8:BC:A2:FA",
 					"frequency" : 5200,
 					"lat" : 0,
-					"long" : 0,
+					"long" : 0
 				}
-			],			
+			]			
 		},
 		{
 			"ssid" : "eduroam",
@@ -34,19 +34,19 @@
 					"mac" : "AC:A3:1E:22:77:01",
 					"frequency" : 2462,
 					"lat" : 0,
-					"long" : 0,
+					"long" : 0
 				},
 				{
 					"mac" : "18:64:72:CB:85:21",
 					"frequency" : 2412,
 					"lat" : 0,
-					"long" : 0,
+					"long" : 0
 				},
 				{
 					"mac" : "00:24:6C:83:0D:E9",
 					"frequency" : 5300,
 					"lat" : 0,
-					"long" : 0,
+					"long" : 0
 				}				
 			]
 		}
