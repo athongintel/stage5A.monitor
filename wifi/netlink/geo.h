@@ -1,15 +1,17 @@
 
 
 struct GeoLocation{
-	float latitude;
-	float longitue;
+	float lattitude;
+	float longitude;
 }
 
 class GeoTracker{
 
-	static GeoTracker instance;
+	static struct GeoTracker* instance = new GeoTracker();
+
+	GeoTracker();
 
 	public:
 		static GeoTracker getInstance();
-		GeoLocation getCurrentLocation();			
+		struct* GeoLocation getCurrentLocation();			
 }
