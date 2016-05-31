@@ -89,42 +89,19 @@ int report(){
 
 	WifiController* netController = new WifiController();
 	vector<WifiInterface*> interfacesOriginal;
-	//check for airmon-ng
-	int ret = system("airmon-ng");
+
+	//check for wpa_supplicant
+	int ret = system("wpa_supplicant");
 	if (ret != 0){
-		cout<<"Error: airmon-ng is not installed. try sudo apt-get install aircrack-ng"<<endl;
+		cout<<"Error: wpa_supplicant is not installed. Try: sudo apt-get install wpasupplicant"<<endl;
 		return -1;
 	}
-	else{
-		//kill all disturbing process
-		cout<<"Killing disturbing processes"<<endl;
+	else{		
+		cout<<"Killing disturbing processes..."<<endl;
 		//manually kill network-manager
-		//system("service network-manager stop");
-		//system("service avahi-daemon stop");
-		system("airmon-ng check kill");
-		
-		interfacesOriginal = netController->getNetworkInterfaces();	
-		for (WifiInterface* i : interfacesOriginal){
-			cout<<"Starting airmon-ng on "<<i->getName()<<endl;;
-			string command = string("airmon-ng start ") + i->getName();
-			int ret = system(command.c_str());
-			if (ret < 0){
-				cout<<"Error: cannot start monitoring mode on"<<i->getName()<<endl;
-			}
-		}
-	}
-	
-	//get network interfaces that had monitoring mode enabled
-	vector<WifiInterface*>::iterator ite;	
-	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
-	
-	for (ite = interfaces.begin(); ite < interfaces.end(); ite++){
-		if ((*ite)->getName().find("mon") == string::npos){
-			//cannot start airmon-ng on this interface
-			cout<<"Removing "<<(*ite)->getName()<<" for not supporting airmon"<<endl;
-			ite = interfaces.erase(ite);
-		}
-	}		
+		system("service network-manager stop");	
+		system("service wpa_supplicant stop");		
+	}	
 	
 	//run one wpa_supplicant for each interface
 	int pCount = 0;
@@ -148,6 +125,8 @@ int report(){
 				cout<<"Starting pid: "<<pid<<" as child process..."<<endl;
 				cpid[pCount]=pid;
 				pCount++;
+				//create new virtual interface and enable monitor mode
+				
 			}
 		}
 		else{
@@ -202,20 +181,6 @@ int report(){
 		}
 	}
 	
-	//check mode
-	int i=100;
-	while (i>0){
-		system("iwconfig");
-		i--;
-	}
-	
-	
-	//stop airmon-ng
-	for (WifiInterface* interface : interfaces){
-		string command = string("airmon-ng stop ") + interface->getName();
-		cout<<"stop airmon on "<<interface->getName()<<endl;
-		system(command.c_str());
-	}
 	
 	//kill children wpa processes
 	for (int i : cpid){

@@ -40,8 +40,14 @@ struct access_point {
 
 struct wiphy {
 	char name[20];
-	int ifIndex;
+	int phyIndex;	
 	unsigned char mac_addr[ETH_ALEN];
+};
+
+struct interface {
+	struct wiphy wiphy;
+	char name[20];	
+	int ifIndex;	
 };
 
 struct wiphy_state {
@@ -50,10 +56,11 @@ struct wiphy_state {
 };
 
 //APIs
-
-int dump_wiphy_list(struct nl_sock* nlSocket, int netlinkID, nl_recvmsg_msg_cb_t handler, void* args);
-int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy, struct wiphy_state* state);
-int full_network_scan_trigger(struct nl_sock* nlSocket,  int netlinkID, struct wiphy* wiphy);
-int get_network_scan_result(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy, nl_recvmsg_msg_cb_t handler, void* args);
-int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy, struct access_point* ap, void* args);
-int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy);
+int add_network_interface(const struct wiphy* wiphy, const char* name, struct interface* interface);
+int remove_network_interface(const struct interface* interface);
+int dump_interface_list(struct nl_sock* nlSocket, int netlinkID, nl_recvmsg_msg_cb_t handler, void* args);
+int get_interface_state(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, struct wiphy_state* state);
+int full_network_scan_trigger(struct nl_sock* nlSocket,  int netlinkID, struct interface* interface);
+int get_network_scan_result(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, nl_recvmsg_msg_cb_t handler, void* args);
+int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, struct access_point* ap, void* args);
+int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct interface* interface);

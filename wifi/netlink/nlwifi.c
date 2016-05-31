@@ -323,7 +323,7 @@ int network_disconnect_multicast_callback(struct nl_msg* msg, void* arg){
 
 /*API IMPLEMENTATION*/
 
-int dump_wiphy_list(struct nl_sock* nlSocket, int nlID, nl_recvmsg_msg_cb_t handler, void* args){
+int dump_interface_list(struct nl_sock* nlSocket, int nlID, nl_recvmsg_msg_cb_t handler, void* args){
 	//using this socket to send dump request to kernel and receive response
 	struct nl_msg* nlMessage;
 	
@@ -349,7 +349,7 @@ int dump_wiphy_list(struct nl_sock* nlSocket, int nlID, nl_recvmsg_msg_cb_t hand
 	return ret;
 }
 
-int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, struct wiphy* wiphy) {
+int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, struct interface* interface) {
 	// Starts the scan and waits for it to finish. Does not return until the scan is done or has been aborted (extra).
 	int scan_result[2];
 	scan_result[0]=0; //done
@@ -392,7 +392,7 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, struct wiphy* 
 
 	// Setup the messages and callback handler.
 	genlmsg_put(msg, 0, 0, nlID, 0, 0, NL80211_CMD_TRIGGER_SCAN, 0);  // Setup which command to run.
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, wiphy->ifIndex);  // Add message attribute, which interface to use.
+	nla_put_u32(msg, NL80211_ATTR_IFINDEX, interface->ifIndex);  // Add message attribute, which interface to use.
 	nla_put(ssids_to_scan, NLA_UNSPEC, 0, "");  // Scan all SSIDs, passing SSID as binary - NLA_UNSPEC, 0 as length of empty string
 	nla_put_nested(msg, NL80211_ATTR_SCAN_SSIDS, ssids_to_scan);  // Add message attribute, which SSIDs to scan for.
 	nlmsg_free(ssids_to_scan);  // Copied to `msg` above, no longer need this.
@@ -435,7 +435,7 @@ int full_network_scan_trigger(struct nl_sock* nlSocket, int nlID, struct wiphy* 
 	return 0;
 }
 
-int get_network_scan_result(struct nl_sock* nlSocket, int nlID, struct wiphy* wiphy, nl_recvmsg_msg_cb_t handler, void* args){
+int get_network_scan_result(struct nl_sock* nlSocket, int nlID, struct interface* interface, nl_recvmsg_msg_cb_t handler, void* args){
 	struct nl_msg* nlMessage;
 	nlMessage = nlmsg_alloc();  // Allocate a message.
 	if (!nlMessage){
@@ -444,7 +444,7 @@ int get_network_scan_result(struct nl_sock* nlSocket, int nlID, struct wiphy* wi
 	}
 	else{
 		genlmsg_put(nlMessage, 0, 0, nlID, 0, NLM_F_DUMP, NL80211_CMD_GET_SCAN, 0);  // Setup which command to run.
-		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);  // Add message attribute, which interface to use.
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, interface->ifIndex);  // Add message attribute, which interface to use.
 		nl_socket_modify_cb(nlSocket, NL_CB_VALID, NL_CB_CUSTOM, handler, args);  // Add the callback.
 		int ret = nl_send_auto(nlSocket, nlMessage);  // Send the message.
 
@@ -457,7 +457,7 @@ int get_network_scan_result(struct nl_sock* nlSocket, int nlID, struct wiphy* wi
 	}	
 }
 
-int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy, struct access_point* ap, void* args){
+int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, struct access_point* ap, void* args){
 			
 	struct nl_msg* nlMessage;
 	struct nl_cb* nlCallback;
@@ -470,7 +470,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 	}
 	else{
 		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_AUTHENTICATE, 0);
-		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, interface->ifIndex);
 		nla_put(nlMessage, NL80211_ATTR_SSID, strlen(ap->SSID), ap->SSID);
 		if (ap->frequency>0){
 			nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, ap->frequency);			
@@ -491,7 +491,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 			}
 			//adding callback
 			unsigned char* input[2];
-			input[0] = wiphy->mac_addr; //source's mac address
+			input[0] = interface->wiphy.mac_addr; //source's mac address
 			input[1] = ap->mac_address; //access point's mac address
 			
 			int connect_result[2];
@@ -532,7 +532,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 				}
 				else{
 					genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_ASSOCIATE, 0);
-					nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);
+					nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, interface->ifIndex);
 					nla_put(nlMessage, NL80211_ATTR_SSID, strlen(ap->SSID), ap->SSID);
 					if (ap->frequency>0){
 						nla_put_u32(nlMessage, NL80211_ATTR_WIPHY_FREQ, ap->frequency);			
@@ -553,7 +553,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
 						}*/
 						//adding callback
 					//unsigned char* input[2];
-					input[0] = wiphy->mac_addr; //source's mac address
+					input[0] = interface->wiphy.mac_addr; //source's mac address
 					input[1] = ap->mac_address; //access point's mac address
 		
 					//int connect_result[2];
@@ -609,7 +609,7 @@ int connect_to_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiph
  *	%NL80211_ATTR_REASON_CODE attributes are used.
  */
 
-int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy){
+int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct interface* interface){
 	
 	struct nl_msg* nlMessage;
 	struct nl_cb* nlCallback;
@@ -624,7 +624,7 @@ int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct
 		//if yes, return error
 		genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_DISCONNECT, 0);
 		//fprintf(stdout, "current if index: %d\n", ifIndex);
-		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, wiphy->ifIndex);				
+		nla_put_u32(nlMessage, NL80211_ATTR_IFINDEX, interface->ifIndex);				
 		//listen to multicast event
 		mcid = nl_get_multicast_id(nlSocket, NL80211_GENL_NAME, NL80211_MULTICAST_GROUP_MLME);
 		//fprintf(stdout, "Disconnect muticast id %d\n", mcid);
@@ -674,8 +674,8 @@ int disconnect_from_access_point(struct nl_sock* nlSocket, int netlinkID, struct
 	}
 }
 
-int get_wiphy_state(struct nl_sock* nlSocket, int netlinkID, struct wiphy* wiphy, struct wiphy_state* state){
+int get_interface_state(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, struct wiphy_state* state){
 	
-	return get_network_scan_result(nlSocket, netlinkID, wiphy, get_wiphy_state_calback, state);
+	return get_network_scan_result(nlSocket, netlinkID, interface, get_wiphy_state_calback, state);
 
 }

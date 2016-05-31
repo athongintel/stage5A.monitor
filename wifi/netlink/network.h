@@ -21,7 +21,7 @@ class AccessPoint;
 class AccessPoint{ 
 	friend class WifiInterface;
 
-	struct access_point* ap;
+	struct access_point ap;
 	
 	
 	//private constructor
@@ -58,17 +58,38 @@ class LinkState{
 };
 
 
+class WifiDevice{
+	friend class WifiController;
+	friend class WifiInterface;
+	
+	int nlID;
+	nl_sock* nlSocket;
+	//constructor
+	WifiDevice();
+	~WifiDevice();
+	
+	int phyIndex;
+	struct wiphy wiphy;
+	
+	public:
+		int getPhysicalIndex();
+		WifiInterface* addInterface(string name, enum nl80211_iftype type = NL80211_IFTYPE_STATION);
+		int removeInterface(const WifiInterface* interface);
+		const unsigned char* getMacAddress();
+		string getDisplayableMacAddress();
+};
+
 class WifiInterface{
 
 	friend class WifiController;
 
-	nl_sock* nlSocket;
-	int nlID;
 	vector<WifiNetwork*> wifiNetworks;
-	struct wiphy* wiphy;
+	
+	WifiDevice* wifiDevice;
+	struct interface interface;
 	
 	//destructor
-	WifiInterface(const char* name, int index, const unsigned char* macadrr);
+	WifiInterface();
 	~WifiInterface();
 	
 	//handlers	
@@ -78,9 +99,7 @@ class WifiInterface{
 		//properties
 		string getName() const;
 		int getIfIndex();
-		const unsigned char* getMacAddress();
-		string getDisplayableMacAddress();
-
+		
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
 		vector<WifiNetwork*> freqNetworkScan();
@@ -102,7 +121,7 @@ class WifiController{
 	~WifiController();
 
 	//handlers
-	static int dump_wiphy_list_handler(struct nl_msg* msg, void* args);
+	static int dump_interface_list_handler(struct nl_msg* msg, void* args);
 
 	public:
 		WifiController();

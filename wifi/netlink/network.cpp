@@ -1,10 +1,28 @@
 #include "network.h"
 
+//WifiDevice class implementation
+
+WifiDevice::WifiDevice(){
+	this->nlSocket = create_genlink_socket(this->nlID);
+}
+
+WifiDevice::~WifiDevice(){
+	if (this->nlSocket){
+		nl_socket_free(nlSocket);
+	}
+}
+
+int WifiDevice::getPhysicalIndex(){
+	return this->phyIndex;
+}
+
+WifiInterface* WifiDevice::addInterface(string name, enum nl80211_iftype type){
+	
+}
 
 //WifiController class implementation
 
 WifiController::WifiController(){
-
 	//alloc a netlink socket
 	this->nlSocket = create_genlink_socket(nlID);
 }
@@ -21,11 +39,11 @@ vector<WifiInterface*> WifiController::getNetworkInterfaces(){
 		for each interface found, handler is called
 		'this' is passed into callback function as argument to update its 'wifiInterfaces'
 	*/
-	dump_wiphy_list(this->nlSocket, this->nlID, dump_wiphy_list_handler, this);
+	dump_interface_list(this->nlSocket, this->nlID, dump_interface_list_handler, this);
 	return this->wifiInterfaces;
 }
 
-int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
+int WifiController::dump_interface_list_handler(struct nl_msg *msg, void *args){
 	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(msg));
 	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
 	
@@ -37,7 +55,15 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 
 	char interfaceName[20];
 	int interfaceIndex;
+	int physicIndex;
 	unsigned char macaddr[ETH_ALEN];
+	
+	if (tb_msg[NL80211_ATTR_WIPHY]){
+		physicIndex = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY]);
+	}
+	else{
+		physicIndex = -1;
+	}
 	
 	//interface name
 	if (tb_msg[NL80211_ATTR_IFNAME])
@@ -61,8 +87,11 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 		interfaceIndex = -1;
 
 	//create new interface
-	WifiInterface* interface = new WifiInterface(interfaceName, interfaceIndex, macaddr);
-
+	WifiInterface* interface = new WifiInterface();
+	interface->interface.ifIndex = interfaceIndex;
+	interface->interface.wiphy.phyIndex = physicIndex;
+	memcpy(interface->interface.wiphy.mac_addr, macaddr, ETH_ALEN);
+	memcpy(interface->interface.name, interfaceName, strlen(interfaceName));
 	
 	//add this new interface into final list
 	instance->wifiInterfaces.push_back(interface);	
@@ -72,20 +101,12 @@ int WifiController::dump_wiphy_list_handler(struct nl_msg *msg, void *args){
 
 //WifiInterface class implementation
 
-WifiInterface::WifiInterface(const char* name, int index, const unsigned char* macaddr){
-	//show
-	//cout<<"inside constructor: "<<name<<" - "<<index<<" - "<<macaddr<<endl;
-	this->nlSocket = create_genlink_socket(this->nlID);
-	struct wiphy* wi = new struct wiphy();
-	wi->ifIndex = index;
-	memcpy(wi->mac_addr, macaddr, ETH_ALEN);
-	memcpy(wi->name, name, strlen(name));
-	this->wiphy = wi;
+WifiInterface::WifiInterface(){
+	this->wifiDevice = new WifiDevice();
 }
 
 WifiInterface::~WifiInterface(){
-	nl_socket_free(this->nlSocket);
-	delete this->wiphy;
+	nl_socket_free(this->wifiDevice->nlSocket);
 }
 
 int WifiInterface::getIfIndex(){
