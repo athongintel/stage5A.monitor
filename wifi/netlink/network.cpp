@@ -102,7 +102,7 @@ string WifiInterface::getDisplayableMacAddress(){
 	return string(mac);
 }
 
-string WifiInterface::getName(){
+string WifiInterface::getName() const{
 	return string(this->wiphy->name);
 }
 

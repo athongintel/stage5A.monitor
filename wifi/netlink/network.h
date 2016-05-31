@@ -76,7 +76,7 @@ class WifiInterface{
 	
 	public:		
 		//properties
-		string getName();
+		string getName() const;
 		int getIfIndex();
 		const unsigned char* getMacAddress();
 		string getDisplayableMacAddress();
