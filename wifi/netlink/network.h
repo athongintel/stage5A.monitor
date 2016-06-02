@@ -66,14 +66,14 @@ class WifiDevice{
 	nl_sock* nlSocket;
 	//constructor
 	WifiDevice();
+	WifiDevice(const struct wiphy* wiphy);
 	~WifiDevice();
 	
-	int phyIndex;
 	struct wiphy wiphy;
 	
 	public:
 		int getPhysicalIndex();
-		WifiInterface* addInterface(string name, enum nl80211_iftype type = NL80211_IFTYPE_STATION);
+		WifiInterface* addVirtualInterface(WifiInterface* interface, string name, enum nl80211_iftype type = NL80211_IFTYPE_STATION);
 		int removeInterface(const WifiInterface* interface);
 		const unsigned char* getMacAddress();
 		string getDisplayableMacAddress();
@@ -81,6 +81,7 @@ class WifiDevice{
 
 class WifiInterface{
 
+	friend class WifiDevice;
 	friend class WifiController;
 
 	vector<WifiNetwork*> wifiNetworks;
@@ -90,6 +91,7 @@ class WifiInterface{
 	
 	//destructor
 	WifiInterface();
+	WifiInterface(const struct interface* interface);
 	~WifiInterface();
 	
 	//handlers	
@@ -99,7 +101,7 @@ class WifiInterface{
 		//properties
 		string getName() const;
 		int getIfIndex();
-		
+		WifiDevice* getDevice();		
 		//methods
 		vector<WifiNetwork*> fullNetworkScan();
 		vector<WifiNetwork*> freqNetworkScan();

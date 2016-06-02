@@ -20,6 +20,7 @@ const char* channel_type_name(enum nl80211_channel_type channel_type);
 const char* iftype_name(enum nl80211_iftype iftype);
 int nl_get_multicast_id(struct nl_sock *sock, const char *family, const char *group);
 int ieee80211_frequency_to_channel(int freq);
+const char *command_name(enum nl80211_commands cmd);
 
 //default handlers
 int default_ack_handler(struct nl_msg *msg, void *arg);

@@ -56,7 +56,7 @@ struct wiphy_state {
 };
 
 //APIs
-int add_network_interface(const struct wiphy* wiphy, const char* name, struct interface* interface);
+int add_network_interface(struct nl_sock* nlSocket, int netlinkID, const struct wiphy* wiphy, struct interface* interface, const char* name, enum nl80211_iftype type, void* args);
 int remove_network_interface(const struct interface* interface);
 int dump_interface_list(struct nl_sock* nlSocket, int netlinkID, nl_recvmsg_msg_cb_t handler, void* args);
 int get_interface_state(struct nl_sock* nlSocket, int netlinkID, struct interface* interface, struct wiphy_state* state);

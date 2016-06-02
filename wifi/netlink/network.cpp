@@ -6,6 +6,12 @@ WifiDevice::WifiDevice(){
 	this->nlSocket = create_genlink_socket(this->nlID);
 }
 
+WifiDevice::WifiDevice(const struct wiphy* wiphy){
+	this->nlSocket = create_genlink_socket(this->nlID);
+	//a full struct copy
+	this->wiphy = (*wiphy);
+}
+
 WifiDevice::~WifiDevice(){
 	if (this->nlSocket){
 		nl_socket_free(nlSocket);
@@ -13,11 +19,34 @@ WifiDevice::~WifiDevice(){
 }
 
 int WifiDevice::getPhysicalIndex(){
-	return this->phyIndex;
+	return this->wiphy.phyIndex;
 }
 
-WifiInterface* WifiDevice::addInterface(string name, enum nl80211_iftype type){
-	
+WifiInterface* WifiDevice::addVirtualInterface(WifiInterface* interface, string name, enum nl80211_iftype type){
+	//TODO
+	struct interface vi;
+	//WifiDevice* dev = interface->getDevice();
+	//int ret = add_network_interface(dev->nlSocket, dev->nlID, &(dev->wiphy), &vi, name.c_str(), type, NULL);
+	string typeString[NL80211_IFTYPE_MAX] = {
+		"unspec",
+		"adhoc",
+		"station",
+		"ap",
+		"ap_vlan",
+		"wds",
+		"monitor",
+		"mesh",
+		"p2pclient",
+		"p2pgo",
+		"p2pdev"};
+	string command = string("iw dev ") + interface->getName() + string(" interface add ") + name + string(" type ") + typeString[type];
+	int ret = system(command.c_str());
+	WifiInterface* result = NULL;
+	if (ret == 0){
+		WifiInterface* result = new WifiInterface(&vi);
+	}
+
+	return result;
 }
 
 //WifiController class implementation
@@ -105,26 +134,41 @@ WifiInterface::WifiInterface(){
 	this->wifiDevice = new WifiDevice();
 }
 
+WifiInterface::WifiInterface(const struct interface* interface){
+	this->wifiDevice = new WifiDevice(&(interface->wiphy));
+	//a full copy will be performed
+	this->interface = (*interface);
+}
+
 WifiInterface::~WifiInterface(){
-	nl_socket_free(this->wifiDevice->nlSocket);
+	if (this->wifiDevice!=NULL){
+		if (this->wifiDevice->nlSocket!=NULL){
+			nl_socket_free(this->wifiDevice->nlSocket);
+		}
+		delete this->wifiDevice;
+	}
 }
 
 int WifiInterface::getIfIndex(){
-	return this->wiphy->ifIndex;
+	return this->interface.ifIndex;
 }
 
-const unsigned char* WifiInterface::getMacAddress(){
-	return this->wiphy->mac_addr;
+WifiDevice* WifiInterface::getDevice(){
+	return this->wifiDevice;
 }
 
-string WifiInterface::getDisplayableMacAddress(){
+const unsigned char* WifiDevice::getMacAddress(){
+	return this->wiphy.mac_addr;
+}
+
+string WifiDevice::getDisplayableMacAddress(){
 	char mac[20];
-	mac_addr_n2a(mac, this->wiphy->mac_addr);
+	mac_addr_n2a(mac, this->wiphy.mac_addr);
 	return string(mac);
 }
 
 string WifiInterface::getName() const{
-	return string(this->wiphy->name);
+	return string(this->interface.name);
 }
 
 int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
@@ -200,7 +244,7 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 
 	//create new access point
 	AccessPoint* accessPoint = new AccessPoint(network, mac_addr, freq, signal);
-	memcpy(accessPoint->ap->SSID, SSID.c_str(), SSID.length());
+	memcpy(accessPoint->ap.SSID, SSID.c_str(), SSID.length());
 	//add the new access point to current network
 	network->accessPoints.push_back(accessPoint);
 	
@@ -211,12 +255,12 @@ vector<WifiNetwork*> WifiInterface::fullNetworkScan(){
 	
 	this->wifiNetworks.clear();
 
-	if (full_network_scan_trigger(this->nlSocket, this->nlID, this->wiphy)<0){
+	if (full_network_scan_trigger(this->wifiDevice->nlSocket, this->wifiDevice->nlID, &(this->interface))<0){
 		//error
 		cout<<"Error: cannot trigger wifi scan"<<endl;		
 	}
 	else{
-		get_network_scan_result(this->nlSocket, this->nlID, this->wiphy, full_network_scan_handler, this);			
+		get_network_scan_result(this->wifiDevice->nlSocket, this->wifiDevice->nlID, &(this->interface), full_network_scan_handler, this);			
 	}
 	return this->wifiNetworks;
 }
@@ -228,7 +272,7 @@ vector<WifiNetwork*> WifiInterface::freqNetworkScan(){
 int WifiInterface::connect(AccessPoint* accessPoint){	
 
 	//calling API	
-	int ret = connect_to_access_point(this->nlSocket, this->nlID, this->wiphy, accessPoint->ap, NULL);
+	int ret = connect_to_access_point(this->wifiDevice->nlSocket, this->wifiDevice->nlID, &(this->interface), &(accessPoint->ap), NULL);
 	cout<<"Connect returned with code: "<<ret<<endl;
 	
 	return ret;
@@ -243,9 +287,8 @@ int WifiInterface::disconnect(){
 		return -1;
 	}
 	else{
-		ret = disconnect_from_access_point(this->nlSocket, this->nlID, this->wiphy);
+		ret = disconnect_from_access_point(this->wifiDevice->nlSocket, this->wifiDevice->nlID, &(this->interface));
 		//cout<<"Disconnect returned with code: "<<ret/*<<" ("<<nl_geterror(ret)<<")"*/<<endl;
-		nl_socket_free(nlSocket);
 		return ret;
 	}
 }
@@ -253,33 +296,32 @@ int WifiInterface::disconnect(){
 
 //AccessPoint class implementation
 AccessPoint::AccessPoint(WifiNetwork* network, const unsigned char* mac_addr, int freq, int signal){
-	this->ap = new struct access_point();
 	this->network = network;
-	memcpy(this->ap->mac_address, mac_addr, ETH_ALEN);
-	this->ap->frequency = freq;
-	this->ap->signal = signal;
+	memcpy(this->ap.mac_address, mac_addr, ETH_ALEN);
+	this->ap.frequency = freq;
+	this->ap.signal = signal;
 }
 
 string AccessPoint::getDisplayableBSSID(){
 	char macbuf[20];
-	mac_addr_n2a(macbuf, this->ap->mac_address);
+	mac_addr_n2a(macbuf, this->ap.mac_address);
 	return string(macbuf);
 }
 
 const unsigned char* AccessPoint::getBSSID(){
-	return this->ap->mac_address;
+	return this->ap.mac_address;
 }
 
 int AccessPoint::getFrequency(){
-	return this->ap->frequency;
+	return this->ap.frequency;
 }
 
 int AccessPoint::getSignalStrength(){
-	return this->ap->signal;
+	return this->ap.signal;
 }
 
 AccessPoint::~AccessPoint(){
-	delete this->ap;
+
 }
 
 //LinkState class implementation
@@ -293,7 +335,7 @@ LinkState* WifiInterface::getState(){
 	LinkState* result = new LinkState();
 	
 	struct wiphy_state state = {.state = DISCONNECTED};
-	int ret = get_wiphy_state(this->nlSocket, this->nlID, this->wiphy, &state);	
+	int ret = get_interface_state(this->wifiDevice->nlSocket, this->wifiDevice->nlID, &(this->interface), &state);	
 	
 	switch (state.state){
 		case ASSOCIATED:

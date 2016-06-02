@@ -320,8 +320,58 @@ int network_disconnect_multicast_callback(struct nl_msg* msg, void* arg){
 	return NL_SKIP;
 }
 
+int add_network_interface_handler(struct nl_msg* nlMessage, void* arg){
+	struct genlmsghdr* gnlh = (genlmsghdr*)nlmsg_data(nlmsg_hdr(nlMessage));
+	struct nlattr* tb_msg[NL80211_ATTR_MAX + 1];
+	
+	fprintf(stdout, "add_network_interface_handler called\n");
+	fprintf(stdout, "unknown event %d ()\n",
+		       gnlh->cmd);
+	return NL_SKIP;
+}
+
 
 /*API IMPLEMENTATION*/
+
+int add_network_interface(struct nl_sock* nlSocket, int netlinkID, const struct wiphy* wiphy, struct interface* interface, const char* name, enum nl80211_iftype type, void* args){
+	//using this socket to send dump request to kernel and receive response
+	struct nl_msg* nlMessage;
+	
+	nlMessage = nlmsg_alloc();
+	if (!nlMessage){
+		//cannot allocate message
+		fprintf(stderr, "Error: cannot allocate netlink message\n");
+		return -1;
+	}
+	
+	fprintf(stdout, "add network interface called\n");
+	
+	//set command and add attribute for a wiphy dump
+	genlmsg_put(nlMessage, 0, 0, netlinkID, 0, 0, NL80211_CMD_NEW_INTERFACE, 0);
+	nla_put_u32(nlMessage, NL80211_ATTR_WIPHY, wiphy->phyIndex);  // Add message attribute, device to use
+	nla_put_u32(nlMessage, NL80211_ATTR_IFTYPE, type);  // Add message attribute, which type of interface to be created
+	//NLA_PUT_STRING(msg, NL80211_ATTR_IFNAME, name);
+	//NLA_PUT_U32(msg, NL80211_ATTR_IFTYPE, type);
+	nla_put(nlMessage, NL80211_ATTR_IFNAME, strlen(name), name);  // Add message attribute, which name defined the new interface
+	nl_socket_modify_cb(nlSocket, NL_CB_MSG_IN, NL_CB_CUSTOM, add_network_interface_handler, args);
+	
+	//send the message
+	int ret = nl_send_auto(nlSocket, nlMessage);
+	if (ret<0){
+		fprintf(stdout, "add network interface message send failed\n");
+	}
+	//block and wait for response packet. Returned after callback.
+	ret = nl_recvmsgs_default(nlSocket);
+	if (ret<0){
+		fprintf(stdout, "add network interface message receive failed\n");
+	}
+	
+
+	//free the message
+   	nlmsg_free(nlMessage);
+	
+	return ret;	
+}
 
 int dump_interface_list(struct nl_sock* nlSocket, int nlID, nl_recvmsg_msg_cb_t handler, void* args){
 	//using this socket to send dump request to kernel and receive response
@@ -341,7 +391,7 @@ int dump_interface_list(struct nl_sock* nlSocket, int nlID, nl_recvmsg_msg_cb_t 
 	//send the message
 	nl_send_auto(nlSocket, nlMessage);
 	//block and wait for response packet. Returned after callback.
-    	int ret = nl_recvmsgs_default(nlSocket);
+    int ret = nl_recvmsgs_default(nlSocket);
 
 	//free the message
    	nlmsg_free(nlMessage);

@@ -5,6 +5,16 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+
+#include <stdio.h>
+#include <pcap.h>
+#include <signal.h>
+#include <unistd.h>
+#include <netinet/in.h> 
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -67,8 +77,9 @@ using namespace rapidjson;
 const char* SAVED_NETWORK_JSON_PATH = "./saved-network.json";
 const int MAX_RANGE = 50;
 
-int run_report_service(const WifiInterface* interface){
-	
+typedef void (*pcap_packet_handler)(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
+
+int wpa_service(const WifiInterface* interface){
 	
 	//start wpa_supplicant, not as daemon
 	string command = "wpa_supplicant";
@@ -79,54 +90,135 @@ int run_report_service(const WifiInterface* interface){
 	
 	cout<<"Runing wpa daemon on "<<interface->getName()<<endl;
 	int result;
-	//int result = execl("/sbin/wpa_supplicant", "wpa_suppplicant", params[0].c_str(), params[1].c_str(), params[2].c_str(), (void*)0);		
+	result = execl("/sbin/wpa_supplicant", "wpa_suppplicant", params[0].c_str(), params[1].c_str(), params[2].c_str(), (void*)0);		
 	
+	//only return if failed
 	return result;
 }
 
+void wifi_connection_analyser(u_char* args, const struct pcap_pkthdr* header, const u_char* packet){
+	cout<<"yeah, I can enter here!!"<<endl;
+}
+
+int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler handler){
+	
+	pcap_t* pcap = NULL;
+	char errbuf[PCAP_ERRBUF_SIZE];
+	int res;
+	
+	const char* devName = "wlan0mon";
+  
+	struct bpf_program fp;	
+	char * filter_exp;
+ 	bpf_u_int32 mask= PCAP_NETMASK_UNKNOWN ;
+ 	
+	cout<<"Sniffing on interface:"<<devName<<endl;
+
+	try{
+  	pcap = pcap_open_live(devName, BUFSIZ, 1, 1000, errbuf);
+  	cout<<"no error pcap open"<<endl;
+  	}
+  	catch (exception& e)
+  	{
+  	cout<<"exception: "<<e.what()<<endl;
+  	}
+  	
+  	cout<<"error here 1"<<endl;
+  	if (pcap == NULL) {
+    	cout<<"Cannot initialize "<<devName<<" because: "<<errbuf<<endl;
+    	return(-1);
+	}
+    
+    cout<<"error here 3"<<endl;
+	if (pcap_compile(pcap, &fp, filter.c_str(), 0, mask) == -1) {
+		cout<<"Couldn't parse filter"<<endl;
+		return(-1);
+	}
+	
+	cout<<"error here 4"<<endl;
+	if (pcap_setfilter(pcap, &fp) == -1) {
+		cout<<"Couldn't install filter"<<endl;
+		return(-1);
+	}
+
+	cout<<"starting pcap loop"<<endl;
+	res = pcap_loop(pcap, 0, handler, NULL);
+	return(res);
+}
+
+
 int report(){
 
-
 	WifiController* netController = new WifiController();
-	vector<WifiInterface*> interfacesOriginal;
+	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
 
 	//check for wpa_supplicant
-	int ret = system("wpa_supplicant");
+	int ret;
+	/*ret = system("wpa_supplicant");
 	if (ret != 0){
 		cout<<"Error: wpa_supplicant is not installed. Try: sudo apt-get install wpasupplicant"<<endl;
 		return -1;
 	}
-	else{		
-		cout<<"Killing disturbing processes..."<<endl;
-		//manually kill network-manager
-		system("service network-manager stop");	
-		system("service wpa_supplicant stop");		
-	}	
+	ret = system("ifconfig");
+	if (ret != 0){
+		cout<<"Error: ifconfig not found on this system"<<endl;
+		return -1;
+	}*/
+	
+
+	cout<<"Killing disturbing processes..."<<endl;
+	//manually kill network-manager
+	system("service network-manager stop");	
+	system("service wpa_supplicant stop");		
 	
 	//run one wpa_supplicant for each interface
 	int pCount = 0;
 	pid_t pid = getpid();
-	int cpid[interfaces.size()]; //child processes's id
+	int cpid[interfaces.size()*2]; //child processes's id
 	
 	//fill zero to children process ids
-	memset(cpid, 0, sizeof(pid));
+	memset(cpid, 0, sizeof(cpid));
 	
 	for (WifiInterface* i : interfaces){
-		if (pid != 0){						
-			
+		if (pid != 0){									
 			//only call fork in parent process
 			pid = fork();
 			if (pid == 0){
 				//this is child process
-				return run_report_service(i);
+				return wpa_service(i);
 			}
 			else{
 				//this is parent process. save the pid for later closing.
-				cout<<"Starting pid: "<<pid<<" as child process..."<<endl;
+				cout<<"Starting pid: "<<pid<<" as wpa process..."<<endl;
 				cpid[pCount]=pid;
 				pCount++;
-				//create new virtual interface and enable monitor mode
 				
+				//create new virtual interface and enable monitor mode
+				cout<<"Creating new virtual interface: "<<i->getName() + string("mon")<<endl;
+				WifiInterface* virtualInterface = i->getDevice()->addVirtualInterface(i, i->getName() + string("mon"), NL80211_IFTYPE_MONITOR);
+				//bring up this virtual interface
+				string bringupcommand;
+				bringupcommand = string("ifconfig ") + i->getName() + string(" up");
+				cout<<"Bringing up: "<<bringupcommand<<endl;
+				system(bringupcommand.c_str());				
+				
+				bringupcommand = string("ifconfig ") + i->getName() + string("mon") + string(" up");
+				cout<<"Bringing up: "<<bringupcommand<<endl;
+				system(bringupcommand.c_str());
+								
+				//start packet sniffing on the virtual interface
+				pid = fork();
+				if (pid == 0){
+					//child sniffing process
+					string filter = "";
+					cout<<"entering snipping process"<<endl;
+					return packet_sniffing(virtualInterface, filter, wifi_connection_analyser);
+				}
+				else{
+					cout<<"Starting pid: "<<pid<<" as sniffing process..."<<endl;
+					cpid[pCount]=pid;
+					pCount++;
+				}
 			}
 		}
 		else{
@@ -179,29 +271,30 @@ int report(){
 				}
 			}
 		}
-	}
+
+		//kill children wpa processes
+		/*for (int i : cpid){
+			if (i>0){
+				cout<<"Sending sigkill to "<<i<<endl;
+				kill(i, SIGKILL);
+			}
+		}*/
 	
-	
-	//kill children wpa processes
-	for (int i : cpid){
-		cout<<"Sending sigkill to "<<i<<endl;
-		kill(i, SIGKILL);
-	}
-	
-	//wait for children processes to terminate
-	int status;
-	while (pCount>0){
-		pid = wait(&status);
-		if (pid>0){
-			cout<<"Process id: "<<pid<<" returned"<<endl;
+		//wait for children processes to terminate
+		int status;
+		while (pCount>0){
+			pid = wait(&status);
+			if (pid>0){
+				cout<<"Process id: "<<pid<<" returned"<<endl;
+			}
+			else{
+				cout<<"Child process returned with error"<<endl;
+			}
+			pCount--;
 		}
-		else{
-			cout<<"Child process returned with error"<<endl;
-		}
-		pCount--;
-	}
 	
-	return EXIT_SUCCESS;
+		return EXIT_SUCCESS;
+	}
 
 }
 
