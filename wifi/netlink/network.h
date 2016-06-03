@@ -74,6 +74,7 @@ class WifiDevice{
 	public:
 		int getPhysicalIndex();
 		WifiInterface* addVirtualInterface(WifiInterface* interface, string name, enum nl80211_iftype type = NL80211_IFTYPE_STATION);
+		int removeVirtualInterface(WifiInterface* interface);
 		int removeInterface(const WifiInterface* interface);
 		const unsigned char* getMacAddress();
 		string getDisplayableMacAddress();

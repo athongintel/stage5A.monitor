@@ -104,9 +104,9 @@ int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler
 	
 	pcap_t* pcap = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	int res;
+	int ret;
 	
-	const char* devName = "wlan0mon";
+	const char* devName = interface->getName().c_str();
   
 	struct bpf_program fp;	
 	char * filter_exp;
@@ -114,36 +114,25 @@ int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler
  	
 	cout<<"Sniffing on interface:"<<devName<<endl;
 
-	try{
   	pcap = pcap_open_live(devName, BUFSIZ, 1, 1000, errbuf);
-  	cout<<"no error pcap open"<<endl;
-  	}
-  	catch (exception& e)
-  	{
-  	cout<<"exception: "<<e.what()<<endl;
-  	}
-  	
-  	cout<<"error here 1"<<endl;
   	if (pcap == NULL) {
     	cout<<"Cannot initialize "<<devName<<" because: "<<errbuf<<endl;
     	return(-1);
 	}
     
-    cout<<"error here 3"<<endl;
 	if (pcap_compile(pcap, &fp, filter.c_str(), 0, mask) == -1) {
 		cout<<"Couldn't parse filter"<<endl;
 		return(-1);
 	}
 	
-	cout<<"error here 4"<<endl;
 	if (pcap_setfilter(pcap, &fp) == -1) {
 		cout<<"Couldn't install filter"<<endl;
 		return(-1);
 	}
 
-	cout<<"starting pcap loop"<<endl;
-	res = pcap_loop(pcap, 0, handler, NULL);
-	return(res);
+	cout<<"Starting pcap loop"<<endl;
+	ret = pcap_loop(pcap, -1, handler, NULL);
+	return(ret);
 }
 
 
@@ -179,12 +168,14 @@ int report(){
 	//fill zero to children process ids
 	memset(cpid, 0, sizeof(cpid));
 	
+	vector<WifiInterface*> virtualInterfaces;
+	
 	for (WifiInterface* i : interfaces){
 		if (pid != 0){									
 			//only call fork in parent process
 			pid = fork();
 			if (pid == 0){
-				//this is child process
+				//starting wpa process for wifi handling
 				return wpa_service(i);
 			}
 			else{
@@ -195,7 +186,9 @@ int report(){
 				
 				//create new virtual interface and enable monitor mode
 				cout<<"Creating new virtual interface: "<<i->getName() + string("mon")<<endl;
-				WifiInterface* virtualInterface = i->getDevice()->addVirtualInterface(i, i->getName() + string("mon"), NL80211_IFTYPE_MONITOR);
+				WifiInterface* vi = i->getDevice()->addVirtualInterface(i, i->getName() + string("mon"), NL80211_IFTYPE_MONITOR);
+				
+				virtualInterfaces.push_back(vi);
 				//bring up this virtual interface
 				string bringupcommand;
 				bringupcommand = string("ifconfig ") + i->getName() + string(" up");
@@ -212,7 +205,7 @@ int report(){
 					//child sniffing process
 					string filter = "";
 					cout<<"entering snipping process"<<endl;
-					return packet_sniffing(virtualInterface, filter, wifi_connection_analyser);
+					return packet_sniffing(vi, filter, wifi_connection_analyser);
 				}
 				else{
 					cout<<"Starting pid: "<<pid<<" as sniffing process..."<<endl;
@@ -239,8 +232,7 @@ int report(){
 		//2. get current location
 		GeoTracker* geoTracker = GeoTracker::getInstance();
 		struct GeoLocation* currentLocation = geoTracker->getCurrentLocation();
-		//std::cout<<"Current location: "<<currentLocation->latitude<<", "<<currentLocation->longitude<<std::endl;
-		
+		//std::cout<<"Current location: "<<currentLocation->latitude<<", "<<currentLocation->longitude<<std::endl;		
 	
 		//4. iterate through access points and check for distance
 		Value &networks = doc["networks"];
@@ -249,21 +241,26 @@ int report(){
 			return -1;		
 		}
 		else{
-			for (SizeType i=0; i<networks.Size(); i++){
-				Value& net = networks[i];			
-				if (!net.IsNull()){
-					Value& aps = net["aps"];
-					cout<<"Into network: "<<net["ssid"].GetString()<<endl;
-					if (!aps.IsNull() && aps.IsArray()){
-						for (SizeType j=0; j<aps.Size(); j++){
-							//4.1 iterate through access point to get those in range
-							Value& ap = aps[j];
-							if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
-								GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
-								float distance = geoTracker->getDistance(apLocation, currentLocation);
-								if (distance <= MAX_RANGE){
-									//4.2 try to connect to this access point
-									//cout<<"got this ap:"<<ap["mac"].GetString()<<endl;					
+			//test with each network interface
+			for (WifiInterface* interface : interfaces){
+				//
+				for (SizeType i=0; i<networks.Size(); i++){
+					Value& net = networks[i];			
+					if (!net.IsNull()){
+						Value& aps = net["aps"];
+						cout<<"Into network: "<<net["ssid"].GetString()<<endl;
+						if (!aps.IsNull() && aps.IsArray()){
+							for (SizeType j=0; j<aps.Size(); j++){
+								//4.1 iterate through access point to get those in range
+								Value& ap = aps[j];
+								if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
+									GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
+									float distance = geoTracker->getDistance(apLocation, currentLocation);
+									if (distance <= MAX_RANGE){
+										//4.2 try to connect to this access point
+										//cout<<"got this ap:"<<ap["mac"].GetString()<<endl;
+									
+									}
 								}
 							}
 						}
@@ -273,13 +270,13 @@ int report(){
 		}
 
 		//kill children wpa processes
-		/*for (int i : cpid){
+		for (int i : cpid){
 			if (i>0){
 				cout<<"Sending sigkill to "<<i<<endl;
 				kill(i, SIGKILL);
 			}
-		}*/
-	
+		}
+		
 		//wait for children processes to terminate
 		int status;
 		while (pCount>0){
@@ -292,6 +289,12 @@ int report(){
 			}
 			pCount--;
 		}
+		
+		//remove virtual device
+		for (WifiInterface* vi : virtualInterfaces){
+			cout<<"Removing vitual interface: "<<vi->getName()<<endl;
+			vi->getDevice()->removeVirtualInterface(vi);
+		}				
 	
 		return EXIT_SUCCESS;
 	}

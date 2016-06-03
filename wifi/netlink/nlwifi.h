@@ -31,7 +31,7 @@ enum link_state {
 };
 
 struct access_point {
-	char SSID[256];
+	char SSID[256] = "";
 	unsigned char mac_address[ETH_ALEN];
 	int frequency;
 	enum nl80211_auth_type authType = NL80211_AUTHTYPE_OPEN_SYSTEM;
@@ -39,15 +39,15 @@ struct access_point {
 };
 
 struct wiphy {
-	char name[20];
+	char name[20] = "";
 	int phyIndex;	
 	unsigned char mac_addr[ETH_ALEN];
 };
 
 struct interface {
+	char name[20] = "";		
+	int ifIndex;
 	struct wiphy wiphy;
-	char name[20];	
-	int ifIndex;	
 };
 
 struct wiphy_state {

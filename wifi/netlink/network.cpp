@@ -22,6 +22,13 @@ int WifiDevice::getPhysicalIndex(){
 	return this->wiphy.phyIndex;
 }
 
+int WifiDevice::removeVirtualInterface(WifiInterface* interface){
+	//TODO
+	string command = string("iw dev ") + interface->getName() + " del";
+	
+	return system(command.c_str());
+}
+
 WifiInterface* WifiDevice::addVirtualInterface(WifiInterface* interface, string name, enum nl80211_iftype type){
 	//TODO
 	struct interface vi;
@@ -40,10 +47,14 @@ WifiInterface* WifiDevice::addVirtualInterface(WifiInterface* interface, string 
 		"p2pgo",
 		"p2pdev"};
 	string command = string("iw dev ") + interface->getName() + string(" interface add ") + name + string(" type ") + typeString[type];
-	int ret = system(command.c_str());
+	system(command.c_str());
+	
+	memcpy(vi.name, name.c_str(), strlen(name.c_str()));
+	
+	int ret=0;
 	WifiInterface* result = NULL;
 	if (ret == 0){
-		WifiInterface* result = new WifiInterface(&vi);
+		result = new WifiInterface(&vi);
 	}
 
 	return result;
