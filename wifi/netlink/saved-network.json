@@ -3,9 +3,8 @@
 		{
 			"ssid" : "eRISCS2",
 			"encryption" : {
-				"method" : "WPA2",
-				"username" : "in case of EAP",
-				"password" : "wireless"
+				"method" : "WPA",
+				"psk" : "wireless"
 			},
 			"aps" : [
 				{

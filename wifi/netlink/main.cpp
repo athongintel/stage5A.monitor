@@ -1,5 +1,7 @@
 #include "network.h"
 #include "geo.h"
+#include "wpawrapper.h"
+
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -243,12 +245,18 @@ int report(){
 		else{
 			//test with each network interface
 			for (WifiInterface* interface : interfaces){
-				//
+				//create control wrapper
+				WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
+				
 				for (SizeType i=0; i<networks.Size(); i++){
 					Value& net = networks[i];			
 					if (!net.IsNull()){
 						Value& aps = net["aps"];
-						cout<<"Into network: "<<net["ssid"].GetString()<<endl;
+						string cipherMode = net["encryption"]["method"].GetString();
+						string networkName = net["ssid"].GetString();
+						cout<<"Into network: "<<networkName<<endl;
+						cout<<"--cipher: "<<cipherMode<<endl;
+
 						if (!aps.IsNull() && aps.IsArray()){
 							for (SizeType j=0; j<aps.Size(); j++){
 								//4.1 iterate through access point to get those in range
@@ -257,15 +265,44 @@ int report(){
 									GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
 									float distance = geoTracker->getDistance(apLocation, currentLocation);
 									if (distance <= MAX_RANGE){
-										//4.2 try to connect to this access point
+										//4.2 try to connect to this network
 										//cout<<"got this ap:"<<ap["mac"].GetString()<<endl;
-									
+										string request;
+										string response;
+										
+										//add network, response contains network ID
+										request = string("ADD_NETWORK");
+										wpaControl->request(request, response);
+										
+										string networkID = response;
+										
+										//set network ssid
+										request = string("SET_NETWORK ") + networkID;
+										wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
+										
+										//set network ssid
+										request = string("SET_NETWORK ") + response;
+										wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
+										
+										//set cipher parameters
+										if (cipherMode == "WPA"){
+											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"] + string("\""), response);
+										}
+										
+										//enable this network
+										request = string("ENABLE_NETWORK ") + networkID;
+										wpaControl->request(request, response);
+										
+										break;
 									}
+									delete apLocation;
 								}
 							}
 						}
 					}
 				}
+				
+				delete wpaControl;
 			}
 		}
 
@@ -298,6 +335,8 @@ int report(){
 	
 		return EXIT_SUCCESS;
 	}
+	
+	delete netController;
 
 }
 
