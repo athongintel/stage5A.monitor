@@ -1,7 +1,7 @@
 {
 	"networks" : [ 
 		{
-			"ssid" : "eRISCS2",
+			"ssid" : "eRISCS",
 			"encryption" : {
 				"method" : "WPA",
 				"psk" : "wireless"

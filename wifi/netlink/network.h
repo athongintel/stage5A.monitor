@@ -67,11 +67,13 @@ class WifiDevice{
 	//constructor
 	WifiDevice();
 	WifiDevice(const struct wiphy* wiphy);
-	~WifiDevice();
+	
 	
 	struct wiphy wiphy;
 	
 	public:
+		~WifiDevice();
+		
 		int getPhysicalIndex();
 		WifiInterface* addVirtualInterface(WifiInterface* interface, string name, enum nl80211_iftype type = NL80211_IFTYPE_STATION);
 		int removeVirtualInterface(WifiInterface* interface);
@@ -93,12 +95,14 @@ class WifiInterface{
 	//destructor
 	WifiInterface();
 	WifiInterface(const struct interface* interface);
-	~WifiInterface();
+	
 	
 	//handlers	
 	static int full_network_scan_handler(struct nl_msg* msg, void* args);
 	
 	public:		
+		~WifiInterface();
+	
 		//properties
 		string getName() const;
 		int getIfIndex();
@@ -121,12 +125,13 @@ class WifiController{
 	vector<WifiInterface*> wifiInterfaces;
 	
 	//destructor
-	~WifiController();
+	
 
 	//handlers
 	static int dump_interface_list_handler(struct nl_msg* msg, void* args);
 
 	public:
+		~WifiController();
 		WifiController();
 		vector<WifiInterface*> getNetworkInterfaces();		
 };

@@ -1,4 +1,3 @@
-#include "network.h"
 #include "geo.h"
 #include "wpawrapper.h"
 
@@ -6,7 +5,6 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-
 
 #include <stdio.h>
 #include <pcap.h>
@@ -225,6 +223,7 @@ int report(){
 	
 	//parent does this
 	if (pid!=0){
+	
 		//1. load saved network
 		ifstream file(SAVED_NETWORK_JSON_PATH);
 		string contents = string(istreambuf_iterator<char>(file), istreambuf_iterator<char>());
@@ -274,11 +273,7 @@ int report(){
 										request = string("ADD_NETWORK");
 										wpaControl->request(request, response);
 										
-										string networkID = response;
-										
-										//set network ssid
-										request = string("SET_NETWORK ") + networkID;
-										wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
+										string networkID = string(response);									
 										
 										//set network ssid
 										request = string("SET_NETWORK ") + response;
@@ -286,33 +281,30 @@ int report(){
 										
 										//set cipher parameters
 										if (cipherMode == "WPA"){
-											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"] + string("\""), response);
+											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
 										}
 										
 										//enable this network
 										request = string("ENABLE_NETWORK ") + networkID;
 										wpaControl->request(request, response);
-										
+																				
 										break;
-									}
-									delete apLocation;
+									}									
 								}
 							}
 						}
 					}
-				}
-				
-				delete wpaControl;
+				}		
 			}
 		}
 
 		//kill children wpa processes
-		for (int i : cpid){
+		/*for (int i : cpid){
 			if (i>0){
 				cout<<"Sending sigkill to "<<i<<endl;
 				kill(i, SIGKILL);
 			}
-		}
+		}*/
 		
 		//wait for children processes to terminate
 		int status;
@@ -335,9 +327,6 @@ int report(){
 	
 		return EXIT_SUCCESS;
 	}
-	
-	delete netController;
-
 }
 
 int main(int argc, char** argv){
