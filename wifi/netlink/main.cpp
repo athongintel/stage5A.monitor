@@ -104,48 +104,44 @@ string print_hex_ascii_line(const u_char* payload, int len, int offset){
 	int gap;
 	const u_char* ch;
 	
-	//try to print payload
-	
-	printf("payload: %s\n", payload);
 	char output[1024]="";
 
 	/* offset */
-	sprintf(output, "%05d   ", offset);
 	
 	/* hex */
 	ch = payload;
 	for(i = 0; i < len; i++) {
-		sprintf(output, "%02x ", *ch);
+		printf("%02x ", *ch);
 		ch++;
 		/* print extra space after 8th byte for visual aid */
 		if (i == 7)
-			sprintf(output, " ");
+			printf(" ");
 	}
 	/* print space to handle line less than 8 bytes */
 	if (len < 8)
-		sprintf(output, " ");
+		printf(" ");
 	
 	/* fill hex gap with spaces if not full line */
 	if (len < 16) {
 		gap = 16 - len;
 		for (i = 0; i < gap; i++) {
-			sprintf(output, "   ");
+			printf("   ");
 		}
 	}
-	sprintf(output, "   ");
+	printf("   ");
 	
 	/* ascii (if printable) */
 	ch = payload;
 	for(i = 0; i < len; i++) {
 		if (isprint(*ch))
-			sprintf(output, "%c", *ch);
+			printf("%c", *ch);
 		else
-			sprintf(output, ".");
+			printf(".");
 		ch++;
 	}
 
-	sprintf(output, "\n");
-	printf("----%s\n", output);
+	printf("\n");
+
 	return string(output);
 }
 
@@ -260,13 +256,17 @@ int report(){
 				bringupcommand = string("ifconfig ") + i->getName() + string("mon") + string(" up");
 				cout<<"Bringing up: "<<bringupcommand<<endl;
 				system(bringupcommand.c_str());
+				
+				cout<<"Wait here to start wireshark"<<endl;
+				string ok;				
+				cin>>ok;
 								
 				//start packet sniffing on the virtual interface
 				pid = fork();
 				if (pid == 0){
 					//child sniffing process
 					string filter = "";
-					cout<<"entering snipping process"<<endl;
+					cout<<"Entering snipping process"<<endl;
 					return packet_sniffing(vi, filter, wifi_connection_analyser);
 				}
 				else{
@@ -318,6 +318,10 @@ int report(){
 						cout<<"Into network: "<<networkName<<endl;
 						cout<<"--cipher: "<<cipherMode<<endl;
 
+						string request;
+						string response;
+						string networkID;
+
 						if (!aps.IsNull() && aps.IsArray()){
 							for (SizeType j=0; j<aps.Size(); j++){
 								//4.1 iterate through access point to get those in range
@@ -328,14 +332,12 @@ int report(){
 									if (distance <= MAX_RANGE){
 										//4.2 try to connect to this network
 										//cout<<"got this ap:"<<ap["mac"].GetString()<<endl;
-										string request;
-										string response;
-										
+																				
 										//add network, response contains network ID
 										request = string("ADD_NETWORK");
 										wpaControl->request(request, response);
 										
-										string networkID = string(response);									
+										networkID = string(response);									
 										
 										//set network ssid
 										request = string("SET_NETWORK ") + response;
@@ -352,13 +354,17 @@ int report(){
 										
 										//enable this network
 										request = string("ENABLE_NETWORK ") + networkID;
-										wpaControl->request(request, response);
-																				
+										wpaControl->request(request, response);																			
+															
 										break;
 									}									
 								}
 							}
 						}
+						//disable network to connect to an other
+						
+						//wait here and check for other networks
+						
 					}
 				}		
 			}
