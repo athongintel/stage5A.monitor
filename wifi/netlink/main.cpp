@@ -76,6 +76,8 @@ using namespace rapidjson;
 
 const char* SAVED_NETWORK_JSON_PATH = "./saved-network.json";
 const int MAX_RANGE = 50;
+pcap_t* pcap = NULL;
+ofstream reportFile;
 
 typedef void (*pcap_packet_handler)(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
 
@@ -96,20 +98,76 @@ int wpa_service(const WifiInterface* interface){
 	return result;
 }
 
+string print_hex_ascii_line(const u_char* payload, int len, int offset){
+
+	int i;
+	int gap;
+	const u_char* ch;
+	
+	//try to print payload
+	
+	printf("payload: %s\n", payload);
+	char output[1024]="";
+
+	/* offset */
+	sprintf(output, "%05d   ", offset);
+	
+	/* hex */
+	ch = payload;
+	for(i = 0; i < len; i++) {
+		sprintf(output, "%02x ", *ch);
+		ch++;
+		/* print extra space after 8th byte for visual aid */
+		if (i == 7)
+			sprintf(output, " ");
+	}
+	/* print space to handle line less than 8 bytes */
+	if (len < 8)
+		sprintf(output, " ");
+	
+	/* fill hex gap with spaces if not full line */
+	if (len < 16) {
+		gap = 16 - len;
+		for (i = 0; i < gap; i++) {
+			sprintf(output, "   ");
+		}
+	}
+	sprintf(output, "   ");
+	
+	/* ascii (if printable) */
+	ch = payload;
+	for(i = 0; i < len; i++) {
+		if (isprint(*ch))
+			sprintf(output, "%c", *ch);
+		else
+			sprintf(output, ".");
+		ch++;
+	}
+
+	sprintf(output, "\n");
+	printf("----%s\n", output);
+	return string(output);
+}
+
 void wifi_connection_analyser(u_char* args, const struct pcap_pkthdr* header, const u_char* packet){
-	cout<<"yeah, I can enter here!!"<<endl;
+
+	reportFile<<"Reporting data\n";
+	printf("got a packet with len: %d, caplen: %d\n", header->len, header->caplen);
+	string output = print_hex_ascii_line(packet, header->caplen, 0);
+	cout<<"output: "<<output;
+	reportFile<<output;
+	//pcap_breakloop(pcap);
 }
 
 int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler handler){
 	
-	pcap_t* pcap = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	int ret;
 	
 	const char* devName = interface->getName().c_str();
   
 	struct bpf_program fp;	
-	char * filter_exp;
+	char* filter_exp;
  	bpf_u_int32 mask= PCAP_NETMASK_UNKNOWN ;
  	
 	cout<<"Sniffing on interface:"<<devName<<endl;
@@ -131,7 +189,11 @@ int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler
 	}
 
 	cout<<"Starting pcap loop"<<endl;
-	ret = pcap_loop(pcap, -1, handler, NULL);
+	
+	reportFile.open(string("./") + interface->getName() + string(".report"));	
+	ret = pcap_loop(pcap, 0, handler, NULL);
+	reportFile.close();
+	cout<<"pcap_loop return: "<<ret;
 	return(ret);
 }
 
@@ -282,6 +344,10 @@ int report(){
 										//set cipher parameters
 										if (cipherMode == "WPA"){
 											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
+										}
+										else if (cipherMode == "EAP"){
+											wpaControl->request(request + string(" username \"") + net["encryption"]["username"].GetString() + string("\""), response);
+											wpaControl->request(request + string(" password \"") + net["encryption"]["password"].GetString() + string("\""), response);
 										}
 										
 										//enable this network
