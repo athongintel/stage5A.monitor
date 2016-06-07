@@ -37,10 +37,12 @@ class AccessPoint{
 };
 
 
-class WifiNetwork{
-	
+class WifiNetwork{			
+	string SSID;		
 	public:
-		string SSID;
+		WifiNetwork(string SSID);
+		
+		string getSSID();
 		vector<AccessPoint*> accessPoints;
 
 };
@@ -67,7 +69,6 @@ class WifiDevice{
 	//constructor
 	WifiDevice();
 	WifiDevice(const struct wiphy* wiphy);
-	
 	
 	struct wiphy wiphy;
 	

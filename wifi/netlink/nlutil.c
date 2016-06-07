@@ -8,33 +8,33 @@ int hex_value(char c){
 	return c-48;
 }
 
-int default_ack_handler(struct nl_msg *msg, void *arg) {
+int default_ack_handler(struct nl_msg* msg, void* arg) {
     // Callback for NL_CB_ACK.
     int* ret = (int*) arg;
     *ret = 0;
     return NL_STOP;
 }
 
-int default_finish_handler(struct nl_msg *msg, void *arg) {
+int default_finish_handler(struct nl_msg* msg, void* arg) {
     // Callback for NL_CB_FINISH.
     int* ret = (int*) arg;
     *ret = 0;
     return NL_SKIP;
 }
 
-int default_noseqcheck_handler(struct nl_msg *msg, void *arg) {
+int default_noseqcheck_handler(struct nl_msg* msg, void* arg) {
     // Callback for NL_CB_SEQ_CHECK.
     return NL_OK;
 }
 
-int default_error_handler(struct sockaddr_nl *nla, struct nlmsgerr *err, void *arg) {
+int default_error_handler(struct sockaddr_nl* nla, struct nlmsgerr* err, void* arg) {
     // Callback for errors.
     int* ret = (int*) arg;
     *ret = err->error;
     return NL_STOP;
 }
 
-void mac_addr_n2a(char *mac_addr, const unsigned char *arg) {
+void mac_addr_n2a(char* mac_addr, const unsigned char* arg) {
     int i, l;
 
     l = 0;
@@ -50,7 +50,7 @@ void mac_addr_n2a(char *mac_addr, const unsigned char *arg) {
 }
 
 
-const char* get_ssid_string(unsigned char *ie, int ielen) {
+const char* get_ssid_string(unsigned char* ie, int ielen) {
 	uint8_t len;
 	uint8_t *data;
 	int i;

@@ -93,7 +93,7 @@ int WifiController::dump_interface_list_handler(struct nl_msg *msg, void *args){
 	//parse received data into tb_msg
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
-	char interfaceName[20];
+	char interfaceName[20] = "";
 	int interfaceIndex;
 	int physicIndex;
 	unsigned char macaddr[ETH_ALEN];
@@ -113,7 +113,7 @@ int WifiController::dump_interface_list_handler(struct nl_msg *msg, void *args){
 		
 	//interface mac address
 	if (tb_msg[NL80211_ATTR_MAC]){		
-		memcpy(macaddr,(unsigned char*)nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);
+		memcpy(macaddr,(unsigned char*)nla_data(tb_msg[NL80211_ATTR_MAC]), ETH_ALEN);		
 	}
 	else{
 		//fill zero because we received nothing
@@ -126,12 +126,15 @@ int WifiController::dump_interface_list_handler(struct nl_msg *msg, void *args){
 	else
 		interfaceIndex = -1;
 
+	//create new device	
 	//create new interface
-	WifiInterface* interface = new WifiInterface();
-	interface->interface.ifIndex = interfaceIndex;
-	interface->interface.wiphy.phyIndex = physicIndex;
-	memcpy(interface->interface.wiphy.mac_addr, macaddr, ETH_ALEN);
-	memcpy(interface->interface.name, interfaceName, strlen(interfaceName));
+	struct interface i;
+	i.ifIndex = interfaceIndex;
+	i.wiphy.phyIndex = physicIndex;
+	memcpy(i.wiphy.mac_addr, macaddr, ETH_ALEN);
+	memcpy(i.name, interfaceName, strlen(interfaceName));
+	
+	WifiInterface* interface = new WifiInterface(&i);
 	
 	//add this new interface into final list
 	instance->wifiInterfaces.push_back(interface);	
@@ -235,7 +238,7 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 	if (!newNetwork){
 		newNetwork = true;
 		for (auto &net : wifiInterface->wifiNetworks){
-			if (net->SSID == SSID){
+			if (net->getSSID() == SSID){
 				newNetwork = false;
 				network = net;
 				break;
@@ -243,8 +246,7 @@ int WifiInterface::full_network_scan_handler(struct nl_msg* msg, void* args){
 		}
 	}
 	if (newNetwork){
-		network = new WifiNetwork();
-		network->SSID = SSID;
+		network = new WifiNetwork(SSID);
 		wifiInterface->wifiNetworks.push_back(network);
 	}
 		
@@ -361,6 +363,15 @@ LinkState* WifiInterface::getState(){
 	return result;
 }
 
+
+//WifiNetwork class implementation
+WifiNetwork::WifiNetwork(string SSID){
+	this->SSID = SSID;
+}
+
+string WifiNetwork::getSSID(){
+	return this->SSID;
+}
 
 
 

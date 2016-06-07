@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 using namespace rapidjson;
@@ -78,6 +80,7 @@ const char* SAVED_NETWORK_JSON_PATH = "./saved-network.json";
 const int MAX_RANGE = 50;
 pcap_t* pcap = NULL;
 ofstream reportFile;
+mutex syncMutex;;
 
 typedef void (*pcap_packet_handler)(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
 
@@ -105,8 +108,6 @@ string print_hex_ascii_line(const u_char* payload, int len, int offset){
 	const u_char* ch;
 	
 	char output[1024]="";
-
-	/* offset */
 	
 	/* hex */
 	ch = payload;
@@ -147,50 +148,83 @@ string print_hex_ascii_line(const u_char* payload, int len, int offset){
 
 void wifi_connection_analyser(u_char* args, const struct pcap_pkthdr* header, const u_char* packet){
 
-	reportFile<<"Reporting data\n";
+	//reportFile<<"Reporting data\n";
 	printf("got a packet with len: %d, caplen: %d\n", header->len, header->caplen);
 	string output = print_hex_ascii_line(packet, header->caplen, 0);
-	cout<<"output: "<<output;
-	reportFile<<output;
+	
+
+	//reportFile<<output;
 	//pcap_breakloop(pcap);
 }
 
-int packet_sniffing(WifiInterface* interface, string filter, pcap_packet_handler handler){
+int packet_sniffing(WifiInterface* interface, WifiNetwork* network, pcap_packet_handler handler){
+	
+	
 	
 	char errbuf[PCAP_ERRBUF_SIZE];
 	int ret;
 	
-	const char* devName = interface->getName().c_str();
+	const char* devName = (interface->getName()+string("mon")).c_str();
+	//filter strategy
+	//--1: coming in and out interface (MAC address) wlan addr1 ehost (receiver) and wlan addr2 ehost (sender)
+	string mac = interface->getDevice()->getDisplayableMacAddress();
+	string filter = string("wlan addr1 ") + mac + string(" or wlan addr2 ") + mac;
   
 	struct bpf_program fp;	
-	char* filter_exp;
  	bpf_u_int32 mask= PCAP_NETMASK_UNKNOWN ;
  	
-	cout<<"Sniffing on interface:"<<devName<<endl;
+	cout<<"Sniffing on interface: "<<devName<<", filter: "<<filter<<endl;
 
   	pcap = pcap_open_live(devName, BUFSIZ, 1, 1000, errbuf);
   	if (pcap == NULL) {
     	cout<<"Cannot initialize "<<devName<<" because: "<<errbuf<<endl;
-    	return(-1);
+    	goto exit_fail;
+	}
+	
+	int* dlt_buf;
+	int n;
+	n = pcap_list_datalinks(pcap, &dlt_buf);
+	printf("n = %d\n",n);
+	if(n == -1)
+	{
+		pcap_perror(pcap, "Datalink_list");
+	}
+	else
+	{
+		printf("The list of datalinks supported are\n");
+		int i;
+		for(i=0; i<n; i++)
+		    printf("%d\n",dlt_buf[i]);
+		const char *str1 = pcap_datalink_val_to_name(dlt_buf[0]);
+		const char *str2 = pcap_datalink_val_to_description(dlt_buf[0]);
+		printf("str1 = %s\n",str1);
+		printf("str2 = %s\n",str2);
+		pcap_free_datalinks(dlt_buf);
 	}
     
-	if (pcap_compile(pcap, &fp, filter.c_str(), 0, mask) == -1) {
+	if (pcap_compile(pcap, &fp, filter.c_str(), 1, mask) == -1) {
 		cout<<"Couldn't parse filter"<<endl;
-		return(-1);
+		goto exit_fail;
 	}
 	
 	if (pcap_setfilter(pcap, &fp) == -1) {
 		cout<<"Couldn't install filter"<<endl;
-		return(-1);
+		goto exit_fail;
 	}
 
 	cout<<"Starting pcap loop"<<endl;
 	
-	reportFile.open(string("./") + interface->getName() + string(".report"));	
+	//reportFile.open(string("./") + interface->getName() + string(".report"));
+	syncMutex.unlock();
 	ret = pcap_loop(pcap, 0, handler, NULL);
-	reportFile.close();
+	//reportFile.close();
 	cout<<"pcap_loop return: "<<ret;
-	return(ret);
+	
+	return ret;
+	
+	exit_fail:
+		syncMutex.unlock();
+		return -1;
 }
 
 
@@ -210,8 +244,7 @@ int report(){
 	if (ret != 0){
 		cout<<"Error: ifconfig not found on this system"<<endl;
 		return -1;
-	}*/
-	
+	}*/	
 
 	cout<<"Killing disturbing processes..."<<endl;
 	//manually kill network-manager
@@ -221,7 +254,7 @@ int report(){
 	//run one wpa_supplicant for each interface
 	int pCount = 0;
 	pid_t pid = getpid();
-	int cpid[interfaces.size()*2]; //child processes's id
+	int cpid[interfaces.size()]; //child processes's id
 	
 	//fill zero to children process ids
 	memset(cpid, 0, sizeof(cpid));
@@ -229,6 +262,7 @@ int report(){
 	vector<WifiInterface*> virtualInterfaces;
 	
 	for (WifiInterface* i : interfaces){
+		cout<<"Interface: "<<i->getName()<<", MAC: "<<i->getDevice()->getDisplayableMacAddress()<<endl;
 		if (pid != 0){									
 			//only call fork in parent process
 			pid = fork();
@@ -257,23 +291,11 @@ int report(){
 				cout<<"Bringing up: "<<bringupcommand<<endl;
 				system(bringupcommand.c_str());
 				
-				cout<<"Wait here to start wireshark"<<endl;
-				string ok;				
+				//wait for wireshark
+				string ok;
+				cout<<"start wireshark...";
 				cin>>ok;
-								
-				//start packet sniffing on the virtual interface
-				pid = fork();
-				if (pid == 0){
-					//child sniffing process
-					string filter = "";
-					cout<<"Entering snipping process"<<endl;
-					return packet_sniffing(vi, filter, wifi_connection_analyser);
-				}
-				else{
-					cout<<"Starting pid: "<<pid<<" as sniffing process..."<<endl;
-					cpid[pCount]=pid;
-					pCount++;
-				}
+						
 			}
 		}
 		else{
@@ -296,6 +318,7 @@ int report(){
 		GeoTracker* geoTracker = GeoTracker::getInstance();
 		struct GeoLocation* currentLocation = geoTracker->getCurrentLocation();
 		//std::cout<<"Current location: "<<currentLocation->latitude<<", "<<currentLocation->longitude<<std::endl;		
+
 	
 		//4. iterate through access points and check for distance
 		Value &networks = doc["networks"];
@@ -304,45 +327,42 @@ int report(){
 			return -1;		
 		}
 		else{
-			//test with each network interface
-			for (WifiInterface* interface : interfaces){
-				//create control wrapper
-				WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
-				
-				for (SizeType i=0; i<networks.Size(); i++){
-					Value& net = networks[i];			
-					if (!net.IsNull()){
-						Value& aps = net["aps"];
-						string cipherMode = net["encryption"]["method"].GetString();
-						string networkName = net["ssid"].GetString();
-						cout<<"Into network: "<<networkName<<endl;
-						cout<<"--cipher: "<<cipherMode<<endl;
+			//test with each network interface							
+			for (SizeType i=0; i<networks.Size(); i++){
+				Value& net = networks[i];			
+				if (!net.IsNull()){
+					Value& aps = net["aps"];
+					string cipherMode = net["encryption"]["method"].GetString();
+					string networkName = net["ssid"].GetString();
+					cout<<"Into network: "<<networkName<<endl;
+					cout<<"--cipher: "<<cipherMode<<endl;
 
-						string request;
-						string response;
-						string networkID;
+					string request;
+					string response;
+					string networkID;
 
-						if (!aps.IsNull() && aps.IsArray()){
-							for (SizeType j=0; j<aps.Size(); j++){
-								//4.1 iterate through access point to get those in range
-								Value& ap = aps[j];
-								if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
-									GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
-									float distance = geoTracker->getDistance(apLocation, currentLocation);
-									if (distance <= MAX_RANGE){
-										//4.2 try to connect to this network
-										//cout<<"got this ap:"<<ap["mac"].GetString()<<endl;
-																				
+					if (!aps.IsNull() && aps.IsArray()){
+						for (SizeType j=0; j<aps.Size(); j++){
+							//4.1 iterate through access point to get those in range
+							Value& ap = aps[j];
+							if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
+								GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
+								float distance = geoTracker->getDistance(apLocation, currentLocation);
+								if (distance <= MAX_RANGE){
+									//try to connect by each interface
+									for (WifiInterface* interface : interfaces){
+										//create control wrapper
+										WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
+																			
 										//add network, response contains network ID
 										request = string("ADD_NETWORK");
-										wpaControl->request(request, response);
-										
+										wpaControl->request(request, response);									
 										networkID = string(response);									
-										
+									
 										//set network ssid
 										request = string("SET_NETWORK ") + response;
 										wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
-										
+									
 										//set cipher parameters
 										if (cipherMode == "WPA"){
 											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
@@ -352,31 +372,45 @@ int report(){
 											wpaControl->request(request + string(" password \"") + net["encryption"]["password"].GetString() + string("\""), response);
 										}
 										
-										//enable this network
+										//start sniffing process
+										WifiNetwork* wifiNetwork = new WifiNetwork(networkName);
+										
+										syncMutex.lock();
+										//this thread will unlock the mutex
+										thread sniffing(packet_sniffing, interface, wifiNetwork, wifi_connection_analyser);
+										
+										syncMutex.lock(); //hang here until sniffing thread ready to enter its loop										
+										//enable this network then wait for result
 										request = string("ENABLE_NETWORK ") + networkID;
-										wpaControl->request(request, response);																			
-															
-										break;
-									}									
-								}
+										wpaControl->request(request, response);
+										syncMutex.unlock();
+										
+										//join the sniffing thread
+										sniffing.join();
+										cout<<"In main: sniffing thread terminated\n";
+
+										//disable this network on this interface
+										request = string("DISABLE_NETWORK ") + networkID;
+										wpaControl->request(request, response);
+																	
+									}
+									//at least one ap of this network found, break
+									break;
+								}							
 							}
 						}
-						//disable network to connect to an other
-						
-						//wait here and check for other networks
-						
-					}
-				}		
+					}								
+				}				
 			}
 		}
 
 		//kill children wpa processes
-		/*for (int i : cpid){
+		for (int i : cpid){
 			if (i>0){
 				cout<<"Sending sigkill to "<<i<<endl;
 				kill(i, SIGKILL);
 			}
-		}*/
+		}
 		
 		//wait for children processes to terminate
 		int status;
