@@ -1,5 +1,6 @@
 #include "geo.h"
 #include "wpawrapper.h"
+#include "pcapwifi.h"
 
 
 #include "rapidjson/document.h"
@@ -101,7 +102,7 @@ int wpa_service(const WifiInterface* interface){
 	return result;
 }
 
-string print_hex_ascii_line(const u_char* payload, int len, int offset){
+string print_hex_ascii_line(const u_char* payload, int len){
 
 	int i;
 	int gap;
@@ -146,27 +147,15 @@ string print_hex_ascii_line(const u_char* payload, int len, int offset){
 	return string(output);
 }
 
-void wifi_connection_analyser(u_char* args, const struct pcap_pkthdr* header, const u_char* packet){
-
-	//reportFile<<"Reporting data\n";
-	printf("got a packet with len: %d, caplen: %d\n", header->len, header->caplen);
-	string output = print_hex_ascii_line(packet, header->caplen, 0);
-	
-
-	//reportFile<<output;
-	//pcap_breakloop(pcap);
-}
-
-int packet_sniffing(WifiInterface* interface, WifiNetwork* network, pcap_packet_handler handler){
-	
-	
+int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 	
 	char errbuf[PCAP_ERRBUF_SIZE];
 	int ret;
+	bool loop = true;
 	
 	const char* devName = (interface->getName()+string("mon")).c_str();
 	//filter strategy
-	//--1: coming in and out interface (MAC address) wlan addr1 ehost (receiver) and wlan addr2 ehost (sender)
+	//--1: coming in and out interface (MAC address) wlan addr1 ehost (receiver) or wlan addr2 ehost (sender)
 	string mac = interface->getDevice()->getDisplayableMacAddress();
 	string filter = string("wlan addr1 ") + mac + string(" or wlan addr2 ") + mac;
   
@@ -179,28 +168,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network, pcap_packet_
   	if (pcap == NULL) {
     	cout<<"Cannot initialize "<<devName<<" because: "<<errbuf<<endl;
     	goto exit_fail;
-	}
-	
-	int* dlt_buf;
-	int n;
-	n = pcap_list_datalinks(pcap, &dlt_buf);
-	printf("n = %d\n",n);
-	if(n == -1)
-	{
-		pcap_perror(pcap, "Datalink_list");
-	}
-	else
-	{
-		printf("The list of datalinks supported are\n");
-		int i;
-		for(i=0; i<n; i++)
-		    printf("%d\n",dlt_buf[i]);
-		const char *str1 = pcap_datalink_val_to_name(dlt_buf[0]);
-		const char *str2 = pcap_datalink_val_to_description(dlt_buf[0]);
-		printf("str1 = %s\n",str1);
-		printf("str2 = %s\n",str2);
-		pcap_free_datalinks(dlt_buf);
-	}
+	}	
     
 	if (pcap_compile(pcap, &fp, filter.c_str(), 1, mask) == -1) {
 		cout<<"Couldn't parse filter"<<endl;
@@ -216,11 +184,39 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network, pcap_packet_
 	
 	//reportFile.open(string("./") + interface->getName() + string(".report"));
 	syncMutex.unlock();
-	ret = pcap_loop(pcap, 0, handler, NULL);
-	//reportFile.close();
-	cout<<"pcap_loop return: "<<ret;
 	
-	return ret;
+	
+	while (loop){
+		const u_char* packet;
+		struct pcap_pkthdr packetHeader;
+		
+		packet = pcap_next(pcap, &packetHeader);
+		if (packet == NULL){
+			//some error occured
+			goto exit_fail;
+		}
+		else{
+			//analyse packet
+			
+			//--1. find the first probe response of current network
+			//--2. find the authen request
+			//--3. find the authen response
+			//--4. find the asso/reasso request
+			//--5. find the ass/reassp response
+			//--6. if WPA: find the first and last key exchanging packet EAPOL
+			//	   if EPA: find the first and last data packet EAPOL
+			
+			struct pcap_radiotap* radiotap_hdr;
+			radiotap_hdr = (struct pcap_radiotap*)packet;
+
+			struct pcap_ieee80211* ieee80211_hdr;
+			ieee80211_hdr = (struct pcap_ieee80211*)(packet + radiotap_hdr->header_len);
+			
+		}
+	}
+	//reportFile.close();
+
+	return 0;
 	
 	exit_fail:
 		syncMutex.unlock();
@@ -377,7 +373,7 @@ int report(){
 										
 										syncMutex.lock();
 										//this thread will unlock the mutex
-										thread sniffing(packet_sniffing, interface, wifiNetwork, wifi_connection_analyser);
+										thread sniffing(packet_sniffing, interface, wifiNetwork);
 										
 										syncMutex.lock(); //hang here until sniffing thread ready to enter its loop										
 										//enable this network then wait for result
