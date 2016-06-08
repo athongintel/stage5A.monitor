@@ -110,6 +110,8 @@ string print_hex_ascii_line(const u_char* payload, int len){
 	
 	char output[1024]="";
 	
+	cout<<"length: "<<len<<endl;
+	
 	/* hex */
 	ch = payload;
 	for(i = 0; i < len; i++) {
@@ -147,15 +149,50 @@ string print_hex_ascii_line(const u_char* payload, int len){
 	return string(output);
 }
 
+void displayMAC(const unsigned char* mac){
+	char macdis[20];
+	mac_addr_n2a(macdis, mac);
+	printf("mac: %s\n", macdis);
+}
+
+bool containString(vector<u_char*> vector, const u_char* str){
+	bool found = false;
+	for (const u_char* i : vector){
+		cout<<"vector: ";
+		displayMAC(i);
+		if (memcmp(i, str, ETH_ALEN) == 0)
+			found = true;
+	}
+	return found;
+}
+
 int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 	
-	char errbuf[PCAP_ERRBUF_SIZE];
+	char errbuf[PCAP_ERRBUF_SIZE] = "";
 	int ret;
 	bool loop = true;
+	
+	//--1. find the first probe response of current network
+	bool firstProbeResponse = false;
+	//--2. find the authen request
+	bool authRequest = false;			
+	//--3. find the authen response
+	bool authResponse = false;
+	//--4. find the asso/reasso request
+	bool assoRequest = false;
+	//--5. find the ass/reassp response
+	bool assoResponse = false;
+	//--6. if WPA: find the first and last key exchanging packet EAPOL		
+	//	   if EAP: find the first and last data packet EAPOL
+	bool firstEAP;
+	bool lastEAP;
+	//--7. find the first QoS data packet
+	bool fisrtQoS;
 	
 	const char* devName = (interface->getName()+string("mon")).c_str();
 	//filter strategy
 	//--1: coming in and out interface (MAC address) wlan addr1 ehost (receiver) or wlan addr2 ehost (sender)
+	vector<unsigned char*>ap_macs;
 	string mac = interface->getDevice()->getDisplayableMacAddress();
 	string filter = string("wlan addr1 ") + mac + string(" or wlan addr2 ") + mac;
   
@@ -182,39 +219,104 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 
 	cout<<"Starting pcap loop"<<endl;
 	
-	//reportFile.open(string("./") + interface->getName() + string(".report"));
+	reportFile.open(string("./") + interface->getName() + string(".report"), fstream::app);
+	reportFile<<"-----------------WIFI EVENT REPORT------------------"<<endl;
+	reportFile<<"Interface: "<<interface->getName()<<" - network: "<<network->getSSID()<<endl;
 	syncMutex.unlock();
-	
+		
 	
 	while (loop){
-		const u_char* packet;
+		const u_char* packet = NULL;
 		struct pcap_pkthdr packetHeader;
 		
-		packet = pcap_next(pcap, &packetHeader);
-		if (packet == NULL){
+		while (packet == NULL)
+			packet = pcap_next(pcap, &packetHeader);
+		/*if (packet == NULL){
 			//some error occured
 			goto exit_fail;
-		}
-		else{
-			//analyse packet
-			
-			//--1. find the first probe response of current network
-			//--2. find the authen request
-			//--3. find the authen response
-			//--4. find the asso/reasso request
-			//--5. find the ass/reassp response
-			//--6. if WPA: find the first and last key exchanging packet EAPOL
-			//	   if EPA: find the first and last data packet EAPOL
-			
-			struct pcap_radiotap* radiotap_hdr;
-			radiotap_hdr = (struct pcap_radiotap*)packet;
+		}*/
+		//else{
+			//analyse packet									
+			struct radiotap_frame* radiotap_hdr;
+			radiotap_hdr = (struct radiotap_frame*)packet;
 
-			struct pcap_ieee80211* ieee80211_hdr;
-			ieee80211_hdr = (struct pcap_ieee80211*)(packet + radiotap_hdr->header_len);
+			struct ieee80211_frame* ieee80211_hdr;
+			ieee80211_hdr = (struct ieee80211_frame*)(packet + radiotap_hdr->header_len);
+				
+			enum IEEE80211_FRAME_TYPE frameType = get80211FrameType(ieee80211_hdr);
+			enum IEEE80211_FRAME_SUBTYPE frameSubType = get80211FrameSubType(ieee80211_hdr, frameType);
 			
-		}
+			printf("frame length: %d\n", packetHeader.caplen);
+			printf("found frame type: %d, frame subtype: %d\n", frameType, frameSubType);						
+			
+			switch (frameType) {
+				case MANAGEMENT_FRAME:
+					struct ieee80211_management_frame* mgnt_frame = (struct ieee80211_management_frame*)(ieee80211_hdr + MANAGEMENT_FRAME_HDRLEN);
+					if (frameSubType == PROBE_RESPONSE_FRAME){											
+						//check if this packet came from the desired AP
+						u_char* ssid = getTaggedValue(mgnt_frame, TAGGED_SSID, packetHeader.caplen - radiotap_hdr->header_len - MANAGEMENT_FRAME_HDRLEN);							
+						if (ssid!=NULL && strcmp(ssid, network->getSSID().c_str())==0){
+							if (!firstProbeResponse){
+								firstProbeResponse = true;
+								reportFile<<"First probe response: "<<packetHeader.ts.tv_sec<<"."<<packetHeader.ts.tv_usec<<endl;
+							}
+							u_char* mac = (u_char*)malloc(ETH_ALEN);
+							memcpy(mac, ieee80211_hdr->sender, ETH_ALEN);
+							ap_macs.push_back(mac);
+							printf("mac ap after probe response: ");								
+						}
+					}
+					else if (frameSubType == AUTHENTICATION_FRAME){																	
+						if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+							//authentication request
+							if (!authRequest){
+								cout<<"auth request found"<<endl;
+								authRequest = true;
+								reportFile<<"Authentication request: "<<packetHeader.ts.tv_sec<<"."<<packetHeader.ts.tv_usec<<endl;
+							}								
+						}
+						else if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+							if (!authResponse){
+								authResponse = true;
+								cout<<"auth response found"<<endl;
+								reportFile<<"Authentication response: "<<packetHeader.ts.tv_sec<<"."<<packetHeader.ts.tv_usec<<endl;
+							}	
+						}			
+					}
+					else if (frameSubType == ASSOCIATION_REQUEST_FRAME){
+						if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+							//association request
+							if (!assoRequest){
+								cout<<"asso request found"<<endl;
+								assoRequest = true;
+								reportFile<<"Association request: "<<packetHeader.ts.tv_sec<<"."<<packetHeader.ts.tv_usec<<endl;
+							}								
+						}
+					}
+					else if (frameSubType == ASSOCIATION_RESPONSE_FRAME){
+						if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+							if (!assoResponse){
+								cout<<"auth response found"<<endl;
+								assoResponse = true;
+								reportFile<<"Association response: "<<packetHeader.ts.tv_sec<<"."<<packetHeader.ts.tv_usec<<endl;
+								//loop = false;
+							}
+						}
+					}									
+					break;
+					
+				case DATA_FRAME:
+					if (frameSubType == QOS_DATA_FRAME){
+						struct ieee80211_data_llc_frame* llc_hdr = (struct ieee80211_data_llc_frame*)()
+					}
+					break;
+					
+				default:
+					break;
+			}	
+		//}
 	}
-	//reportFile.close();
+	reportFile.close();
 
 	return 0;
 	
@@ -327,75 +429,78 @@ int report(){
 			for (SizeType i=0; i<networks.Size(); i++){
 				Value& net = networks[i];			
 				if (!net.IsNull()){
-					Value& aps = net["aps"];
-					string cipherMode = net["encryption"]["method"].GetString();
-					string networkName = net["ssid"].GetString();
-					cout<<"Into network: "<<networkName<<endl;
-					cout<<"--cipher: "<<cipherMode<<endl;
+					if (net["enabled"].GetBool()){
+					
+						Value& aps = net["aps"];
+						string cipherMode = net["encryption"]["method"].GetString();
+						string networkName = net["ssid"].GetString();
+						cout<<"Into network: "<<networkName<<endl;
+						cout<<"--cipher: "<<cipherMode<<endl;
 
-					string request;
-					string response;
-					string networkID;
+						string request;
+						string response;
+						string networkID;
 
-					if (!aps.IsNull() && aps.IsArray()){
-						for (SizeType j=0; j<aps.Size(); j++){
-							//4.1 iterate through access point to get those in range
-							Value& ap = aps[j];
-							if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
-								GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
-								float distance = geoTracker->getDistance(apLocation, currentLocation);
-								if (distance <= MAX_RANGE){
-									//try to connect by each interface
-									for (WifiInterface* interface : interfaces){
-										//create control wrapper
-										WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
-																			
-										//add network, response contains network ID
-										request = string("ADD_NETWORK");
-										wpaControl->request(request, response);									
-										networkID = string(response);									
+						if (!aps.IsNull() && aps.IsArray()){
+							for (SizeType j=0; j<aps.Size(); j++){
+								//4.1 iterate through access point to get those in range
+								Value& ap = aps[j];
+								if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
+									GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
+									float distance = geoTracker->getDistance(apLocation, currentLocation);
+									if (distance <= MAX_RANGE){
+										//try to connect by each interface
+										for (WifiInterface* interface : interfaces){
+											//create control wrapper
+											WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
+	
+											//add network, response contains network ID
+											request = string("ADD_NETWORK");
+											wpaControl->request(request, response);									
+											networkID = string(response);									
 									
-										//set network ssid
-										request = string("SET_NETWORK ") + response;
-										wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
+											//set network ssid
+											request = string("SET_NETWORK ") + response;
+											wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
 									
-										//set cipher parameters
-										if (cipherMode == "WPA"){
-											wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
-										}
-										else if (cipherMode == "EAP"){
-											wpaControl->request(request + string(" username \"") + net["encryption"]["username"].GetString() + string("\""), response);
-											wpaControl->request(request + string(" password \"") + net["encryption"]["password"].GetString() + string("\""), response);
-										}
+											//set cipher parameters
+											if (cipherMode == "WPA"){
+												wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
+											}
+											else if (cipherMode == "EAP"){
+												wpaControl->request(request + string(" identity \"") + net["encryption"]["identity"].GetString() + string("\""), response);
+												wpaControl->request(request + string(" password \"") + net["encryption"]["password"].GetString() + string("\""), response);
+											}
 										
-										//start sniffing process
-										WifiNetwork* wifiNetwork = new WifiNetwork(networkName);
+											//start sniffing process
+											WifiNetwork* wifiNetwork = new WifiNetwork(networkName);
 										
-										syncMutex.lock();
-										//this thread will unlock the mutex
-										thread sniffing(packet_sniffing, interface, wifiNetwork);
+											syncMutex.lock();
+											//this thread will unlock the mutex
+											thread sniffing(packet_sniffing, interface, wifiNetwork);
 										
-										syncMutex.lock(); //hang here until sniffing thread ready to enter its loop										
-										//enable this network then wait for result
-										request = string("ENABLE_NETWORK ") + networkID;
-										wpaControl->request(request, response);
-										syncMutex.unlock();
+											syncMutex.lock(); //hang here until sniffing thread ready to enter its loop										
+											//enable this network then wait for result
+											request = string("ENABLE_NETWORK ") + networkID;
+											wpaControl->request(request, response);
+											syncMutex.unlock();
 										
-										//join the sniffing thread
-										sniffing.join();
-										cout<<"In main: sniffing thread terminated\n";
+											//join the sniffing thread
+											sniffing.join();
+											cout<<"In main: sniffing thread terminated\n";
 
-										//disable this network on this interface
-										request = string("DISABLE_NETWORK ") + networkID;
-										wpaControl->request(request, response);
+											//disable this network on this interface
+											request = string("DISABLE_NETWORK ") + networkID;
+											wpaControl->request(request, response);
 																	
-									}
-									//at least one ap of this network found, break
-									break;
-								}							
+										}
+										//at least one ap of this network found, break
+										break;
+									}							
+								}
 							}
 						}
-					}								
+					}							
 				}				
 			}
 		}
@@ -426,7 +531,9 @@ int report(){
 			cout<<"Removing vitual interface: "<<vi->getName()<<endl;
 			vi->getDevice()->removeVirtualInterface(vi);
 		}				
-	
+		
+		//restart network-manager
+		system("service network-manager start");
 		return EXIT_SUCCESS;
 	}
 }

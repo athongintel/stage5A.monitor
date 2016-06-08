@@ -2,6 +2,7 @@
 	"networks" : [ 
 		{
 			"ssid" : "eRISCS",
+			"enabled" : true,
 			"encryption" : {
 				"method" : "WPA",
 				"psk" : "wireless"
@@ -23,9 +24,10 @@
 		},
 		{
 			"ssid" : "eduroam",
+			"enabled" : false,
 			"encryption" : {
 				"method" : "EAP",
-				"username" : "xuan-thong.dang@etu.univ-amu.fr",
+				"identity" : "xuan-thong.dang@etu.univ-amu.fr",
 				"password" : "!vinamilk100G!"
 			},
 			"aps" : [
