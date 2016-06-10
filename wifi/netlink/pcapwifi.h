@@ -20,7 +20,7 @@
 	};
 
 	struct ieee80211_frame{
-		uint16_t frame_control;
+		u_short frame_control;
 		u_short duration;
 		u_char receiver[ETH_ALEN];
 		u_char sender[ETH_ALEN];
@@ -60,6 +60,9 @@
 		AUTHENTICATION_FRAME,
 		ASSOCIATION_REQUEST_FRAME,
 		ASSOCIATION_RESPONSE_FRAME,
+		
+		#define QoSHeaderLen(ieee80211_hdr) ((ieee80211_hdr->frame_control & 0x4000)>0 ? 34 : 26)
+		#define IEEE_8021X_AUTHENTICATION 0x8e88
 		QOS_DATA_FRAME,
 		ACTION_FRAME,
 		UNKNOWN_SUBFRAME
