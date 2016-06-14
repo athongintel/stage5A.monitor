@@ -20,62 +20,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <thread>
 #include <mutex>
+#include <iterator>
 
 using namespace std;
 using namespace rapidjson;
-
-/*void test_connect(){
-	WifiController* netController = new WifiController();
-	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
-	vector<WifiNetwork*> networks;
-	//int networkcount=0;
-	int networkcount;
-	int apcount;
-	for (auto &i : interfaces){
-		cout<<i->getName()<<" "<<i->getDisplayableMacAddress()<<endl;
-		cout<<"I'm performing a full scan..."<<endl;
-		networks = i->fullNetworkScan();	
-		for (auto &net : networks){
-			cout<<networkcount<<": "<<(net->SSID.empty()? "Hidden network" : net->SSID)<<endl;
-			networkcount++;
-			apcount=0;
-			/*if (strcmp(net->SSID, "(Aix*Marseille universite")==0){
-				cout<<"Trying to connect to "<<net->SSID<<" access point..."<<endl;				
-			}
-			bool connect = false;
-			for (auto &ap : net->accessPoints){
-				cout<<" -- "<<apcount<<":  "<<ap->getDisplayableBSSID()<<"  "<<ap->getFrequency()<<"  "<<endl;
-				apcount++;
-				/*if (!connect){
-					//connect to first access point
-					connect = true;
-					i->connect(ap);
-				}
-			}
-		}
-		i->disconnect();
-		cout<<"Disconnected!"<<endl;
-	}
-	int selectedInterface;
-	int selectedNetwork;
-	int selectedAP;
-	cout<<"Selected interface to connect: ";
-	cin>>selectedInterface;
-	cout<<"Which network do you want connect: ";
-	cin>>selectedNetwork;
-	cout<<"Which AP of "<<networks[selectedNetwork]->SSID<<" you want to connect: ";
-	cin>>selectedAP;
-	
-	
-	//connect to this ap
-	cout<<"Trying to connect to "<<networks[selectedNetwork]->accessPoints[selectedAP]->getDisplayableBSSID()<<" of "<<networks[selectedNetwork]->SSID<<" on "<<interfaces[selectedInterface]->getName()<<endl;
-	
-	interfaces[selectedInterface]->connect(networks[selectedNetwork]->accessPoints[selectedAP]);	
-
-}*/
 
 const char* SAVED_NETWORK_JSON_PATH = "./saved-network.json";
 const int MAX_RANGE = 50;
@@ -160,8 +112,8 @@ void displayMAC(const unsigned char* mac){
 bool containString(vector<u_char*> vector, const u_char* str){
 	bool found = false;
 	for (const u_char* i : vector){
-		cout<<"vector: ";
-		displayMAC(i);
+		//cout<<"vector: ";
+		//displayMAC(i);
 		if (memcmp(i, str, ETH_ALEN) == 0)
 			found = true;
 	}
@@ -169,27 +121,29 @@ bool containString(vector<u_char*> vector, const u_char* str){
 }
 
 void report_to_file(ofstream& file, const char* des, struct timeval& time){
-	if (event.tv_sec == 0){
-		fprintf(file, "%s\n", des);
-	}
-	else{		
+	cout<<"EVENT: "<<des<<endl;
+	if (event.tv_sec != 0){
 		if (time.tv_usec > event.tv_usec){
 			if (time.tv_sec-event.tv_sec>0) 
-				fprintf(file, "%d ", time.tv_sec-event.tv_sec));
-			fprintf(file,"%3d ms\n", time.tv_usec-event.tv_usec)/1000);
+				file<<time.tv_sec-event.tv_sec<<"";
+			file<<setfill('0')<<setw(3)<<(time.tv_usec-event.tv_usec)/1000<<" ms"<<endl;
 		}
 		else{
 			if (time.tv_sec-event.tv_sec-1>0) 
-				fprintf(file, "%d ", time.tv_sec-event.tv_sec-1));
-			fprintf(file, "%3d ms\n", time.tv_usec-event.tv_usec+1000000)/1000);
+				file<<time.tv_sec-event.tv_sec-1<<"";
+			file<<setfill('0')<<setw(3)<<(time.tv_usec-event.tv_usec+1000000)/1000<<" ms"<<endl;
 		}				
-		file<<des<<endl;
+		
 	}
+	file<<des<<endl;
+	
 	event.tv_usec = time.tv_usec;
 	event.tv_sec = time.tv_sec;
 }
 
 int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
+	
+
 	
 	char errbuf[PCAP_ERRBUF_SIZE] = "";
 	int ret;
@@ -245,7 +199,6 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 		syncMutex.unlock();
 		return -1;
 	}
-	
 		
 	cout<<"Starting pcap loop"<<endl;
 	
@@ -259,121 +212,108 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 		const u_char* packet = NULL;
 		struct pcap_pkthdr packetHeader;
 		
+		//force reading packet		
 		while (packet == NULL)
 			packet = pcap_next(pcap, &packetHeader);
-		/*if (packet == NULL){
-			//some error occured
-			goto exit_fail;
-		}*/
-		//else{
-			//analyse packet									
-			struct radiotap_frame* radiotap_hdr;
-			radiotap_hdr = (struct radiotap_frame*)packet;
+								
+		struct radiotap_frame* radiotap_hdr;
+		radiotap_hdr = (struct radiotap_frame*)packet;
 
-			struct ieee80211_frame* ieee80211_hdr;
-			ieee80211_hdr = (struct ieee80211_frame*)(packet + radiotap_hdr->header_len);			
-				
-			enum IEEE80211_FRAME_TYPE frameType = get80211FrameType(ieee80211_hdr);
-			enum IEEE80211_FRAME_SUBTYPE frameSubType = get80211FrameSubType(ieee80211_hdr, frameType);
-		
-			struct ieee80211_management_frame* mgnt_frame;
+		struct ieee80211_frame* ieee80211_hdr;
+		ieee80211_hdr = (struct ieee80211_frame*)(packet + radiotap_hdr->header_len);			
 			
-			switch (frameType) {
-				case MANAGEMENT_FRAME:
-					mgnt_frame = (struct ieee80211_management_frame*)(packet + radiotap_hdr->header_len + MANAGEMENT_FRAME_HDRLEN);
-					if (frameSubType == PROBE_RESPONSE_FRAME){											
-						//check if this packet came from the desired AP
-						u_char* ssid = getTaggedValue(mgnt_frame, TAGGED_SSID, packetHeader.caplen - radiotap_hdr->header_len - MANAGEMENT_FRAME_HDRLEN);							
-						if (ssid!=NULL && strcmp(ssid, network->getSSID().c_str())==0){
-							if (!firstProbeResponse){
-								firstProbeResponse = true;
-								report_to_file(reportFile, "First probe response", packetHeader.ts);
-							}
-							u_char* mac = (u_char*)malloc(ETH_ALEN);
-							memcpy(mac, ieee80211_hdr->sender, ETH_ALEN);
-							ap_macs.push_back(mac);							
-						}
-					}
-					else if (frameSubType == AUTHENTICATION_FRAME){																	
-						if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
-							//authentication request
-							if (!authRequest){
-								authRequest = true;
-								report_to_file(reportFile, "Authentication request", packetHeader.ts);							
-							}								
-						}
-						else if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
-							if (!authResponse){
-								authResponse = true;
-								report_to_file(reportFile, "Authentication response", packetHeader.ts);	
-							}	
-						}			
-					}
-					else if (frameSubType == ASSOCIATION_REQUEST_FRAME){
-						if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
-							//association request
-							if (!assoRequest){								
-								assoRequest = true;
-								report_to_file(reportFile, "Association request", packetHeader.ts);	
-							}								
-						}
-					}
-					else if (frameSubType == ASSOCIATION_RESPONSE_FRAME){
-						if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
-							if (!assoResponse){								
-								assoResponse = true;
-								report_to_file(reportFile, "Association request", packetHeader.ts);								
-							}
-						}
-					}									
-					break;
+		enum IEEE80211_FRAME_TYPE frameType = get80211FrameType(ieee80211_hdr);
+		enum IEEE80211_FRAME_SUBTYPE frameSubType = get80211FrameSubType(ieee80211_hdr, frameType);
+	
+		struct ieee80211_management_frame* mgnt_frame;
+		
+		cout<<"frame "<<packetHeader.caplen;		
+		switch (frameType) {
+			case MANAGEMENT_FRAME:
+				mgnt_frame = (struct ieee80211_management_frame*)(packet + radiotap_hdr->header_len + MANAGEMENT_FRAME_HDRLEN);
+				if (frameSubType == PROBE_RESPONSE_FRAME){											
+					//check if this packet came from the desired AP
+					cout<<" - probe response\n";
+					char ssid[100] = "";
+					getTaggedValue(mgnt_frame, TAGGED_SSID, packetHeader.caplen - radiotap_hdr->header_len - MANAGEMENT_FRAME_HDRLEN, ssid);
 					
-				case DATA_FRAME:
-					//printf("data frame\n");
-					//printf("QOS_DATA_FRAME %d frameSubType %d\n",QOS_DATA_FRAME, frameSubType);					
-					if (lastEAP){
-						report_to_file(reportFile, "First data packet", packetHeader.ts);
-						loop = false;
+					cout<<" -- captured ssid: "<<ssid<<endl;
+					cout<<" -- network ssid: "<<network->getSSID().c_str()<<endl;
+					if (ssid!=NULL && strcmp(ssid, network->getSSID().c_str())==0){
+						if (!firstProbeResponse){
+							firstProbeResponse = true;
+							report_to_file(reportFile, "First probe response", packetHeader.ts);
+						}
+						u_char* mac = (u_char*)malloc(ETH_ALEN);
+						memcpy(mac, ieee80211_hdr->sender, ETH_ALEN);
+						ap_macs.push_back(mac);							
 					}
-					else
-					{
-						if (frameSubType == QOS_DATA_FRAME){					
-							struct ieee80211_data_llc_frame* llc_hdr = (struct ieee80211_data_llc_frame*)(packet + radiotap_hdr->header_len + QoSHeaderLen(ieee80211_hdr));
-							/*printf("ieee80211_hdr inside data frame: %d\n", ieee80211_hdr);
-							printf("QoSHeaderLen: %d\n", QoSHeaderLen(ieee80211_hdr));
-							printf("ieee80211_hdr + QoSHeaderLen: %d\n", llc_hdr);
-							printf("ieee80211_hdr + 26: %d\n", ieee80211_hdr + 26);
-							printf("header: ");
-							for (int i=0; i<QoSHeaderLen(ieee80211_hdr); i++){
-								printf("%02x ", *(ieee80211_hdr+i));
+				}
+				else if (frameSubType == AUTHENTICATION_FRAME){
+					cout<<" - authen\n";															
+					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+						//authentication request
+						if (!authRequest){
+							authRequest = true;
+							report_to_file(reportFile, "Authentication request", packetHeader.ts);							
+						}								
+					}
+					else if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+						if (!authResponse){
+							authResponse = true;
+							report_to_file(reportFile, "Authentication response", packetHeader.ts);	
+						}	
+					}			
+				}
+				else if (frameSubType == ASSOCIATION_REQUEST_FRAME){
+					cout<<" - asso\n";
+					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+						//association request
+						if (!assoRequest){								
+							assoRequest = true;
+							report_to_file(reportFile, "Association request", packetHeader.ts);	
+						}								
+					}
+				}
+				else if (frameSubType == ASSOCIATION_RESPONSE_FRAME){
+					if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+						if (!assoResponse){								
+							assoResponse = true;
+							report_to_file(reportFile, "Association response", packetHeader.ts);								
+						}
+					}
+				}									
+				break;
+				
+			case DATA_FRAME:
+				cout<<" - data\n";			
+				if (lastEAP){
+					report_to_file(reportFile, "First data packet", packetHeader.ts);
+					loop = false;
+				}
+				else
+				{
+					if (frameSubType == QOS_DATA_FRAME){					
+						struct ieee80211_data_llc_frame* llc_hdr = (struct ieee80211_data_llc_frame*)(packet + radiotap_hdr->header_len + QoSHeaderLen(ieee80211_hdr));
+						if (llc_hdr->type == IEEE_8021X_AUTHENTICATION){
+							if (!firstEAP){
+								firstEAP = true;
+								report_to_file(reportFile, "First EAP", packetHeader.ts);	
 							}
-							printf("first byte: %02x\n", *(llc_hdr));
-							printf("DSAP %02x\n", llc_hdr->DSAP);
-							printf("SSAP %02x\n", llc_hdr->SSAP);
-							printf("control_field %02x\n", llc_hdr->control_field);
-							printf("organisation_code %s\n", llc_hdr->organisation_code);
-							printf("type %d\n", llc_hdr->type);	
-							*/
-							if (llc_hdr->type == IEEE_8021X_AUTHENTICATION){
-								if (!firstEAP){
-									firstEAP = true;
-									report_to_file(reportFile, "First EAP", packetHeader.ts);	
-								}
-								counterEAP++;
-								//WPA 4-way handshake
-								if (counterEAP == 4){									
-									lastEAP = true;
-									report_to_file(reportFile, "Last EAP", packetHeader.ts);	
-								}
+							counterEAP++;
+							//WPA 4-way handshake
+							if (counterEAP == 4){									
+								lastEAP = true;
+								report_to_file(reportFile, "Last EAP", packetHeader.ts);	
 							}
 						}
-					}					
-					break;
-					
-				default:
-					break;
-			}	
-		//}
+					}
+				}					
+				break;
+				
+			default:
+				break;
+		}
 	}
 	reportFile.close();
 
@@ -383,11 +323,13 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 
 int report(){
 
+	bool fixed_freq = false;
+
 	WifiController* netController = new WifiController();
 	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
 
 	//check for wpa_supplicant
-	int ret;
+	//int ret;
 	/*ret = system("wpa_supplicant");
 	if (ret != 0){
 		cout<<"Error: wpa_supplicant is not installed. Try: sudo apt-get install wpasupplicant"<<endl;
@@ -442,31 +384,30 @@ int report(){
 				
 				bringupcommand = string("ifconfig ") + i->getName() + string("mon") + string(" up");
 				cout<<"Bringing up: "<<bringupcommand<<endl;
-				system(bringupcommand.c_str());
-				
-				//wait for wireshark
-				string ok;
-				cout<<"start wireshark...";
-				cin>>ok;
-						
+				system(bringupcommand.c_str());								
 			}
 		}
 		else{
 			//this is the next loop inside child proccess with pid overriden to 0 after a success fork
 			//just break to stop the redundancy iteration.
-			break;		
+			break;
 		}
 	}
 	
 	//parent does this
 	if (pid!=0){
 	
+		//wait for wireshark
+		string ok;
+		cout<<"start wireshark...";
+		cin>>ok;
+	
 		//1. load saved network
 		ifstream file(SAVED_NETWORK_JSON_PATH);
 		string contents = string(istreambuf_iterator<char>(file), istreambuf_iterator<char>());
 		Document doc;
 		doc.Parse(contents.c_str());	
-	
+		
 		//2. get current location
 		GeoTracker* geoTracker = GeoTracker::getInstance();
 		struct GeoLocation* currentLocation = geoTracker->getCurrentLocation();
@@ -487,7 +428,9 @@ int report(){
 					if (net["enabled"].GetBool()){
 					
 						Value& aps = net["aps"];
-						string cipherMode = net["encryption"]["method"].GetString();
+						Value& encryption = net["encryption"];
+						
+						string cipherMode = encryption["key_mgmt"].GetString();
 						string networkName = net["ssid"].GetString();
 						cout<<"Into network: "<<networkName<<endl;
 						cout<<"--cipher: "<<cipherMode<<endl;
@@ -501,6 +444,7 @@ int report(){
 								//4.1 iterate through access point to get those in range
 								Value& ap = aps[j];
 								if (!ap["lat"].IsNull() && !ap["long"].IsNull()){
+
 									GeoLocation* apLocation = new GeoLocation(ap["lat"].GetFloat(), ap["long"].GetFloat());
 									float distance = geoTracker->getDistance(apLocation, currentLocation);
 									if (distance <= MAX_RANGE){
@@ -508,6 +452,18 @@ int report(){
 										for (WifiInterface* interface : interfaces){
 											//create control wrapper
 											WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
+											string ok;
+											cout<<"wait for wpa_cli"<<endl;
+											cin>>ok;
+											
+											if (fixed_freq){
+												request = string("SET freq_list ") + to_string(ap["frequency"].GetInt());
+												wpaControl->request(request, response);
+											}
+											
+											//set AP scan
+											request = string("SET ap_scan 1");
+											wpaControl->request(request, response);	
 	
 											//add network, response contains network ID
 											request = string("ADD_NETWORK");
@@ -517,16 +473,13 @@ int report(){
 											//set network ssid
 											request = string("SET_NETWORK ") + response;
 											wpaControl->request(request + string(" ssid \"") + networkName + string("\""), response);
-									
+											
 											//set cipher parameters
-											if (cipherMode == "WPA"){
-												wpaControl->request(request + string(" psk \"") + net["encryption"]["psk"].GetString() + string("\""), response);
-											}
-											else if (cipherMode == "EAP"){
-												wpaControl->request(request + string(" identity \"") + net["encryption"]["identity"].GetString() + string("\""), response);
-												wpaControl->request(request + string(" password \"") + net["encryption"]["password"].GetString() + string("\""), response);
-											}
-										
+											for (Value::MemberIterator m = encryption.MemberBegin(); m!= encryption.MemberEnd(); m++){
+    											wpaControl->request(request + string(" ") + m->name.GetString() + string(" ") + m->value.GetString(), response);
+    											cout<<m->name.GetString()<<endl;
+    										}
+
 											//start sniffing process
 											WifiNetwork* wifiNetwork = new WifiNetwork(networkName);
 										
@@ -543,9 +496,15 @@ int report(){
 											//join the sniffing thread
 											sniffing.join();
 											cout<<"In main: sniffing thread terminated\n";
+											
+											
+											cout<<"wait before disable network"<<endl;
+											cin>>ok;
 
 											//disable this network on this interface
 											request = string("DISABLE_NETWORK ") + networkID;
+											wpaControl->request(request, response);			
+											request = string("REMOVE_NETWORK ") + networkID;
 											wpaControl->request(request, response);														
 										}
 										//at least one ap of this network found, break

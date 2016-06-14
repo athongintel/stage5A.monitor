@@ -85,7 +85,7 @@
 	enum IEEE80211_FRAME_TYPE get80211FrameType(const struct ieee80211_frame* frame);
 	enum IEEE80211_FRAME_SUBTYPE get80211FrameSubType(const struct ieee80211_frame* frame, enum IEEE80211_FRAME_TYPE type);
 	
-	u_char* getTaggedValue(const struct ieee80211_management_frame* frame, int tagged_parameter, int len);
+	int getTaggedValue(const struct ieee80211_management_frame* frame, int tagged_parameter, int packetlen, void* data);
 	
 #endif
 

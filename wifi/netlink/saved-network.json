@@ -2,21 +2,16 @@
 	"networks" : [ 
 		{
 			"ssid" : "eRISCS",
-			"enabled" : true,
+			"enabled" : false,
 			"encryption" : {
-				"method" : "WPA",
-				"psk" : "wireless"
+				"auth_alg" : "OPEN",
+				"key_mgmt" : "WPA-PSK",
+				"psk" : "\"wireless\""
 			},
 			"aps" : [
 				{
 					"mac" : "3C:46:D8:BC:A2:F8",
-					"frequency" : 2472,
-					"lat" : 0,
-					"long" : 0
-				},
-				{
-					"mac" : "3C:46:D8:BC:A2:FA",
-					"frequency" : 5200,
+					"frequency" : 2412,
 					"lat" : 0,
 					"long" : 0
 				}
@@ -24,11 +19,13 @@
 		},
 		{
 			"ssid" : "eduroam",
-			"enabled" : false,
+			"enabled" : true,
 			"encryption" : {
-				"method" : "EAP",
-				"identity" : "xuan-thong.dang@etu.univ-amu.fr",
-				"password" : "!vinamilk100G!"
+				"key_mgmt" : "WPA-EAP",
+				"eap" : "TTLS",
+				"identity" : "\"xuan-thong.dang@etu.univ-amu.fr\"",
+				"password" : "\"!vinamilk100G!\"",
+				"phase2" : "\"auth=MSCHAPV2\""
 			},
 			"aps" : [
 				{
@@ -49,6 +46,23 @@
 					"lat" : 0,
 					"long" : 0
 				}				
+			]
+		},
+		{
+			"ssid" : "Lua mi ATKT",
+			"enabled" : false,
+			"encryption" : {
+				"auth_alg" : "OPEN",
+				"key_mgmt" : "WPA-PSK",				
+				"psk" : "\"vinamilk\""
+			},
+			"aps" : [
+				{
+					"mac" : "3c:c2:43:a8:e0:fe",
+					"frequency" : 2437,
+					"lat" : 0,
+					"long" : 0
+				}			
 			]
 		}
 	]

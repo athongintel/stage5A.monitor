@@ -56,29 +56,28 @@ enum IEEE80211_FRAME_SUBTYPE get80211FrameSubType(const struct ieee80211_frame* 
 	}
 }
 
-u_char* getTaggedValue(const struct ieee80211_management_frame* frame, int tagged_parameter, int len){
+int getTaggedValue(const struct ieee80211_management_frame* frame, int tagged_parameter, int packetlen, void* result){
 	
-	u_char* result = NULL;
+	int valueLen = 0;
 	u_char* tags = &(frame->taggedParameters);
 	if (tags == NULL){
 		printf("tag = NULL!!\n");
+		return -1;
 	}
 	else{
 		int searchLen = 0;
-		int tagLen = 0;
 		do{			
 			if ((*tags) == tagged_parameter){
 				//pointer at tag is tag ID, at tag+1 is tag len, tag+2 is the starting value
-				tagLen = *(tags+1);
-				result = (u_char*)malloc(tagLen);
-				memcpy(result, tags+2, tagLen);
-				return result;
+				valueLen = *(tags+1);
+				memcpy(result, tags+2, valueLen);
+				return valueLen;
 			}
 			else{
-				searchLen += tagLen + 2;	
+				searchLen += valueLen + 2;	
 			}
 		}
-		while (searchLen<len);
+		while (searchLen<packetlen);
 	}
-	return result;
+	return valueLen;
 }
