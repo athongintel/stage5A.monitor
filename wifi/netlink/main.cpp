@@ -112,8 +112,8 @@ void displayMAC(const unsigned char* mac){
 bool containString(vector<u_char*> vector, const u_char* str){
 	bool found = false;
 	for (const u_char* i : vector){
-		//cout<<"vector: ";
-		//displayMAC(i);
+		cout<<"vector: ";
+		displayMAC(i);
 		if (memcmp(i, str, ETH_ALEN) == 0)
 			found = true;
 	}
@@ -167,7 +167,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 	bool firstEAP = false;
 	bool lastEAP = false;
 	//--7. find the first QoS data packet
-	bool fisrtQoS = false;
+	bool firstData = false;
 	
 	const char* devName = (interface->getName()+string("mon")).c_str();
 	//filter strategy
@@ -288,8 +288,15 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 			case DATA_FRAME:
 				cout<<" - data\n";			
 				if (lastEAP){
-					report_to_file(reportFile, "First data packet", packetHeader.ts);
-					loop = false;
+					if (!firstData){
+						firstData = true;
+						report_to_file(reportFile, "First data packet", packetHeader.ts);
+						//call dhclient
+					
+						string dhclient = string("dhclient ") + interface->getName();
+						system(dhclient.c_str());
+						//loop = false;
+					}
 				}
 				else
 				{
@@ -300,8 +307,12 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 								firstEAP = true;
 								report_to_file(reportFile, "First EAP", packetHeader.ts);	
 							}
-							counterEAP++;
-							//WPA 4-way handshake
+							
+							//count 4 ways handshake packets
+							struct ieee8021X_authentication_frame* eap_auth = (struct ieee8021X_authentication_frame*)(packet + radiotap_hdr->header_len + QoSHeaderLen(ieee80211_hdr) + LLC_HEADER_LEN);
+							if (eap_auth->type == IEEE_8021X_KEY_FRAME){
+								counterEAP++;
+							}
 							if (counterEAP == 4){									
 								lastEAP = true;
 								report_to_file(reportFile, "Last EAP", packetHeader.ts);	

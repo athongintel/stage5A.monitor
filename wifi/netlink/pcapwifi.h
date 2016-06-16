@@ -38,6 +38,12 @@
 		u_char organisation_code[3];
 		u_short type;
 	};
+	
+	struct ieee8021X_authentication_frame{
+		u_char version;
+		u_char type;
+		u_char* otherData;
+	};
 
 
 	enum IEEE80211_FRAME_TYPE{
@@ -47,7 +53,6 @@
 		#define CONTROL_FRAME_HDRLEN 16
 		CONTROL_FRAME,
 
-		#define LLC_HEADER_LEN		
 		DATA_FRAME,
 		UNKNOWN_FRAME			
 	};
@@ -62,7 +67,11 @@
 		ASSOCIATION_RESPONSE_FRAME,
 		
 		#define QoSHeaderLen(ieee80211_hdr) ((ieee80211_hdr->frame_control & 0x4000)>0 ? 34 : 26)
+		#define LLC_HEADER_LEN 8
 		#define IEEE_8021X_AUTHENTICATION 0x8e88
+		#define IEEE_8021X_KEY_FRAME 3
+		#define IEEE_8021X_DATA_FRAME 0
+		
 		QOS_DATA_FRAME,
 		ACTION_FRAME,
 		UNKNOWN_SUBFRAME
