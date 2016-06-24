@@ -1,0 +1,11 @@
+Wi-Fi and Cellular Network Switching Analysis
+
+
+I.	Context
+1.	Aim of the experiment
+2.	Terms
+
+II.	Experiment's details
+1.	Wi-Fi connection latency
+a.	Connection process summary
+b.	

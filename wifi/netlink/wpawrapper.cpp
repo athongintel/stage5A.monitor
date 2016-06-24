@@ -20,11 +20,11 @@ int WpaControlWrapper::request(string command, string& response){
 	char responseBuffer[512] = "";
 	size_t responseLength;
 	
-	cout<<"requesting: "<<command.c_str()<<endl;
+	//cout<<"requesting: "<<command.c_str()<<endl;
 	
 	int result = wpa_ctrl_request(this->controller, command.c_str(), strlen(command.c_str()), responseBuffer, &responseLength, NULL);
 	if (result == 0){
-		cout<<"response with: "<<responseBuffer<<endl;
+		//cout<<"response with: "<<responseBuffer<<endl;
 		response = string(responseBuffer);
 	}
 	else{

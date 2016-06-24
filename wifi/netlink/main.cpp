@@ -112,11 +112,24 @@ void displayMAC(const unsigned char* mac){
 bool containString(vector<u_char*> vector, const u_char* str){
 	bool found = false;
 	for (const u_char* i : vector){
-		cout<<"vector: ";
-		displayMAC(i);
-		if (memcmp(i, str, ETH_ALEN) == 0)
+		//cout<<"vector: ";
+		//displayMAC(i);
+		if (memcmp(i, str, ETH_ALEN) == 0){
+			break;
 			found = true;
+		}
 	}
+	/*if (!found){
+		//try again with ETH_ALEN/2
+		for (const u_char* i : vector){
+			cout<<"vector: ";
+			//displayMAC(i);
+			if (memcmp(i, str, ETH_ALEN/2) == 0){			
+				found = true;
+				break;
+			}
+		}
+	}*/
 	return found;
 }
 
@@ -237,8 +250,8 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 					char ssid[100] = "";
 					getTaggedValue(mgnt_frame, TAGGED_SSID, packetHeader.caplen - radiotap_hdr->header_len - MANAGEMENT_FRAME_HDRLEN, ssid);
 					
-					cout<<" -- captured ssid: "<<ssid<<endl;
-					cout<<" -- network ssid: "<<network->getSSID().c_str()<<endl;
+					//cout<<" -- captured ssid: "<<ssid<<endl;
+					//cout<<" -- network ssid: "<<network->getSSID().c_str()<<endl;
 					if (ssid!=NULL && strcmp(ssid, network->getSSID().c_str())==0){
 						if (!firstProbeResponse){
 							firstProbeResponse = true;
@@ -251,14 +264,14 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 				}
 				else if (frameSubType == AUTHENTICATION_FRAME){
 					cout<<" - authen\n";															
-					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 /*&& (containString(ap_macs, ieee80211_hdr->receiver))*/){
 						//authentication request
 						if (!authRequest){
 							authRequest = true;
 							report_to_file(reportFile, "Authentication request", packetHeader.ts);							
 						}								
 					}
-					else if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+					else if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 /*&& (ap_macs.size() ==0 || containString(ap_macs, ieee80211_hdr->sender))*/){
 						if (!authResponse){
 							authResponse = true;
 							report_to_file(reportFile, "Authentication response", packetHeader.ts);	
@@ -267,7 +280,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 				}
 				else if (frameSubType == ASSOCIATION_REQUEST_FRAME){
 					cout<<" - asso\n";
-					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->receiver)){
+					if (memcmp(ieee80211_hdr->sender, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 /*&& (ap_macs.size() ==0 || containString(ap_macs, ieee80211_hdr->receiver))*/){
 						//association request
 						if (!assoRequest){								
 							assoRequest = true;
@@ -276,7 +289,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 					}
 				}
 				else if (frameSubType == ASSOCIATION_RESPONSE_FRAME){
-					if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 && containString(ap_macs, ieee80211_hdr->sender)){
+					if (memcmp(ieee80211_hdr->receiver, interface->getDevice()->getMacAddress(), ETH_ALEN) == 0 /*&& (ap_macs.size() ==0 || containString(ap_macs, ieee80211_hdr->sender))*/){
 						if (!assoResponse){								
 							assoResponse = true;
 							report_to_file(reportFile, "Association response", packetHeader.ts);								
@@ -291,11 +304,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 					if (!firstData){
 						firstData = true;
 						report_to_file(reportFile, "First data packet", packetHeader.ts);
-						//call dhclient
-					
-						string dhclient = string("dhclient ") + interface->getName();
-						system(dhclient.c_str());
-						//loop = false;
+						loop = false;
 					}
 				}
 				else
@@ -315,7 +324,11 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 							}
 							if (counterEAP == 4){									
 								lastEAP = true;
-								report_to_file(reportFile, "Last EAP", packetHeader.ts);	
+								report_to_file(reportFile, "Last EAP", packetHeader.ts);
+								
+								//call dhclient											
+								string dhclient = string("dhclient ") + interface->getName();
+								system(dhclient.c_str());								
 							}
 						}
 					}
@@ -334,7 +347,7 @@ int packet_sniffing(WifiInterface* interface, WifiNetwork* network){
 
 int report(){
 
-	bool fixed_freq = false;
+	bool fixed_freq = true;
 
 	WifiController* netController = new WifiController();
 	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
@@ -378,18 +391,18 @@ int report(){
 			}
 			else{
 				//this is parent process. save the pid for later closing.
-				cout<<"Starting pid: "<<pid<<" as wpa process..."<<endl;
+				//cout<<"Starting pid: "<<pid<<" as wpa process..."<<endl;
 				cpid[pCount]=pid;
 				pCount++;
 				
 				//create new virtual interface and enable monitor mode
-				cout<<"Creating new virtual interface: "<<i->getName() + string("mon")<<endl;
+				//cout<<"Creating new virtual interface: "<<i->getName() + string("mon")<<endl;
 				WifiInterface* vi = i->getDevice()->addVirtualInterface(i, i->getName() + string("mon"), NL80211_IFTYPE_MONITOR);
 				
 				virtualInterfaces.push_back(vi);
 				//bring up this virtual interface
 				string bringupcommand;
-				bringupcommand = string("ifconfig ") + i->getName() + string(" up");
+				//bringupcommand = string("ifconfig ") + i->getName() + string(" up");
 				cout<<"Bringing up: "<<bringupcommand<<endl;
 				system(bringupcommand.c_str());				
 				
@@ -463,9 +476,9 @@ int report(){
 										for (WifiInterface* interface : interfaces){
 											//create control wrapper
 											WpaControlWrapper* wpaControl = new WpaControlWrapper(interface);
-											string ok;
-											cout<<"wait for wpa_cli"<<endl;
-											cin>>ok;
+											//string ok;
+											//cout<<"wait for wpa_cli"<<endl;
+											//cin>>ok;
 											
 											if (fixed_freq){
 												request = string("SET freq_list ") + to_string(ap["frequency"].GetInt());
@@ -510,7 +523,7 @@ int report(){
 											
 											
 											cout<<"wait before disable network"<<endl;
-											cin>>ok;
+											//cin>>ok;
 
 											//disable this network on this interface
 											request = string("DISABLE_NETWORK ") + networkID;
@@ -557,7 +570,7 @@ int report(){
 		}				
 		
 		//restart network-manager
-		system("service network-manager start");
+		//system("service network-manager start");
 		return EXIT_SUCCESS;
 	}
 }
