@@ -351,6 +351,7 @@ int report(){
 
 	WifiController* netController = new WifiController();
 	vector<WifiInterface*> interfaces = netController->getNetworkInterfaces();
+<<<<<<< HEAD
 
 	//check for wpa_supplicant
 	//int ret;
@@ -437,7 +438,6 @@ int report(){
 		struct GeoLocation* currentLocation = geoTracker->getCurrentLocation();
 		//std::cout<<"Current location: "<<currentLocation->latitude<<", "<<currentLocation->longitude<<std::endl;		
 
-	
 		//4. iterate through access points and check for distance
 		Value &networks = doc["networks"];
 		if (networks.IsNull() || !networks.IsArray()){
