@@ -12,8 +12,8 @@
 		SVCAuthenticator* authenticator;
 	
 		public:
-			SVC(SVCHost* remotehost, SVCAuthenticator* authenticator);
-			bool establishConnecion();
+			SVC(SVCAuthenticator* authenticator);
+			bool establishConnecion(SVCApp* localApp, SVCHost* remoteHost);
 			int sendData(unsigned char* data, size_t dalalen, SVCPriority priority, bool sureProtocol);
 			bool setDataReceiveHandler(SVCDataReceiveHandler handler);
 	};
