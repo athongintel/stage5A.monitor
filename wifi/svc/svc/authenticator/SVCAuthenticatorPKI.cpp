@@ -20,3 +20,6 @@ string SVCAuthenticatorPKI::generateProof(string challenge){
 
 
 }
+
+string SVCAuthenticatorPKI::generateChallenge(){
+}

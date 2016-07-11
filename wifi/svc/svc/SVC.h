@@ -10,6 +10,7 @@
 		bool isAuthenticated;
 		SVCHost* host;
 		SVCAuthenticator* authenticator;
+		int socket; //some type of socket
 	
 		public:
 			SVC(SVCAuthenticator* authenticator);

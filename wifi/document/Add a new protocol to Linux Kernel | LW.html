@@ -1,0 +1,1550 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Add a new protocol to Linux Kernel | LW</title>
+
+	<link rel="pingback" href="https://linuxwarrior.wordpress.com/xmlrpc.php">
+	<link href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/style_002.css" type="text/css" rel="stylesheet">
+	<link href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/switch.css" type="text/css" rel="stylesheet">
+
+	<link rel="alternate" type="application/rss+xml" title="LW » Feed" href="https://linuxwarrior.wordpress.com/feed/">
+<link rel="alternate" type="application/rss+xml" title="LW » Comments Feed" href="https://linuxwarrior.wordpress.com/comments/feed/">
+<link rel="alternate" type="application/rss+xml" title="LW » Add a new protocol to Linux&nbsp;Kernel Comments Feed" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/feed/">
+	<script src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/beacon.js" async=""></script><script type="text/javascript">
+		/* <![CDATA[ */
+		function addLoadEvent(func) {
+			var oldonload = window.onload;
+			if (typeof window.onload != 'function') {
+				window.onload = func;
+			} else {
+				window.onload = function () {
+					oldonload();
+					func();
+				}
+			}
+		}
+		/* ]]> */
+	</script>
+	<link rel="stylesheet" id="all-css-0" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a.css" type="text/css" media="all">
+<link rel="stylesheet" id="print-css-1" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/global-print.css" type="text/css" media="print">
+<link rel="stylesheet" id="all-css-2" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/global.css" type="text/css" media="all">
+<script type="text/javascript">
+/* <![CDATA[ */
+var LoggedOutFollow = {"invalid_email":"Your subscription did not succeed, please try again with a valid email address."};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a_003"></script>
+<link rel="stylesheet" id="all-css-0" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/style.css" type="text/css" media="all">
+<!--[if lt IE 8]>
+<link rel='stylesheet' id='highlander-comments-ie7-css'  href='https://s1.wp.com/wp-content/mu-plugins/highlander-comments/style-ie7.css?m=1351637563h&#038;ver=20110606' type='text/css' media='all' />
+<![endif]-->
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://linuxwarrior.wordpress.com/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://s1.wp.com/wp-includes/wlwmanifest.xml"> 
+<link rel="prev" title="Facebook blocking series" href="https://linuxwarrior.wordpress.com/2008/06/05/facebook-blockin/">
+<meta name="generator" content="WordPress.com">
+<link rel="canonical" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/">
+<link rel="shortlink" href="http://wp.me/p1JfV-E">
+<link rel="alternate" type="application/json+oembed" href="https://public-api.wordpress.com/oembed/1.0/?format=json&amp;url=https%3A%2F%2Flinuxwarrior.wordpress.com%2F2008%2F12%2F02%2Fadd-a-new-protocol-to-linux-kernel%2F&amp;for=wpcom-auto-discovery"><link rel="alternate" type="application/xml+oembed" href="https://public-api.wordpress.com/oembed/1.0/?format=xml&amp;url=https%3A%2F%2Flinuxwarrior.wordpress.com%2F2008%2F12%2F02%2Fadd-a-new-protocol-to-linux-kernel%2F&amp;for=wpcom-auto-discovery">
+<!-- Jetpack Open Graph Tags -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Add a new protocol to Linux Kernel">
+<meta property="og:url" content="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/">
+<meta property="og:description" content="Written By : Vishal Thanki The Linux Network sub-system supports several protocols. It is flexible enough to allow addition of new protocols. These protocols are accessible to user application thro…">
+<meta property="article:published_time" content="2008-12-02T09:46:57+00:00">
+<meta property="article:modified_time" content="2008-12-02T10:27:54+00:00">
+<meta property="og:site_name" content="LW">
+<meta property="og:image" content="https://linuxwarrior.wordpress.com/files/2008/12/socket1.jpg">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:site" content="@wordpressdotcom">
+<meta name="twitter:image" content="https://linuxwarrior.wordpress.com/files/2008/12/socket1.jpg?w=240">
+<meta name="twitter:card" content="summary">
+<meta property="fb:app_id" content="249643311490">
+<meta property="article:publisher" content="https://www.facebook.com/WordPresscom">
+<link rel="shortcut icon" type="image/x-icon" href="https://s2.wp.com/i/favicon.ico" sizes="16x16 24x24 32x32 48x48">
+<link rel="icon" type="image/x-icon" href="https://s2.wp.com/i/favicon.ico" sizes="16x16 24x24 32x32 48x48">
+<link rel="apple-touch-icon-precomposed" href="https://s0.wp.com/i/webclip.png">
+<link rel="openid.server" href="https://linuxwarrior.wordpress.com/?openidserver=1">
+<link rel="openid.delegate" href="https://linuxwarrior.wordpress.com/">
+<link rel="search" type="application/opensearchdescription+xml" href="https://linuxwarrior.wordpress.com/osd.xml" title="LW">
+<link rel="search" type="application/opensearchdescription+xml" href="https://s1.wp.com/opensearch.xml" title="WordPress.com">
+<meta name="application-name" content="LW"><meta name="msapplication-window" content="width=device-width;height=device-height"><meta name="msapplication-tooltip" content="The Free/Open Source Alliance"><meta name="msapplication-task" content="name=Subscribe;action-uri=https://linuxwarrior.wordpress.com/feed/;icon-uri=https://s2.wp.com/i/favicon.ico"><meta name="msapplication-task" content="name=Sign up for a free blog;action-uri=http://wordpress.com/signup/;icon-uri=https://s2.wp.com/i/favicon.ico"><meta name="msapplication-task" content="name=WordPress.com Support;action-uri=http://support.wordpress.com/;icon-uri=https://s2.wp.com/i/favicon.ico"><meta name="msapplication-task" content="name=WordPress.com Forums;action-uri=http://forums.wordpress.com/;icon-uri=https://s2.wp.com/i/favicon.ico"><meta name="title" content="Add a new protocol to Linux&nbsp;Kernel | LW on WordPress.com">
+<meta name="description" content="Written By : Vishal Thanki The Linux Network sub-system supports several protocols. It is flexible enough to allow addition of new protocols. These protocols are accessible to user application through socket interface by means of protocol family. The subsequent sections will cover major steps to add a new protocol family (with Linux kernel 2.6.24 as…">
+		<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/amzn_ads.js"></script>
+		<script type="text/javascript">
+		try { amznads.getAds("3033"); } catch(e) { /* ignore */ }
+		</script>
+		<script type="text/javascript">
+		try {
+			var a9_p = amznads.getKeys(),
+			_ipw_custom = {
+				wordAds: '0',
+				adSafe: '0',
+				domain: 'linuxwarrior.wordpress.com',
+				pageURL: 'https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/'
+			};
+			if("undefined"!=typeof a9_p&&""!=a9_p&&null!==a9_p&&"[object Array]"===Object.prototype.toString.call(a9_p)){var a="",b=0,c=a9_p.length;a9_p.sort();for(var d=0;d<c;d++){a9_p[d-b]=a9_p[d-b].replace(/a1x6p/,"a160x600p");var e=a9_p[d-b].split("p");e[0]==a&&(a9_p.splice(d-b,1),b++);a=e[0]}_ipw_custom.amznPay=a9_p};document.close();
+		} catch(e) {}
+		</script>		<!-- IPONWEB header script -->
+		<script type="text/javascript">
+			window.__ATA = {
+				scriptSrc: '//s.pubmine.com/showad.js',
+				slotPrefix: 'automattic-id-',
+				initAd: function(o) {
+					var o = o || {},
+						g = window,
+						d = g.document,
+						wr = d.write,
+						id = g.__ATA.id();
+					wr.call(d, '<div id="' + id + '" data-section="' + (o.sectionId || 0) + '"' + (o.type ? ('data-type="' + o.type + '"') : '') + ' ' + (o.forcedUrl ? ('data-forcedurl="' + o.forcedUrl + '"') : '') + ' style="width:' + (o.width || 0) + 'px; height:' + (o.height || 0) + 'px;">');
+					g.__ATA.displayAd(id);
+					wr.call(d, '</div>');
+				},
+				displayAd: function(id) {
+					window.__ATA.ids = window.__ATA.ids || {};
+					window.__ATA.ids[id] = 1;
+				},
+				customParams: _ipw_custom,
+				id: function() {
+					return window.__ATA.slotPrefix + (parseInt(Math.random() * 10000, 10) + 1 + (new Date()).getMilliseconds());
+				}
+			};
+			(function(d, ata) {
+				var pr = "https:" === d.location.protocol ? "https:" : "http:",
+					src = pr + ata.scriptSrc,
+					st = "text/javascript";
+				d.write('<scr' + 'ipt type="' + st + '" src="' + src + '"><\/scr' + 'ipt>');
+			})(window.document, window.__ATA);
+		</script><script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/showad.js"></script>
+		<script type="text/javascript">
+		jQuery(window).ready(function () {
+			jQuery("a.wpa-about").text("About these ads");
+		});
+		</script><link rel="amphtml" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/amp/"><style type="text/css" id="syntaxhighlighteranchor"></style>
+<script type="text/javascript">
+	window.google_analytics_uacct = "UA-52447-2";
+</script>
+
+<script type="text/javascript">
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-52447-2']);
+	_gaq.push(['_setDomainName', 'wordpress.com']);
+	_gaq.push(['_initData']);
+	_gaq.push(['_trackPageview']);
+
+	(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+	})();
+</script><script src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ga.js" async="" type="text/javascript"></script>
+
+	<!--
+	Regulus Theme Created by Ben Gillbanks @ Binary Moon (http://www.binarymoon.co.uk/)
+	-->
+
+<script src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a_002.js" async="" type="text/javascript"></script><link rel="stylesheet" type="text/css" id="gravatar-card-css" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/hovercard.css"><link rel="stylesheet" type="text/css" id="gravatar-card-services-css" href="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/services.css"><script src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a.js" async="" type="text/javascript"></script><script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/467305181135471361c58651d86cf993.json"></script></head>
+
+
+<body class="single single-post postid-40 single-format-standard green hid_3 mp6 customizer-styles-applied highlander-enabled highlander-light">
+
+<div id="wrapper">
+
+	<div id="header">
+
+				<h1>LW</h1>
+		<p class="site_description">The Free/Open Source Alliance</p>
+		
+		<ul id="nav">
+	<li><a href="https://linuxwarrior.wordpress.com/">Home</a></li>
+	<li class="page_item page-item-2"><a href="https://linuxwarrior.wordpress.com/about/">Linuxwarrior</a></li>
+</ul>
+
+
+	</div>
+
+	<a href="#nav" class="skipnav">jump to navigation</a>
+
+
+<div id="content">
+<div class="post-40 post type-post status-publish format-standard hentry category-linux tag-kernel tag-linux tag-protocol">
+	<h2>
+					Add a new protocol to Linux&nbsp;Kernel				<em>December 2, 2008</em>
+	</h2>
+	<em class="info">Posted by linuxwarrior in <a href="https://linuxwarrior.wordpress.com/category/linux/" rel="category tag">Linux</a>.
+<br>
+Tags: <a href="https://linuxwarrior.wordpress.com/tag/kernel/" rel="tag">kernel</a>, <a href="https://linuxwarrior.wordpress.com/tag/linux/" rel="tag">Linux</a>, <a href="https://linuxwarrior.wordpress.com/tag/protocol/" rel="tag">protocol</a><br>		        <a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/trackback/" title="trackback url">trackback</a>
+				</em>
+
+	<p>Written By : Vishal Thanki</p>
+<p>The Linux Network sub-system supports several protocols. It is 
+flexible enough to allow addition of new protocols. These protocols are 
+accessible to user application through socket interface by means of 
+protocol family. The subsequent sections will cover major steps to add a
+ new protocol family (with Linux kernel 2.6.24 as reference). The 
+implementation of the new protocol is not in scope of this document.</p>
+<p><strong>Top level view of Linux Network (Kernel) Sub-system:</strong></p>
+<p><a href="https://linuxwarrior.files.wordpress.com/2008/12/socket1.jpg"><img scale="1.5" originalw="460" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/socket1.jpg" alt="socket1" title="socket1" class="alignnone size-full wp-image-39" height="173" width="416"></a></p>
+<p>For the scope of this document, we can consider the network sub-system in Linux consisting of three layers as shown above.<br>
+	1. The top most “SOCKET” layer takes care of all socket related system 
+calls. It identifies the protocol family and forwards the call to 
+respective protocol implementation.</p>
+<p>	2.The next layer implements transport and network layer protocols, where we can introduce our new protocol family.</p>
+<p>	3. The lowest layer is the network controller device driver providing hardware access.</p>
+<p><strong>Adding a New Protocol Family:</strong><br>
+The Linux kernel network subsystem data structures, “struct proto” 
+(/include/net/sock.h) and the “struct net_proto_family” 
+(/include/linux/net.h) encapsulates the protocol family implementation.<br>
+Following step by step code snippets show a simplified example to 
+register the new protocol family similar to TCP/IP stack (using IP as 
+the network layer). Please note, all the protocol specific new functions
+ (to be implemented) has prefix “my_”.<br>
+1) Initialize an instance of “struct proto” and register to Linux network sub-system with call “proto_register()”.</p>
+<p><code><br>
+/* Protocol specific socket structure */<br>
+struct my_sock {<br>
+	struct inet_sock isk;<br>
+	/* Add the Protocol implementation specific data members per socket here from here on */<br>
+};</code><code><br>
+struct proto my_proto = {<br>
+	.close       = my_close,<br>
+	.connect     = my_connect,<br>
+	.disconnect  = my_disconnect,<br>
+	.accept      = my_accept,<br>
+	.ioctl       = my_ioctl,<br>
+	.init        = my_init_sock,<br>
+	.shutdown    = my_shutdown,<br>
+	.setsockopt  = my_setsockopt,<br>
+	.getsockopt  = my_getsockopt,<br>
+	.sendmsg     = my_sendmsg,<br>
+	.recvmsg     = my_recvmsg,<br>
+	.unhash      = my_unhash,<br>
+	.get_port    		= my_get_port,<br>
+	.enter_memory_pressure 	= my_enter_memory_pressure,<br>
+	.sockets_allocated 	= &amp;sockets_allocated,<br>
+	.memory_allocated 	= &amp;memory_allocated,<br>
+	.memory_pressure 		= &amp;memory_pressure,<br>
+	.orphan_count 		= &amp;orphan_count,<br>
+	.sysctl_mem             = sysctl_tcp_mem,<br>
+	.sysctl_wmem            = sysctl_tcp_wmem,<br>
+	.sysctl_rmem            = sysctl_tcp_rmem,<br>
+	.max_header  		= 0,<br>
+	.obj_size    		= sizeof(struct my_sock),<br>
+	.owner	     		= THIS_MODULE,<br>
+	.name	     			= "NEW_TCP",<br>
+};</code><br>
+<code>rc = proto_register(&amp;my_proto, 1);</code></p>
+<p>2) Provide an interface to create the new protocol specific socket 
+creation routine. Register our handler to socket layer using call 
+“sock_register()”. The “family” member specifies the address family for 
+the new protocol.<br>
+<code>struct net_proto_family my_net_proto = {<br>
+	.family     = AF_INET_NEW_TCP,<br>
+	.create     = my_create_socket,<br>
+	.owner	= THIS_MODULE,<br>
+};</code><br>
+<code>rc = sock_register(&amp;my_net_proto, 1);</code></p>
+<p>3) The new protocol’s address family is the only interface for user 
+level socket calls to reach the new protocol implementation. The new 
+protocol’s address family AF_INET_NEW_TCP should be added in 
+/include/linux/socket.h. Any socket() call with this new address family 
+will be directed to my_create_socket() function in kernel, and which 
+establishes the use of new protocol stack for all subsequent socket 
+operations.</p>
+<p>4) The protocol can be connection oriented or connection less as 
+chosen by the protocol implementer. In the socket creation routine, 
+protocol implementer specifies a “struct proto_ops” 
+(/include/linux/net.h) instance. The socket layer calls function members
+ of this proto_ops instance before the protocol specific functions are 
+called (as defined in step# 1). A typical implementation of the create 
+socket routine for TCP/IP like (connection oriented) new protocol:<br>
+<code>static struct proto_ops my_proto_ops = {<br>
+	.family     = PF_INET,<br>
+	.owner      = THIS_MODULE,<br>
+	.release    = inet_release,<br>
+	.bind       = my_bind,<br>
+	.connect    = inet_stream_connect,<br>
+	.socketpair = sock_no_socketpair,<br>
+	.accept     = inet_accept,<br>
+	.getname    = inet_getname,<br>
+	.poll       = my_poll,<br>
+	.ioctl      = inet_ioctl,<br>
+	.listen     = my_inet_listen,<br>
+	.shutdown   = inet_shutdown,<br>
+	.setsockopt = sock_common_setsockopt,<br>
+	.getsockopt = sock_common_getsockopt,<br>
+	.sendmsg    = inet_sendmsg,<br>
+	.recvmsg    = sock_common_recvmsg,<br>
+};</code><br>
+<code>static int my_create_socket(struct socket *sock, int protocol)<br>
+{<br>
+	struct sock *sk;<br>
+	int rc;</code></p><code>
+<p>	sk = sk_alloc(PF_INET_NEW_TCP, GFP_KERNEL, &amp;my_proto, 1);<br>
+	if (!sk) {<br>
+		printk("failed to allocate socket.\n");<br>
+		return -ENOMEM;<br>
+	}</p>
+<p>	sock_init_data(sock, sk);<br>
+	sk-&gt;sk_protocol = 0x0;</p>
+<p>	sock-&gt;ops = &amp;my_proto_ops;<br>
+	sock-&gt;state = SS_UNCONNECTED;</p>
+</code><p><code>	/* Do the protocol specific socket object initialization */<br>
+	return 0;<br>
+};</code></p>
+		<div class="wpcnt">
+			<div class="wpa wpmrec">
+				<a class="wpa-about" href="https://wordpress.com/about-these-ads/" rel="nofollow">About these ads</a>
+				<div class="u">
+					<script type="text/javascript">
+					(function(g){g.__ATA.initAd({sectionId:26942, width:300, height:250});})(window);
+					</script><div id="automattic-id-10156" data-section="26942" style="width:300px; height:250px;"></div>
+				</div>
+			</div>
+		</div><div id="jp-post-flair" class="sharedaddy sd-like-enabled"><div class="sharedaddy sd-block sd-like jetpack-likes-widget-wrapper jetpack-likes-widget-loaded" id="like-post-wrapper-412295-40-577d0ff97b14e" data-src="//widgets.wp.com/likes/#blog_id=412295&amp;post_id=40&amp;origin=linuxwarrior.wordpress.com&amp;obj_id=412295-40-577d0ff97b14e" data-name="like-post-frame-412295-40-577d0ff97b14e"><h3 class="sd-title">Like this:</h3><div class="likes-widget-placeholder post-likes-widget-placeholder" style="height: 55px; display: none;"><span class="button"><span>Like</span></span> <span class="loading">Loading...</span></div><iframe class="post-likes-widget jetpack-likes-widget" name="like-post-frame-412295-40-577d0ff97b14e" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a.html" frameborder="0" height="55px" width="100%"></iframe><span class="sd-text-color"></span><a class="sd-link-color"></a></div>
+<div style="display: block;" id="jp-relatedposts" class="jp-relatedposts">
+	<h3 class="jp-relatedposts-headline"><em>Related</em></h3>
+<div class="jp-relatedposts-items jp-relatedposts-items-minimal"><p class="jp-relatedposts-post jp-relatedposts-post0" data-post-id="32" data-post-format="false"><span class="jp-relatedposts-post-title"><a data-position="0" data-origin="40" rel="nofollow" title="Remote Directory Memory Access
+
+Written By : Vishal Thanki Introduction In today's world, where 1Gig/sed ethernet network speed as being very common, the demand of high speed network is rapidly increasding. All the data centers, cluster computers and many more R&amp;amp;D oriented organizations are in need of more speed on ethernet. The problem with…" href="https://linuxwarrior.wordpress.com/2007/08/26/remote-directory-memory-access/" class="jp-relatedposts-post-a">Remote Directory Memory Access</a></span><span class="jp-relatedposts-post-context">In "Linux"</span></p><p class="jp-relatedposts-post jp-relatedposts-post1" data-post-id="21" data-post-format="false"><span class="jp-relatedposts-post-title"><a data-position="1" data-origin="40" rel="nofollow" title="Ubuntu guru on power management hacks
+
+It was while watching fellow Linux users having to shutdown their laptops in between talks at open source conferences some years ago that Matthew Garrett, now head of the Ubuntu laptop team, was initially alerted to power management issues in Linux systems. After almost 15 years of hacking, Garrett will…" href="https://linuxwarrior.wordpress.com/2007/01/10/ubuntu-guru-on-power-management-hacks/" class="jp-relatedposts-post-a">Ubuntu guru on power management hacks</a></span><span class="jp-relatedposts-post-context">In "Blogroll"</span></p><p class="jp-relatedposts-post jp-relatedposts-post2" data-post-id="12" data-post-format="false"><span class="jp-relatedposts-post-title"><a data-position="2" data-origin="40" rel="nofollow" title="Real Fact
+
+After Kerala revolution in India, Munich has begun its migration to Linux. The city announced its move to open source software. Now it’s time for Asian Countries, who are comparatively way behind in the use of open source technology. It’s time to throw Windows in dust. Why we are fear…" href="https://linuxwarrior.wordpress.com/2006/09/24/real-fact/" class="jp-relatedposts-post-a">Real Fact</a></span><span class="jp-relatedposts-post-context">In "Real World"</span></p></div></div></div></div><div id="comments">
+	<h2>Comments<a href="#postComment" title="leave a comment">»</a></h2>
+
+		<dl class="commentlist">
+
+			<dt id="comment-387" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/493479a2dbcd060d0d3b692d99f9764d?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-493479a2dbcd060d0d3b692d99f9764d-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/493479a2dbcd060d0d3b692d99f9764d.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	1.	<a href="http://none/" rel="external nofollow" class="url">James</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-387">May 17, 2009</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-387">
+	<p>Thats  good one</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=387#respond" onclick='return addComment.moveForm( "div-comment-387", "387", "respond", "40" )' aria-label="Reply to James">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-392" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/d1950853135c71e555d64230ed1e07e4?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-d1950853135c71e555d64230ed1e07e4-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/d1950853135c71e555d64230ed1e07e4.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	2.	edo -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-392">October 30, 2009</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-392">
+	<p>I was really looking for this thing! Thanks a lot!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=392#respond" onclick='return addComment.moveForm( "div-comment-392", "392", "respond", "40" )' aria-label="Reply to edo">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-394" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/1120dbbbe3395c4202f851a50d957b4e?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-1120dbbbe3395c4202f851a50d957b4e-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/1120dbbbe3395c4202f851a50d957b4e.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	3.	<a href="http://omglolz.info/" rel="external nofollow" class="url">funnystuff</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-394">September 7, 2010</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-394">
+	<p>Hola<br>
+I like your post. It is very interesting to read.<br>
+I am curious how come I didn’t know about this blog earlier.</p>
+<p>I will try to share. Many of my   friends will appreciate this.</p>
+<p>Thank you and keep’em coming!<img scale="0" class="wp-smiley emoji" draggable="false" alt=":)" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/simple-smile.svg" style="height: 1em; max-height: 1em;" height="16" width="16"></p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=394#respond" onclick='return addComment.moveForm( "div-comment-394", "394", "respond", "40" )' aria-label="Reply to funnystuff">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-396" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/1b380a3a0fcf6711d51d10c9d603c92c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-1b380a3a0fcf6711d51d10c9d603c92c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/1b380a3a0fcf6711d51d10c9d603c92c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	4.	Moran -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-396">December 26, 2010</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-396">
+	<p>Hi<br>
+Thanks a lot<br>
+It was very helpful</p>
+<p>Can you please add also some of the functions implementation:<br>
+my_close<br>
+my_bind<br>
+and so?</p>
+<p>(I had some errors when I tried to implement them)</p>
+<p>Thanks<br>
+Moran</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=396#respond" onclick='return addComment.moveForm( "div-comment-396", "396", "respond", "40" )' aria-label="Reply to Moran">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-397" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/1eeefe71c2a0fa82c61a20d5ee1df827?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-1eeefe71c2a0fa82c61a20d5ee1df827-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/1eeefe71c2a0fa82c61a20d5ee1df827.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	5.	Safa -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-397">February 7, 2011</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-397">
+	<p>Thanks a lot. I have one question however, If I add the protocol as 
+module to the kernel and then write an application to create a socket() 
+using the added protocol, the application enter infinate loop and does 
+not exist. When I check the messages in /var/log/messages I get message 
+of 8 lines with question marks and memery address. Do you know what is 
+the problem.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=397#respond" onclick='return addComment.moveForm( "div-comment-397", "397", "respond", "40" )' aria-label="Reply to Safa">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-399" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/8ad09b802ab7e99d1353ed57b06af9ba?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-8ad09b802ab7e99d1353ed57b06af9ba-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/8ad09b802ab7e99d1353ed57b06af9ba.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	6.	yogs -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-399">December 4, 2011</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-399">
+	<p>super….thanks a lot!!!!!!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=399#respond" onclick='return addComment.moveForm( "div-comment-399", "399", "respond", "40" )' aria-label="Reply to yogs">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-401" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/0a0433f4d222b5ff323dff13b7334b02?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-0a0433f4d222b5ff323dff13b7334b02-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/0a0433f4d222b5ff323dff13b7334b02.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	7.	holy baig -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-401">January 14, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-401">
+	<p>thank u Thanki! you rock! it is so hard to find such good help on kernel stuff!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=401#respond" onclick='return addComment.moveForm( "div-comment-401", "401", "respond", "40" )' aria-label="Reply to holy baig">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-404" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/f229701d3c3eef3a14708955e1ade312?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-f229701d3c3eef3a14708955e1ade312-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/f229701d3c3eef3a14708955e1ade312.jpeg" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	8.	Ahmed -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-404">March 30, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-404">
+	<p>Very useful, Thanks</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=404#respond" onclick='return addComment.moveForm( "div-comment-404", "404", "respond", "40" )' aria-label="Reply to Ahmed">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-406" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/a1d092ab2223fdc154cebb2fb9265d1d?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-a1d092ab2223fdc154cebb2fb9265d1d-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a1d092ab2223fdc154cebb2fb9265d1d.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	9.	<a href="http://www.aol.com/a11a3804f99294a9620ce148a31dfe0e1e4fbc70" rel="external nofollow" class="url">click</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-406">June 7, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-406">
+	<p>A lot of of the comments on this web site dont make sense.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=406#respond" onclick='return addComment.moveForm( "div-comment-406", "406", "respond", "40" )' aria-label="Reply to click">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-407" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/a79aefd893a33b260cf02777502fc19c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-a79aefd893a33b260cf02777502fc19c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a79aefd893a33b260cf02777502fc19c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	10.	<a href="http://www.dealsforbrisbane.com/" rel="external nofollow" class="url">brisbane deals</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-407">June 21, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-407">
+	<p>Could you message me with some hints &amp; tips on how you made your blog look this good , I would appreciate it!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=407#respond" onclick='return addComment.moveForm( "div-comment-407", "407", "respond", "40" )' aria-label="Reply to brisbane deals">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-408" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/13d1508ac440785d216140f3118894d8?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-13d1508ac440785d216140f3118894d8-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/13d1508ac440785d216140f3118894d8.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	11.	<a href="http://www.youngdrivers-carinsurance.org/" rel="external nofollow" class="url">this month</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-408">June 21, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-408">
+	<p>If you dont mind, exactly where do you host your weblog? I am 
+hunting for a great web host and your blog seams to be extremely fast 
+and up most the time</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=408#respond" onclick='return addComment.moveForm( "div-comment-408", "408", "respond", "40" )' aria-label="Reply to this month">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-409" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/81476158b134636e2267622942e168c6?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-81476158b134636e2267622942e168c6-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/81476158b134636e2267622942e168c6.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	12.	<a href="http://www.carinsurancerates.com/north-dakota-car-insurance.html" rel="external nofollow" class="url">address</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-409">June 22, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-409">
+	<p>Just to let you know your blog appears a little bit different on Safari on my pc using Linux .</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=409#respond" onclick='return addComment.moveForm( "div-comment-409", "409", "respond", "40" )' aria-label="Reply to address">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-410" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/474a95b83945e75745fcf80670beeb54?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-474a95b83945e75745fcf80670beeb54-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/474a95b83945e75745fcf80670beeb54.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	13.	<a href="http://www.rockpaperphoto.com/photographer_michael_leach" rel="external nofollow" class="url">michael leach talk</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-410">June 23, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-410">
+	<p>When I initially commented I clicked the Notify me any time new 
+comments are added checkbox and now each time a comment is added I get 4
+ messages with the exact same comment.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=410#respond" onclick='return addComment.moveForm( "div-comment-410", "410", "respond", "40" )' aria-label="Reply to michael leach talk">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-411" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/98f4cdae503b47a534e77c713240338c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-98f4cdae503b47a534e77c713240338c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/98f4cdae503b47a534e77c713240338c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	14.	account -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-411">June 23, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-411">
+	<p>I like the website layout . How do you make it. Its so cool.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=411#respond" onclick='return addComment.moveForm( "div-comment-411", "411", "respond", "40" )' aria-label="Reply to account">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-412" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/8f13709fa8eb5b6a440ceb5827d16b72?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-8f13709fa8eb5b6a440ceb5827d16b72-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/8f13709fa8eb5b6a440ceb5827d16b72.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	15.	<a href="http://www.takeyourcash.com/" rel="external nofollow" class="url">save on</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-412">June 24, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-412">
+	<p>Is it alright to place part of this in my web site if I submit a reference point to this webpage?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=412#respond" onclick='return addComment.moveForm( "div-comment-412", "412", "respond", "40" )' aria-label="Reply to save on">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-413" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/467305181135471361c58651d86cf993?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-467305181135471361c58651d86cf993-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/467305181135471361c58651d86cf993.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	16.	<a href="http://www.18kgoldjewelry.org/" rel="external nofollow" class="url">18k gold chain</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-413">June 24, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-413">
+	<p>I love this blog site layout . How do you make it!? It is so cool!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=413#respond" onclick='return addComment.moveForm( "div-comment-413", "413", "respond", "40" )' aria-label="Reply to 18k gold chain">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-414" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/a1e24e23bd28919cb9a60127af65ebf2?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-a1e24e23bd28919cb9a60127af65ebf2-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a1e24e23bd28919cb9a60127af65ebf2.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	17.	<a href="http://youtube.com/ontargetfx" rel="external nofollow" class="url">forex education</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-414">June 25, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-414">
+	<p>If you dont mind, where do you host your web site? I am looking for a
+ very good web host and your website appears to be extremely fast and up
+ most the time</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=414#respond" onclick='return addComment.moveForm( "div-comment-414", "414", "respond", "40" )' aria-label="Reply to forex education">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-415" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/b674e17647dd0bb76f376476c6b80eea?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-b674e17647dd0bb76f376476c6b80eea-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/b674e17647dd0bb76f376476c6b80eea.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	18.	<a href="http://www.squidoo.com/nursing-morals-and-ethics" rel="external nofollow" class="url">nursing job description</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-415">June 25, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-415">
+	<p>Jesus Christ there is plenty of spammy feedback on this webpage. 
+Have you ever before thought about attempting to eliminate them or 
+installing a plugin?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=415#respond" onclick='return addComment.moveForm( "div-comment-415", "415", "respond", "40" )' aria-label="Reply to nursing job description">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-416" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/5451273770111a81da313c7701ffb03f?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-5451273770111a81da313c7701ffb03f-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/5451273770111a81da313c7701ffb03f.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	19.	<a href="http://www.theshots.co.uk/VenueHire.ink" rel="external nofollow" class="url">commercial function rooms surrey</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-416">June 26, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-416">
+	<p>When I open up your Feed it seems to be a ton of nonsense, is the issue on my part?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=416#respond" onclick='return addComment.moveForm( "div-comment-416", "416", "respond", "40" )' aria-label="Reply to commercial function rooms surrey">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-417" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/aa1bc137fc1de8407af6dfdfc29dec1d?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-aa1bc137fc1de8407af6dfdfc29dec1d-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/aa1bc137fc1de8407af6dfdfc29dec1d.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	20.	<a href="http://www.senukexcrreviews.co.uk/" rel="external nofollow" class="url">senukexcrreviews.co.uk</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-417">June 26, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-417">
+	<p>It seems to me that this site doesnt download in a Motorola Droid. 
+Are other folks getting the same problem? I enjoy this blog and dont 
+want to have to miss it whenever Im away from my computer.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=417#respond" onclick='return addComment.moveForm( "div-comment-417", "417", "respond", "40" )' aria-label="Reply to senukexcrreviews.co.uk">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-418" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/34dff11baefa8f76eaadd2d4dfb6d435?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-34dff11baefa8f76eaadd2d4dfb6d435-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/34dff11baefa8f76eaadd2d4dfb6d435.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	21.	<a href="http://www.youtube.com/watch?v=EuUFBp8bYzA" rel="external nofollow" class="url">sailing holiday</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-418">June 29, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-418">
+	<p>I tried taking a look at your web site on my iphone and the page 
+layout does not seem to be right. Might want to check it out on WAP as 
+well as it seems most cellphone layouts are not really working with your
+ website.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=418#respond" onclick='return addComment.moveForm( "div-comment-418", "418", "respond", "40" )' aria-label="Reply to sailing holiday">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-419" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/69fc591e3926958c6dc0bb6e01c07f0f?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-69fc591e3926958c6dc0bb6e01c07f0f-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/69fc591e3926958c6dc0bb6e01c07f0f.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	22.	buy fridge freezer -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-419">June 30, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-419">
+	<p>Just to let you know your web-site looks a little bit unusual in Firefox on my laptop with Linux .</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=419#respond" onclick='return addComment.moveForm( "div-comment-419", "419", "respond", "40" )' aria-label="Reply to buy fridge freezer">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-420" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/2c69fd626618ebeab3816582fa4a3bf3?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-2c69fd626618ebeab3816582fa4a3bf3-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/2c69fd626618ebeab3816582fa4a3bf3.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	23.	<a href="http://www.padgettnga.com/" rel="external nofollow" class="url">thumbnail</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-420">June 30, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-420">
+	<p>Whilst I actually like this publish, I think there was an punctuational error close towards the end of the 3rd section.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=420#respond" onclick='return addComment.moveForm( "div-comment-420", "420", "respond", "40" )' aria-label="Reply to thumbnail">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-421" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/d0a475bd533e149d6d823866a3dc3ccd?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-d0a475bd533e149d6d823866a3dc3ccd-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/d0a475bd533e149d6d823866a3dc3ccd.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	24.	<a href="http://coolmotorbikegames.com/" rel="external nofollow" class="url">investigate motorbike games</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-421">July 1, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-421">
+	<p>Oh man! This blog is amazing. How did you  make it look this good ?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=421#respond" onclick='return addComment.moveForm( "div-comment-421", "421", "respond", "40" )' aria-label="Reply to investigate motorbike games">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-422" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/12ff0624cfb8389cef29aa228b72f175?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-12ff0624cfb8389cef29aa228b72f175-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/12ff0624cfb8389cef29aa228b72f175.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	25.	<a href="http://www.arianerocherjewellery.com/r_shop_Rings.html?type=822" rel="external nofollow" class="url">designer rings</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-422">July 2, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-422">
+	<p>Wow. This blog site is sick. How can I  make it look like this !?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=422#respond" onclick='return addComment.moveForm( "div-comment-422", "422", "respond", "40" )' aria-label="Reply to designer rings">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-423" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/3df7dae56b989630334fa9719a79e632?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-3df7dae56b989630334fa9719a79e632-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/3df7dae56b989630334fa9719a79e632.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	26.	<a href="http://www.cinsay.com/blog/" rel="external nofollow" class="url">video ecommerce</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-423">July 2, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-423">
+	<p>Heya, I just hopped over to your web site using StumbleUpon. Not 
+somthing I would typically browse, but I enjoyed your thoughts none the 
+less. Thank you for making something well worth reading through.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=423#respond" onclick='return addComment.moveForm( "div-comment-423", "423", "respond", "40" )' aria-label="Reply to video ecommerce">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-424" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/8f5b59ab2e8f37ace01c8f9a9c501d12?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-8f5b59ab2e8f37ace01c8f9a9c501d12-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/8f5b59ab2e8f37ace01c8f9a9c501d12.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	27.	<a href="http://butcherblockcountertopscost.com/" rel="external nofollow" class="url">home page</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-424">July 2, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-424">
+	<p>Is it fine to insert part of this in my web site if I submit a reference point to this web page?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=424#respond" onclick='return addComment.moveForm( "div-comment-424", "424", "respond", "40" )' aria-label="Reply to home page">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-425" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/997350104b44d0aca872e06d35d4b602?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-997350104b44d0aca872e06d35d4b602-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/997350104b44d0aca872e06d35d4b602.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	28.	<a href="http://www.budapestrooms.com/" rel="external nofollow" class="url">visit budapest</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-425">July 3, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-425">
+	<p>Hi, I just hopped over to your site using StumbleUpon. Not somthing I
+ might usually read, but I appreciated your views none the less. Thanks 
+for making some thing worthy of browsing.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=425#respond" onclick='return addComment.moveForm( "div-comment-425", "425", "respond", "40" )' aria-label="Reply to visit budapest">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-426" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/605665d487039e101fdbc0a67f131a57?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-605665d487039e101fdbc0a67f131a57-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/605665d487039e101fdbc0a67f131a57.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	29.	<a href="http://http//www.youtube.com/watch?v=jS-PyniD3A8" rel="external nofollow" class="url">bathroom remodeling phoenix, bathroom remodeling az, phoenix kitchen remodeling, kitchen remodeling az, home remodeling phoenix</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-426">July 4, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-426">
+	<p>Whenever I originally left a comment I clicked on the Notify me any 
+time new comments are added checkbox and now each time a comment is 
+added I get four messages with the same comment.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=426#respond" onclick='return addComment.moveForm( "div-comment-426", "426", "respond", "40" )' aria-label="Reply to bathroom remodeling phoenix, bathroom remodeling az, phoenix kitchen remodeling, kitchen remodeling az, home remodeling phoenix">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-427" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/8c2008854cc0f6b180873ad9f289bb0b?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-8c2008854cc0f6b180873ad9f289bb0b-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/8c2008854cc0f6b180873ad9f289bb0b.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	30.	<a href="http://freelaptopwithmobilephone.co.uk/" rel="external nofollow" class="url">freelaptopwithmobilephone discussions</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-427">July 6, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-427">
+	<p>Just to let you know your webpage looks a little bit strange on Firefox on my notebook using Linux .</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=427#respond" onclick='return addComment.moveForm( "div-comment-427", "427", "respond", "40" )' aria-label="Reply to freelaptopwithmobilephone discussions">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-428" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/6e4f78b376a729029a03c4fd295b6d68?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-6e4f78b376a729029a03c4fd295b6d68-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/6e4f78b376a729029a03c4fd295b6d68.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	31.	<a href="http://www.supportsolutions.co.uk/" rel="external nofollow" class="url">personalisation agenda</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-428">July 6, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-428">
+	<p>I was basically wanting to know if you ever considered adjusting the
+ design of your web site? It is very well written; I enjoy what you have
+ got to state. But maybe you could add a little more in the way of 
+content so people can connect with it better. You have got a great deal 
+of text for only having one or two graphics. Maybe you can space it out 
+better?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=428#respond" onclick='return addComment.moveForm( "div-comment-428", "428", "respond", "40" )' aria-label="Reply to personalisation agenda">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-429" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/fe48cad445b57b14b3198ef8245e08af?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-fe48cad445b57b14b3198ef8245e08af-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/fe48cad445b57b14b3198ef8245e08af.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	32.	<a href="http://www.youtube.com/watch?v=MFoOgxo12M8" rel="external nofollow" class="url">live your passion</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-429">July 7, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-429">
+	<p>Have you considered adding some social bookmarking links to these blogs. At the very least for myspace.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=429#respond" onclick='return addComment.moveForm( "div-comment-429", "429", "respond", "40" )' aria-label="Reply to live your passion">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-430" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/7906766fd705e27f9da5dc84f7572f44?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-7906766fd705e27f9da5dc84f7572f44-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/7906766fd705e27f9da5dc84f7572f44.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	33.	<a href="http://www.freefarmvillecash.me/" rel="external nofollow" class="url">this month</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-430">July 7, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-430">
+	<p>Nice post . Thanks for, posting on this blog page man. Ill message you some time. I did not realise that!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=430#respond" onclick='return addComment.moveForm( "div-comment-430", "430", "respond", "40" )' aria-label="Reply to this month">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-431" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/bc3aa5df041187fbcf4872d9a217525c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-bc3aa5df041187fbcf4872d9a217525c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/bc3aa5df041187fbcf4872d9a217525c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	34.	<a href="http://www.westbocadental.com/" rel="external nofollow" class="url">snoring treatment boca raton</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-431">July 8, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-431">
+	<p>This site has got a lot of really helpful information on it. Thank you for informing me!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=431#respond" onclick='return addComment.moveForm( "div-comment-431", "431", "respond", "40" )' aria-label="Reply to snoring treatment boca raton">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-432" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/29e02fffc7d1efeded9917e2bb44bfd6?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-29e02fffc7d1efeded9917e2bb44bfd6-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/29e02fffc7d1efeded9917e2bb44bfd6.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	35.	<a href="http://www.youtube.com/watch?v=bYJvOTZETt8" rel="external nofollow" class="url">investigate how to be attractive</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-432">July 8, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-432">
+	<p>Wanted to drop a remark and let you know your Feed isnt working 
+today. I tried including it to my Google reader account and got nothing.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=432#respond" onclick='return addComment.moveForm( "div-comment-432", "432", "respond", "40" )' aria-label="Reply to investigate how to be attractive">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-433" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/3a05efc4955594cb35a6c58e5a9592d3?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-3a05efc4955594cb35a6c58e5a9592d3-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/3a05efc4955594cb35a6c58e5a9592d3.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	36.	<a href="http://www.212smoke.com/Cartridges_ep_46.html" rel="external nofollow" class="url">e cig cartridge</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-433">July 8, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-433">
+	<p>I believe one of your current ads initiated my internet browser to resize, you may well want to set that on your blacklist.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=433#respond" onclick='return addComment.moveForm( "div-comment-433", "433", "respond", "40" )' aria-label="Reply to e cig cartridge">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-434" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/569efe6ef687b3c65121d88699bab791?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-569efe6ef687b3c65121d88699bab791-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/569efe6ef687b3c65121d88699bab791.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	37.	<a href="http://www.loanmontelwilliams.com/" rel="external nofollow" class="url">montell william loan</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-434">July 9, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-434">
+	<p>A lot of of the opinions on this blog dont make sense.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=434#respond" onclick='return addComment.moveForm( "div-comment-434", "434", "respond", "40" )' aria-label="Reply to montell william loan">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-435" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/0bc03c8570989db901274751b51a6065?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-0bc03c8570989db901274751b51a6065-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/0bc03c8570989db901274751b51a6065.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	38.	<a href="http://www.garagedoorsmilwaukeewi.com/" rel="external nofollow" class="url">milwaukee garage door</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-435">July 10, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-435">
+	<p>An interesting post right there mate . Thanks for posting .</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=435#respond" onclick='return addComment.moveForm( "div-comment-435", "435", "respond", "40" )' aria-label="Reply to milwaukee garage door">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-436" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/33734165040015c3f96cb7fa9e93ea20?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-33734165040015c3f96cb7fa9e93ea20-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/33734165040015c3f96cb7fa9e93ea20.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	39.	<a href="http://cosmeticdentistnyc1.com/" rel="external nofollow" class="url">cosmetic dentistry nyc</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-436">July 10, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-436">
+	<p>quite helpful material, in general I picture this is worthy of a bookmark, cheers</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=436#respond" onclick='return addComment.moveForm( "div-comment-436", "436", "respond", "40" )' aria-label="Reply to cosmetic dentistry nyc">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-437" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/a25f7b0dac83ddca0d2862976ea4443c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-a25f7b0dac83ddca0d2862976ea4443c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a25f7b0dac83ddca0d2862976ea4443c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	40.	<a href="http://www.honeymoon-vacation.com/" rel="external nofollow" class="url">all inclusive honeymoon packages united states</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-437">July 11, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-437">
+	<p>Even though I truly like this publish, I believe there was an spelling error close to the finish of the third section.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=437#respond" onclick='return addComment.moveForm( "div-comment-437", "437", "respond", "40" )' aria-label="Reply to all inclusive honeymoon packages united states">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-438" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/bd545dbe6acd17498771316b4743095a?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-bd545dbe6acd17498771316b4743095a-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/bd545dbe6acd17498771316b4743095a.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	41.	<a href="http://clubmedvacation.com/" rel="external nofollow" class="url">tour us all inclusive resorts</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-438">July 12, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-438">
+	<p>You should really moderate the responses at this site</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=438#respond" onclick='return addComment.moveForm( "div-comment-438", "438", "respond", "40" )' aria-label="Reply to tour us all inclusive resorts">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-439" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/3cdfb1b816b154de20b8db3213d81b60?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-3cdfb1b816b154de20b8db3213d81b60-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/3cdfb1b816b154de20b8db3213d81b60.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	42.	<a href="http://www.emeraldpacificelectric.com/" rel="external nofollow" class="url">discount san diego electrical</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-439">July 12, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-439">
+	<p>I love this site layout ! How did you make it? It is rather nice.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=439#respond" onclick='return addComment.moveForm( "div-comment-439", "439", "respond", "40" )' aria-label="Reply to discount san diego electrical">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-440" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/8db28f5c281a9e790901c0b0542dfafb?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-8db28f5c281a9e790901c0b0542dfafb-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/8db28f5c281a9e790901c0b0542dfafb.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	43.	<a href="http://manhattancosmeticdentistoffice.com/" rel="external nofollow" class="url">dentists manhattan</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-440">July 12, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-440">
+	<p>The design for the site is a little bit off in Epiphany. 
+Nevertheless I like your blog. I may have to use a normal web browser 
+just to enjoy it.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=440#respond" onclick='return addComment.moveForm( "div-comment-440", "440", "respond", "40" )' aria-label="Reply to dentists manhattan">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-441" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/afef239f91a1a49d81556a2b276f3454?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-afef239f91a1a49d81556a2b276f3454-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/afef239f91a1a49d81556a2b276f3454.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	44.	<a href="http://www.youtube.com/watch?v=hii3YvFmtJc" rel="external nofollow" class="url">spinach recipe</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-441">July 12, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-441">
+	<p>Could you message me with some hints on how you made your blog site look this awesome, I would be appreciative!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=441#respond" onclick='return addComment.moveForm( "div-comment-441", "441", "respond", "40" )' aria-label="Reply to spinach recipe">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-442" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/66c1467ae3aa0502bc521b1049658d48?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-66c1467ae3aa0502bc521b1049658d48-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/66c1467ae3aa0502bc521b1049658d48.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	45.	<a href="http://www.earthcarewindows.com/" rel="external nofollow" class="url">shades waukesha</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-442">July 13, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-442">
+	<p>Strange , your posting turns up with a black hue to it, what color is the primary color on your site?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=442#respond" onclick='return addComment.moveForm( "div-comment-442", "442", "respond", "40" )' aria-label="Reply to shades waukesha">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-443" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/5581fd23542d5cc2dc270ed004ed3610?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-5581fd23542d5cc2dc270ed004ed3610-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/5581fd23542d5cc2dc270ed004ed3610.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	46.	<a href="http://youtu.be/Tkst1_fam8o" rel="external nofollow" class="url">work from home site</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-443">July 14, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-443">
+	<p>Weird , your posting shows up with a black hue to it, what color is the primary color on your web site?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=443#respond" onclick='return addComment.moveForm( "div-comment-443", "443", "respond", "40" )' aria-label="Reply to work from home site">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-444" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/6814f112911c3d4bd4c74563bbb8e6f2?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-6814f112911c3d4bd4c74563bbb8e6f2-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/6814f112911c3d4bd4c74563bbb8e6f2.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	47.	<a href="http://www.wolftotalfitness.com/tanning/" rel="external nofollow" class="url">tanning big bear</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-444">July 14, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-444">
+	<p>Have you given any kind of consideration at all with converting your
+ current webpage in to Spanish? I know a several of translaters here 
+that will would certainly help you do it for free if you want to make 
+contact with me personally.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=444#respond" onclick='return addComment.moveForm( "div-comment-444", "444", "respond", "40" )' aria-label="Reply to tanning big bear">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-445" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/44b1d109a584a0bf74d8726b160b5118?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-44b1d109a584a0bf74d8726b160b5118-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/44b1d109a584a0bf74d8726b160b5118.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	48.	<a href="http://http//www.youtube.com/watch?v=K7GqrTRUiCc" rel="external nofollow" class="url">san
+ francisco dentist, san francisco cosmetic dentist, dental implants san 
+francisco , cosmetic dentist san francisco, san francisco implant 
+dentist</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-445">July 14, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-445">
+	<p>Could you email me with any hints about how you made this blog look this awesome, Id appreciate it!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=445#respond" onclick='return addComment.moveForm( "div-comment-445", "445", "respond", "40" )' aria-label="Reply to san francisco dentist, san francisco cosmetic dentist, dental implants san francisco , cosmetic dentist san francisco, san francisco implant dentist">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-446" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/14c9ec3438daf17a9071f60661e25728?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-14c9ec3438daf17a9071f60661e25728-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/14c9ec3438daf17a9071f60661e25728.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	49.	<a href="http://www.easymontelwilliamsloan.com/" rel="external nofollow" class="url">like us on facebook</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-446">July 14, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-446">
+	<p>Have you considered adding a few social bookmarking buttons to these sites. At the very least for facebook.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=446#respond" onclick='return addComment.moveForm( "div-comment-446", "446", "respond", "40" )' aria-label="Reply to like us on facebook">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-447" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/6d192435acc02057a0f52e25e45817de?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-6d192435acc02057a0f52e25e45817de-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/6d192435acc02057a0f52e25e45817de.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	50.	<a href="http://truenorthdentistry.com/sleep_apnea.htm" rel="external nofollow" class="url">snoring specialist in flagstaff</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-447">July 15, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-447">
+	<p>How do you make a site look this sick!? Email me if you want and share your wisdom. Id be thankful!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=447#respond" onclick='return addComment.moveForm( "div-comment-447", "447", "respond", "40" )' aria-label="Reply to snoring specialist in flagstaff">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-448" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/4b16b7948a857a896c4c30d569e195ab?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-4b16b7948a857a896c4c30d569e195ab-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/4b16b7948a857a896c4c30d569e195ab.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	51.	<a href="http://www.youtube.com/watch?v=uyz4P_LME14" rel="external nofollow" class="url">patent pending</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-448">July 16, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-448">
+	<p>You should really control the comments listed here</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=448#respond" onclick='return addComment.moveForm( "div-comment-448", "448", "respond", "40" )' aria-label="Reply to patent pending">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-449" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/53302acd5f6c4b55a237d8203a862c9c?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-53302acd5f6c4b55a237d8203a862c9c-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/53302acd5f6c4b55a237d8203a862c9c.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	52.	<a href="http://twitter.com/downloadhaus" rel="external nofollow" class="url">sponsor</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-449">July 16, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-449">
+	<p>This site has got a lot of very helpful information on it. Cheers for sharing it with me.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=449#respond" onclick='return addComment.moveForm( "div-comment-449", "449", "respond", "40" )' aria-label="Reply to sponsor">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-450" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/f8b28710ee72c3aaf11d6fbae9d84f76?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-f8b28710ee72c3aaf11d6fbae9d84f76-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/f8b28710ee72c3aaf11d6fbae9d84f76.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	53.	<a href="http://appstarscam.weebly.com/" rel="external nofollow" class="url">appstar complaint</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-450">July 16, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-450">
+	<p>Odd , this post turns up with a black color to it, what color is the primary color on your webpage?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=450#respond" onclick='return addComment.moveForm( "div-comment-450", "450", "respond", "40" )' aria-label="Reply to appstar complaint">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-451" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/3faf54c583464c2ae70fdf6b069de5b1?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-3faf54c583464c2ae70fdf6b069de5b1-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/3faf54c583464c2ae70fdf6b069de5b1.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	54.	<a href="http://www.lnt.com/category/2448/1/vanity-mirrors.html" rel="external nofollow" class="url">bathroom mirrors</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-451">July 16, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-451">
+	<p>This blog has got lots of really useful information on it! Thank you for informing me.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=451#respond" onclick='return addComment.moveForm( "div-comment-451", "451", "respond", "40" )' aria-label="Reply to bathroom mirrors">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-452" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/a06b5e39fa3c6f1ee4790ce7bb8c2f41?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-a06b5e39fa3c6f1ee4790ce7bb8c2f41-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a06b5e39fa3c6f1ee4790ce7bb8c2f41.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	55.	<a href="http://caregiving-losangeles.com/" rel="external nofollow" class="url">clicky</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-452">July 17, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-452">
+	<p>I had been wanting to know if you ever thought of modifying the 
+layout of your blog? Its well written; I love what you have got to say. 
+But maybe you could create a a bit more in the way of content so people 
+might connect to it better. You have got an awful lot of wording for 
+only having one or two pictures. Maybe you can space it out better?</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=452#respond" onclick='return addComment.moveForm( "div-comment-452", "452", "respond", "40" )' aria-label="Reply to clicky">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-453" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/fbda03adeb4a1f2696dc15e52d7f8c3f?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-fbda03adeb4a1f2696dc15e52d7f8c3f-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/fbda03adeb4a1f2696dc15e52d7f8c3f.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	56.	<a href="http://www.animedownloadsonline.com/manga.php" rel="external nofollow" class="url">homepage</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-453">July 17, 2012</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-453">
+	<p>Have you given any kind of consideration at all with translating 
+your main blog in to Chinese? I know a couple of of translaters right 
+here which would help you do it for free if you wanna contact me.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=453#respond" onclick='return addComment.moveForm( "div-comment-453", "453", "respond", "40" )' aria-label="Reply to homepage">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-456" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/f184895ff427341482fdb051c3597968?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-f184895ff427341482fdb051c3597968-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/f184895ff427341482fdb051c3597968.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	57.	<a href="http://forum.servicezon.com/home/space.php?uid=21006&amp;do=blog&amp;id=338021" rel="external nofollow" class="url">Jan</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-456">April 20, 2013</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-456">
+	<p>Hello, I think your site might be having browser compatibility issues.<br>
+When I look at your website in Ie, it looks fine but when opening in Internet<br>
+Explorer, it has some overlapping. I just wanted to give you a<br>
+quick heads up! Other then that, awesome blog!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=456#respond" onclick='return addComment.moveForm( "div-comment-456", "456", "respond", "40" )' aria-label="Reply to Jan">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-457" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://1.gravatar.com/avatar/14cd1979f76bebf8817dce22b9995af3?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-14cd1979f76bebf8817dce22b9995af3-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/14cd1979f76bebf8817dce22b9995af3.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	58.	<a href="http://summer49cup.wordpress.com/2013/02/17/absolutely-free-essay-writing-providers-for-college-college-students/" rel="external nofollow" class="url">argument essay</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-457">April 22, 2013</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-457">
+	<p>I go to see daily some web pages and websites to read content, except this weblog provides quality based content.</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=457#respond" onclick='return addComment.moveForm( "div-comment-457", "457", "respond", "40" )' aria-label="Reply to argument essay">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-459" class="comment even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://0.gravatar.com/avatar/67c179c75cde2655806a509d4141da80?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-67c179c75cde2655806a509d4141da80-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/67c179c75cde2655806a509d4141da80.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	59.	<a href="http://frictionandwear.com/feed/" rel="external nofollow" class="url">2 place motorized astm grease working machine</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-459">August 14, 2013</a>
+		</dt>
+	<dd class="comment odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-459">
+	<p>Greetings! Very useful advice within this article!<br>
+It’s the little changes that produce the largest changes. Thanks a lot for sharing!</p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=459#respond" onclick='return addComment.moveForm( "div-comment-459", "459", "respond", "40" )' aria-label="Reply to 2 place motorized astm grease working machine">Reply</a>	</div>
+	</div>
+	</dd>
+	<dt id="comment-533" class="comment byuser comment-author-mcdonalddowns76275 even thread-even depth-1 highlander-comment">
+	<img scale="1.5" src-orig="https://2.gravatar.com/avatar/b581f4ed03abbeea9cda1931b9931160?s=32&amp;d=identicon&amp;r=G" originals="32" id="grav-b581f4ed03abbeea9cda1931b9931160-0" alt="" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/b581f4ed03abbeea9cda1931b9931160.png" class="avatar avatar-32 grav-hashed grav-hijack" height="32" width="32">	60.	<a href="http://mcdonalddowns76275.wordpress.com/" rel="external nofollow" class="url">mcdonalddowns76275</a> -
+	<a href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#comment-533">April 9, 2016</a>
+		</dt>
+	<dd class="comment byuser comment-author-mcdonalddowns76275 odd alt thread-odd thread-alt depth-1 highlander-comment">
+	<div class="comment" id="div-comment-533">
+	<p>Oh,and one more thing jaws is just a normal shark and the megaladon is a ANCIENT ANIMAL!!n:@ Click <a href="http://s.intmainreturn0.com/people3091630" rel="nofollow">http://s.intmainreturn0.com/people3091630</a></p>
+	<div class="reply">
+		<a rel="nofollow" class="comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/?replytocom=533#respond" onclick='return addComment.moveForm( "div-comment-533", "533", "respond", "40" )' aria-label="Reply to mcdonalddowns76275">Reply</a>	</div>
+	</div>
+	</dd>
+		</dl>
+
+		<div class="navigation">
+			<div class="alignleft"></div>
+			<div class="alignright"></div>
+		</div>
+		<br>
+
+	
+</div>
+
+				<div id="respond" class="comment-respond js">
+			<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/#respond" style="display:none;">Cancel reply</a></small></h3>				<form action="https://linuxwarrior.wordpress.com/wp-comments-post.php" method="post" id="commentform" class="comment-form">
+					<input id="highlander_comment_nonce" name="highlander_comment_nonce" value="5f2e1f240c" type="hidden"><input name="_wp_http_referer" value="/2008/12/02/add-a-new-protocol-to-linux-kernel/" type="hidden">
+<input name="hc_post_as" id="hc_post_as" value="guest" type="hidden">
+
+<div class="comment-form-field comment-textarea">
+	
+	<div id="comment-form-comment"><textarea class="autosizejs " tabindex="-1" style="position: absolute; top: -999px; left: 0px; right: auto; bottom: auto; border: 0px none; padding: 0px; box-sizing: content-box; word-wrap: break-word; height: 0px ! important; min-height: 0px ! important; overflow: hidden; transition: none 0s ease 0s ; font-family: Arial,Helvetica,Tahoma,Verdana,sans-serif; font-size: 21px; font-weight: 400; font-style: normal; letter-spacing: 0px; text-transform: none; text-decoration: none; word-spacing: 0px; text-indent: 0px; line-height: 15.3333px; width: 438.667px;">Enter your comment here...</textarea><textarea style="height: 40px; overflow: hidden; word-wrap: break-word; resize: none;" placeholder="Enter your comment here..." id="comment" name="comment" title="Enter your comment here..."></textarea></div>
+</div>
+
+<div style="display: none;" id="comment-form-identity">
+
+	<div id="comment-form-nascar">
+		<p>Fill in your details below or click an icon to log in:</p>
+		<ul>
+			<li class="selected" style="display:none;">
+				<a href="#comment-form-guest" id="postas-guest" title="Guest">
+					<span></span>
+				</a>
+			</li>
+			<li>
+				<a href="#comment-form-load-service:WordPress.com" id="postas-wordpress" title="WordPress.com">
+					<span></span>
+				</a>
+			</li>
+			<li>
+				<a href="#comment-form-load-service:Twitter" id="postas-twitter" title="Twitter">
+					<span></span>
+				</a>
+			</li>
+			<li>
+				<a href="#comment-form-load-service:Facebook" id="postas-facebook" title="Facebook">
+					<span></span>
+				</a>
+			</li>
+			<li>
+			<iframe id="googleplus-sign-in" name="googleplus-sign-in" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a_002.html" scrolling="no" allowtransparency="true" seamless="seamless" frameborder="0" height="24" width="24"></iframe>
+			</li>
+		</ul>
+	</div>
+
+	<div id="comment-form-guest" class="comment-form-service selected">
+		<div class="comment-form-padder">
+			<div class="comment-form-avatar">
+<a href="https://gravatar.com/site/signup/" target="_blank">				<img scale="1.5" originals="25" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ad516503a11cd5ca435acc9bb6523536.png" alt="Gravatar" class="no-grav" width="25">
+</a>			</div>
+
+				<div class="comment-form-fields">
+				<div class="comment-form-field comment-form-email">
+					<label for="email">Email <span class="required">(required)</span> <span class="nopublish">(Address never made public)</span></label>
+					<div class="comment-form-input"><input id="email" name="email" type="email"></div>
+				</div>
+				<div class="comment-form-field comment-form-author">
+					<label for="author">Name <span class="required">(required)</span></label>
+					<div class="comment-form-input"><input id="author" name="author" type="text"></div>
+				</div>
+				<div class="comment-form-field comment-form-url">
+					<label for="url">Website</label>
+					<div class="comment-form-input"><input id="url" name="url" type="text"></div>
+				</div>
+			</div>
+	
+		</div>
+	</div>
+
+	<div id="comment-form-wordpress" class="comment-form-service">
+		<div class="comment-form-padder">
+			<div class="comment-form-avatar">
+				<img scale="1.5" originals="25" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ad516503a11cd5ca435acc9bb6523536.png" alt="WordPress.com Logo" class="no-grav" width="25">
+			</div>
+
+				<div class="comment-form-fields">
+				<input name="wp_avatar" id="wordpress-avatar" class="comment-meta-wordpress" value="" type="hidden">
+				<input name="wp_user_id" id="wordpress-user_id" class="comment-meta-wordpress" value="" type="hidden">
+				<input name="wp_access_token" id="wordpress-access_token" class="comment-meta-wordpress" value="" type="hidden">
+				<p class="comment-form-posting-as pa-wordpress"><strong></strong> You are commenting using your <span class="skimlinks-unlinked">WordPress.com</span> account. <span class="comment-form-log-out">(&nbsp;<a href="javascript:HighlanderComments.doExternalLogout(%20'wordpress'%20);">Log&nbsp;Out</a>&nbsp;/&nbsp;<a href="#" onclick="javascript:HighlanderComments.switchAccount();return false;">Change</a>&nbsp;)</span></p>
+			</div>
+	
+		</div>
+	</div>
+
+	<div id="comment-form-twitter" class="comment-form-service">
+		<div class="comment-form-padder">
+			<div class="comment-form-avatar">
+				<img scale="1.5" originals="25" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ad516503a11cd5ca435acc9bb6523536.png" alt="Twitter picture" class="no-grav" width="25">
+			</div>
+
+				<div class="comment-form-fields">
+				<input name="twitter_avatar" id="twitter-avatar" class="comment-meta-twitter" value="" type="hidden">
+				<input name="twitter_user_id" id="twitter-user_id" class="comment-meta-twitter" value="" type="hidden">
+				<input name="twitter_access_token" id="twitter-access_token" class="comment-meta-twitter" value="" type="hidden">
+				<p class="comment-form-posting-as pa-twitter"><strong></strong> You are commenting using your Twitter account. <span class="comment-form-log-out">(&nbsp;<a href="javascript:HighlanderComments.doExternalLogout(%20'twitter'%20);">Log&nbsp;Out</a>&nbsp;/&nbsp;<a href="#" onclick="javascript:HighlanderComments.switchAccount();return false;">Change</a>&nbsp;)</span></p>
+			</div>
+	
+		</div>
+	</div>
+
+	<div id="comment-form-facebook" class="comment-form-service">
+		<div class="comment-form-padder">
+			<div class="comment-form-avatar">
+				<img scale="1.5" originals="25" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ad516503a11cd5ca435acc9bb6523536.png" alt="Facebook photo" class="no-grav" width="25">
+			</div>
+
+				<div class="comment-form-fields">
+				<input name="fb_avatar" id="facebook-avatar" class="comment-meta-facebook" value="" type="hidden">
+				<input name="fb_user_id" id="facebook-user_id" class="comment-meta-facebook" value="" type="hidden">
+				<input name="fb_access_token" id="facebook-access_token" class="comment-meta-facebook" value="" type="hidden">
+				<p class="comment-form-posting-as pa-facebook"><strong></strong> You are commenting using your Facebook account. <span class="comment-form-log-out">(&nbsp;<a href="javascript:HighlanderComments.doExternalLogout(%20'facebook'%20);">Log&nbsp;Out</a>&nbsp;/&nbsp;<a href="#" onclick="javascript:HighlanderComments.switchAccount();return false;">Change</a>&nbsp;)</span></p>
+			</div>
+	
+		</div>
+	</div>
+
+	<div id="comment-form-googleplus" class="comment-form-service">
+		<div class="comment-form-padder">
+			<div class="comment-form-avatar">
+				<img scale="1.5" originals="25" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/ad516503a11cd5ca435acc9bb6523536.png" alt="Google+ photo" class="no-grav" width="25">
+			</div>
+
+				<div class="comment-form-fields">
+				<input name="googleplus_avatar" id="googleplus-avatar" class="comment-meta-googleplus" value="" type="hidden">
+				<input name="googleplus_user_id" id="googleplus-user_id" class="comment-meta-googleplus" value="" type="hidden">
+				<input name="googleplus_access_token" id="googleplus-access_token" class="comment-meta-googleplus" value="" type="hidden">
+				<p class="comment-form-posting-as pa-googleplus"><strong></strong> You are commenting using your Google+ account. <span class="comment-form-log-out">(&nbsp;<a href="javascript:HighlanderComments.doExternalLogout(%20'googleplus'%20);">Log&nbsp;Out</a>&nbsp;/&nbsp;<a href="#" onclick="javascript:HighlanderComments.switchAccount();return false;">Change</a>&nbsp;)</span></p>
+			</div>
+	
+		</div>
+	</div>
+
+
+	<div id="comment-form-load-service" class="comment-form-service">
+		<div class="comment-form-posting-as-cancel"><a href="javascript:HighlanderComments.cancelExternalWindow();">Cancel</a></div>
+		<p>Connecting to %s</p>
+	</div>
+
+</div>
+
+<script type="text/javascript">
+var highlander_expando_javascript = function(){
+	var input = document.createElement( 'input' ),
+	    comment = jQuery( '#comment' );
+
+	if ( 'placeholder' in input ) {
+		comment.attr( 'placeholder', jQuery( '.comment-textarea label' ).remove().text() );
+	}
+
+	// Expando Mode: start small, then auto-resize on first click + text length
+	jQuery( '#comment-form-identity' ).hide();
+	jQuery( '#comment-form-subscribe' ).hide();
+	jQuery( '#commentform .form-submit' ).hide();
+
+	comment.css( { 'height':'10px' } ).one( 'focus', function() {
+		var timer = setInterval( HighlanderComments.resizeCallback, 10 )
+		jQuery( this ).animate( { 'height': HighlanderComments.initialHeight } ).delay( 100 ).queue( function(n) { clearInterval( timer ); HighlanderComments.resizeCallback(); n(); } );
+		jQuery( '#comment-form-identity' ).slideDown();
+		jQuery( '#comment-form-subscribe' ).slideDown();
+		jQuery( '#commentform .form-submit' ).slideDown();
+	});
+}
+jQuery(document).ready( highlander_expando_javascript );
+</script>
+
+<div style="display: none;" id="comment-form-subscribe">
+	<p class="comment-subscription-form"><input name="subscribe" id="subscribe" value="subscribe" style="width: auto;" type="checkbox"> <label class="subscribe-label" id="subscribe-label" for="subscribe" style="display: inline;">Notify me of new comments via email.</label></p></div>
+
+
+
+
+<p style="display: none;" class="form-submit"><input name="submit" id="comment-submit" class="submit" value="Post Comment" type="submit"> <input name="comment_post_ID" value="40" id="comment_post_ID" type="hidden">
+<input name="comment_parent" id="comment_parent" value="0" type="hidden">
+</p><p style="display: none;"><input id="akismet_comment_nonce" name="akismet_comment_nonce" value="408ebe4e67" type="hidden"></p>
+<input name="genseq" value="1467813881" type="hidden">
+<p style="display: none;"></p>				<input id="ak_js" name="ak_js" value="1467813883590" type="hidden"></form>
+					</div><!-- #respond -->
+		<div style="clear: both"></div>
+
+</div>
+
+<div id="sidebar">
+
+		<form action="https://linuxwarrior.wordpress.com" method="get" id="search">
+		<p><label for="s">search</label>
+		<input name="s" id="s">
+		<input value="go!" class="button" id="searchbutton" name="searchbutton" type="submit"></p>
+		</form>
+
+		<ul>
+
+		<li id="rss-1" class="widget widget_rss"><h2 class="widgettitle"><a class="rsswidget" href="http://rss.groups.yahoo.com/group/linuxwarrior/rss" title="Syndicate this content"><img scale="0" style="background: orange; color: white; border: none;" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/rss.png" alt="RSS" height="14" width="14"></a> <a class="rsswidget" href="" title="">Linuxwarrior Group</a></h2>
+<ul><li>An error has occurred; the feed is probably down. Try again later.</li></ul></li>
+<li id="linkcat-1356" class="widget widget_links"><h2 class="widgettitle">Blogroll</h2>
+
+	<ul class="xoxo blogroll">
+<li><a href="http://amitksaha.blogspot.com/">Amit</a></li>
+<li><a href="http://rudyegenias.wordpress.com/">Kray</a></li>
+<li><a href="http://ksiezyc.net/blogen/index.html">Mara</a></li>
+<li><a href="http://munichlinux.blogspot.com/">Prashanth</a></li>
+
+	</ul>
+</li>
+
+<li id="archives-2" class="widget widget_archive"><h2 class="widgettitle">Archives</h2>
+		<ul>
+			<li><a href="https://linuxwarrior.wordpress.com/2008/12/">December 2008</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2008/06/">June 2008</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2008/05/">May 2008</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2007/08/">August 2007</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2007/05/">May 2007</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2007/04/">April 2007</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2007/02/">February 2007</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2007/01/">January 2007</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2006/12/">December 2006</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2006/10/">October 2006</a></li>
+	<li><a href="https://linuxwarrior.wordpress.com/2006/09/">September 2006</a></li>
+		</ul>
+		</li>
+<li id="wp_tag_cloud-2" class="widget wp_widget_tag_cloud"><h2 class="widgettitle"></h2>
+<div style="overflow:hidden"><a href="https://linuxwarrior.wordpress.com/tag/kernel/" class="tag-link-2428 tag-link-position-1" title="1 topic" style="font-size: 8pt;">kernel</a>
+<a href="https://linuxwarrior.wordpress.com/tag/linux/" class="tag-link-610 tag-link-position-2" title="1 topic" style="font-size: 8pt;">Linux</a>
+<a href="https://linuxwarrior.wordpress.com/tag/linuxwarrior/" class="tag-link-7269547 tag-link-position-3" title="1 topic" style="font-size: 8pt;">linuxwarrior</a>
+<a href="https://linuxwarrior.wordpress.com/tag/protocol/" class="tag-link-177410 tag-link-position-4" title="1 topic" style="font-size: 8pt;">protocol</a>
+<a href="https://linuxwarrior.wordpress.com/tag/sun/" class="tag-link-429 tag-link-position-5" title="1 topic" style="font-size: 8pt;">sun</a></div></li>
+
+  		</ul>
+
+		<ul id="feeds">
+		<li><h3>Feeds</h3></li>
+		<li><a href="https://linuxwarrior.wordpress.com/feed/">Full</a></li>
+		<li><a href="https://linuxwarrior.wordpress.com/comments/feed/">Comments</a></li>
+		</ul>
+
+</div>
+
+
+		<ul id="footer">
+			<li><a href="https://wordpress.com/themes/regulus/" title="Learn more about this theme">The Regulus Theme</a>.</li>
+			<li><a href="https://wordpress.com/?ref=footer_website">Create a free website or blog at WordPress.com.</a></li>
+			<li><a href="#nav" title="Jump to top of page">Top</a></li>
+		</ul>
+	</div>
+	<!-- wpcom_wp_footer -->
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/gprofiles.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var WPGroHo = {"my_hash":""};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/wpgroho.js"></script>
+
+	<script>
+		//initialize and attach hovercards to all gravatars
+		jQuery( document ).ready( function( $ ) {
+
+			if (typeof Gravatar === "undefined"){
+				return;
+			}
+
+			if ( typeof Gravatar.init !== "function" ) {
+				return;
+			}			
+
+			Gravatar.profile_cb = function( hash, id ) {
+				WPGroHo.syncProfileData( hash, id );
+			};
+			Gravatar.my_hash = WPGroHo.my_hash;
+			Gravatar.init( 'body', '#wp-admin-bar-my-account' );
+		});
+	</script>
+
+		<div style="display:none">
+	<div class="grofile-hash-map-493479a2dbcd060d0d3b692d99f9764d">
+	</div>
+	<div class="grofile-hash-map-d1950853135c71e555d64230ed1e07e4">
+	</div>
+	<div class="grofile-hash-map-1120dbbbe3395c4202f851a50d957b4e">
+	</div>
+	<div class="grofile-hash-map-1b380a3a0fcf6711d51d10c9d603c92c">
+	</div>
+	<div class="grofile-hash-map-1eeefe71c2a0fa82c61a20d5ee1df827">
+	</div>
+	<div class="grofile-hash-map-8ad09b802ab7e99d1353ed57b06af9ba">
+	</div>
+	<div class="grofile-hash-map-0a0433f4d222b5ff323dff13b7334b02">
+	</div>
+	<div class="grofile-hash-map-f229701d3c3eef3a14708955e1ade312">
+	</div>
+	<div class="grofile-hash-map-a1d092ab2223fdc154cebb2fb9265d1d">
+	</div>
+	<div class="grofile-hash-map-a79aefd893a33b260cf02777502fc19c">
+	</div>
+	<div class="grofile-hash-map-13d1508ac440785d216140f3118894d8">
+	</div>
+	<div class="grofile-hash-map-81476158b134636e2267622942e168c6">
+	</div>
+	<div class="grofile-hash-map-474a95b83945e75745fcf80670beeb54">
+	</div>
+	<div class="grofile-hash-map-98f4cdae503b47a534e77c713240338c">
+	</div>
+	<div class="grofile-hash-map-8f13709fa8eb5b6a440ceb5827d16b72">
+	</div>
+	<div class="grofile-hash-map-467305181135471361c58651d86cf993">
+	</div>
+	<div class="grofile-hash-map-a1e24e23bd28919cb9a60127af65ebf2">
+	</div>
+	<div class="grofile-hash-map-b674e17647dd0bb76f376476c6b80eea">
+	</div>
+	<div class="grofile-hash-map-5451273770111a81da313c7701ffb03f">
+	</div>
+	<div class="grofile-hash-map-aa1bc137fc1de8407af6dfdfc29dec1d">
+	</div>
+	<div class="grofile-hash-map-34dff11baefa8f76eaadd2d4dfb6d435">
+	</div>
+	<div class="grofile-hash-map-69fc591e3926958c6dc0bb6e01c07f0f">
+	</div>
+	<div class="grofile-hash-map-2c69fd626618ebeab3816582fa4a3bf3">
+	</div>
+	<div class="grofile-hash-map-d0a475bd533e149d6d823866a3dc3ccd">
+	</div>
+	<div class="grofile-hash-map-12ff0624cfb8389cef29aa228b72f175">
+	</div>
+	<div class="grofile-hash-map-3df7dae56b989630334fa9719a79e632">
+	</div>
+	<div class="grofile-hash-map-8f5b59ab2e8f37ace01c8f9a9c501d12">
+	</div>
+	<div class="grofile-hash-map-997350104b44d0aca872e06d35d4b602">
+	</div>
+	<div class="grofile-hash-map-605665d487039e101fdbc0a67f131a57">
+	</div>
+	<div class="grofile-hash-map-8c2008854cc0f6b180873ad9f289bb0b">
+	</div>
+	<div class="grofile-hash-map-6e4f78b376a729029a03c4fd295b6d68">
+	</div>
+	<div class="grofile-hash-map-fe48cad445b57b14b3198ef8245e08af">
+	</div>
+	<div class="grofile-hash-map-7906766fd705e27f9da5dc84f7572f44">
+	</div>
+	<div class="grofile-hash-map-bc3aa5df041187fbcf4872d9a217525c">
+	</div>
+	<div class="grofile-hash-map-29e02fffc7d1efeded9917e2bb44bfd6">
+	</div>
+	<div class="grofile-hash-map-3a05efc4955594cb35a6c58e5a9592d3">
+	</div>
+	<div class="grofile-hash-map-569efe6ef687b3c65121d88699bab791">
+	</div>
+	<div class="grofile-hash-map-0bc03c8570989db901274751b51a6065">
+	</div>
+	<div class="grofile-hash-map-33734165040015c3f96cb7fa9e93ea20">
+	</div>
+	<div class="grofile-hash-map-a25f7b0dac83ddca0d2862976ea4443c">
+	</div>
+	<div class="grofile-hash-map-bd545dbe6acd17498771316b4743095a">
+	</div>
+	<div class="grofile-hash-map-3cdfb1b816b154de20b8db3213d81b60">
+	</div>
+	<div class="grofile-hash-map-8db28f5c281a9e790901c0b0542dfafb">
+	</div>
+	<div class="grofile-hash-map-afef239f91a1a49d81556a2b276f3454">
+	</div>
+	<div class="grofile-hash-map-66c1467ae3aa0502bc521b1049658d48">
+	</div>
+	<div class="grofile-hash-map-5581fd23542d5cc2dc270ed004ed3610">
+	</div>
+	<div class="grofile-hash-map-6814f112911c3d4bd4c74563bbb8e6f2">
+	</div>
+	<div class="grofile-hash-map-44b1d109a584a0bf74d8726b160b5118">
+	</div>
+	<div class="grofile-hash-map-14c9ec3438daf17a9071f60661e25728">
+	</div>
+	<div class="grofile-hash-map-6d192435acc02057a0f52e25e45817de">
+	</div>
+	<div class="grofile-hash-map-4b16b7948a857a896c4c30d569e195ab">
+	</div>
+	<div class="grofile-hash-map-53302acd5f6c4b55a237d8203a862c9c">
+	</div>
+	<div class="grofile-hash-map-f8b28710ee72c3aaf11d6fbae9d84f76">
+	</div>
+	<div class="grofile-hash-map-3faf54c583464c2ae70fdf6b069de5b1">
+	</div>
+	<div class="grofile-hash-map-a06b5e39fa3c6f1ee4790ce7bb8c2f41">
+	</div>
+	<div class="grofile-hash-map-fbda03adeb4a1f2696dc15e52d7f8c3f">
+	</div>
+	<div class="grofile-hash-map-f184895ff427341482fdb051c3597968">
+	</div>
+	<div class="grofile-hash-map-14cd1979f76bebf8817dce22b9995af3">
+	</div>
+	<div class="grofile-hash-map-67c179c75cde2655806a509d4141da80">
+	</div>
+	<div class="grofile-hash-map-b581f4ed03abbeea9cda1931b9931160">
+	</div>
+	</div>
+<script type="text/javascript">
+/* <![CDATA[ */
+var HighlanderComments = {"loggingInText":"Logging In\u2026","submittingText":"Posting Comment\u2026","postCommentText":"Post Comment","connectingToText":"Connecting to %s","commentingAsText":"%1$s: You are commenting using your %2$s account.","logoutText":"Log Out","loginText":"Log In","connectURL":"https:\/\/linuxwarrior.wordpress.com\/public.api\/connect\/?action=request","logoutURL":"https:\/\/linuxwarrior.wordpress.com\/wp-login.php?action=logout&_wpnonce=56428d4f75","homeURL":"https:\/\/linuxwarrior.wordpress.com\/","postID":"40","gravDefault":"identicon","enterACommentError":"Please enter a comment","enterEmailError":"Please enter your email address here","invalidEmailError":"Invalid email address","enterAuthorError":"Please enter your name here","gravatarFromEmail":"This picture will show whenever you leave a comment. Click to customize it.","logInToExternalAccount":"Log in to use details from one of these accounts.","change":"Change","changeAccount":"Change Account","comment_registration":"","userIsLoggedIn":"","isJetpack":"0","text_direction":"ltr"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a"></script>
+
+	<div style="bottom: -227px;" id="bit" class="loggedout-follow-normal">
+		<a class="bsub" href="javascript:void(0)"><span id="bsub-text">Follow</span></a>
+		<div id="bitsubscribe">
+
+					<h3><label for="loggedout-follow-field">Follow “LW”</label></h3>
+
+			<form action="https://subscribe.wordpress.com" method="post" accept-charset="utf-8" id="loggedout-follow">
+			<p>Get every new post delivered to your Inbox.</p>
+
+			<p id="loggedout-follow-error" style="display: none;"></p>
+
+			
+			<p><input name="email" placeholder="Enter your email address" id="loggedout-follow-field" type="email"></p>
+
+			<input name="action" value="subscribe" type="hidden">
+			<input name="blog_id" value="412295" type="hidden">
+			<input name="source" value="https://linuxwarrior.wordpress.com/2008/12/02/add-a-new-protocol-to-linux-kernel/" type="hidden">
+			<input name="sub-type" value="loggedout-follow" type="hidden">
+
+			<input id="_wpnonce" name="_wpnonce" value="3edffb39dd" type="hidden"><input name="_wp_http_referer" value="/2008/12/02/add-a-new-protocol-to-linux-kernel/" type="hidden">
+			<p id="bsub-subscribe-button"><input value="Sign me up" type="submit"></p>
+			</form>
+					<div id="bsub-credit"><a href="https://wordpress.com/?ref=lof">Build a website with WordPress.com</a></div>
+		</div><!-- #bitsubscribe -->
+	</div><!-- #bit -->
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/form.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var JetpackEmojiSettings = {"base_url":"https:\/\/s0.wp.com\/wp-content\/mu-plugins\/emoji\/twemoji\/"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/a_002"></script>
+<script type="text/javascript">
+// <![CDATA[
+(function() {
+try{
+  if ( window.external &&'msIsSiteMode' in window.external) {
+    if (window.external.msIsSiteMode()) {
+      var jl = document.createElement('script');
+      jl.type='text/javascript';
+      jl.async=true;
+      jl.src='/wp-content/plugins/ie-sitemode/custom-jumplist.php';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(jl, s);
+    }
+  }
+}catch(e){}
+})();
+// ]]>
+</script>	<script type="text/javascript">
+	var skimlinks_pub_id = "725X584219"
+	var skimlinks_sitename = "linuxwarrior.wordpress.com";
+	</script>
+	<script type="text/javascript" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/725X1342.js"></script>		<iframe src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/master.html" scrolling="no" id="likes-master" name="likes-master" style="display:none;"></iframe>
+		<div id="likes-other-gravatars"><div class="likes-text"><span>%d</span> bloggers like this:</div><ul class="wpl-avatars sd-like-gravatars"></ul></div>
+		<script>
+			var _comscore = _comscore || [];
+			_comscore.push({
+				c1: "2",
+				c2: "7518284"
+			});
+			(function() {
+				var s = document.createElement("script"),
+					el = document.getElementsByTagName("script")[0];
+				s.async = true;
+				s.src = (document.location.protocol == "https:" ? "https://sb" : "http://b") + ".scorecardresearch.com/beacon.js";
+				el.parentNode.insertBefore(s, el);
+			})();
+		</script>
+		<noscript>
+			<p class="robots-nocontent"><img src="https://sb.scorecardresearch.com/p?c1=2&c2=7518284&c3=&c4=&c5=&c6=&c15=&cv=2.0&cj=1" alt="" style="display:none;" width="1" height="1" /></p>
+		</noscript><script src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/w.js" type="text/javascript" async="" defer="defer"></script>
+<script type="text/javascript">
+_tkq = window._tkq || [];
+_stq = window._stq || [];
+_tkq.push(['storeContext', {'blog_id':'412295','blog_tz':'0','user_lang':'en','blog_lang':'en','user_id':'0'}]);
+_stq.push(['view', {'blog':'412295','v':'wpcom','tz':'0','user_id':'0','post':'40','subd':'linuxwarrior'}]);
+_stq.push(['extra', {'crypt':'UE5XaGUuOTlwaD85flAmcm1mcmZsaDhkV11YdWFnNncxc1tjZG9XVXhRdzR6dTIuSnFPfDlMeVFDVVo2dE1BTnZLQnM3UnQyZDJbV3xudTh2OHQxdENHUmYmRTJxMDZdb2hfMllpYy4sUUJpNG5PLWxtTmJLN2pnRTFRJlJHd3JBVUpoUmp2UkU9dXcxW2hXZFhicUtdS3EzMU8zT0hQd3VCJk85cTZzJnhQSTJtSXhdLiVaZm5xUkd6RElVUSxIJVNCZ2lOaXVsU3FTLzNGODQ5YjNUSnIzPy4xNkd+UCZnL0JQRm1qZTMlL01UMEFDWFlaUmFbSX5xTDdOSENEdkJfRXxIdkJ4REFHay0mOTlnKzNHLlk0WQ=='}]);
+_stq.push([ 'clickTrackerInit', '412295', '40' ]);
+	</script>
+<noscript><img src="https://pixel.wp.com/b.gif?v=noscript" style="height:0px;width:0px;overflow:hidden" alt="" /></noscript>
+<script>
+if ( 'object' === typeof wpcom_mobile_user_agent_info ) {
+
+	wpcom_mobile_user_agent_info.init();
+	var mobileStatsQueryString = "";
+	
+	if( false !== wpcom_mobile_user_agent_info.matchedPlatformName )
+		mobileStatsQueryString += "&x_" + 'mobile_platforms' + '=' + wpcom_mobile_user_agent_info.matchedPlatformName;
+	
+	if( false !== wpcom_mobile_user_agent_info.matchedUserAgentName )
+		mobileStatsQueryString += "&x_" + 'mobile_devices' + '=' + wpcom_mobile_user_agent_info.matchedUserAgentName;
+	
+	if( wpcom_mobile_user_agent_info.isIPad() )
+		mobileStatsQueryString += "&x_" + 'ipad_views' + '=' + 'views';
+
+	if( "" != mobileStatsQueryString ) {
+		new Image().src = document.location.protocol + '//pixel.wp.com/g.gif?v=wpcom-no-pv' + mobileStatsQueryString + '&baba=' + Math.random();
+	}
+	
+}
+</script>
+
+<img scale="0" id="wpstats" alt=":)" src="Add%20a%20new%20protocol%20to%20Linux%20Kernel%20%7C%20LW_files/g.gif"></body></html>
