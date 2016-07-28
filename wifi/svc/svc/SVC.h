@@ -3,98 +3,69 @@
 #ifndef __SVC__
 #define __SVC__
 
-	#include "SVCAuthenticator.h"
+	//#define _POSIX_C_SOURCE 199309L
+
+
+	#include "authenticator/SVCAuthenticator.h"
+	#include "SVC-header.h"
+	#include "SVCHost.h"
+	#include "SVCApp.h"
 	#include <functional>
 	#include <string>
+	#include <cstring>	
+	#include <mutex>
+	#include <vector>
+	#include <csignal>
+	#include <sys/un.h>
+	#include <unistd.h>
+	#include <sys/socket.h>
+	#include <sys/time.h>
+	#include <sys/types.h>
+	#include <sys/syscall.h>
 	
-	
-	/*	SVC ERROR DESCRIPTION	*/
-	#define SVC_ERROR_NAME_EXISTED			"Application name existed"
-	#define SVC_ERROR_UNEXPECTED_RESPONSE	"Unexpected response"
-	#define SVC_ERROR_NOT_ESTABLISHED		"Connection not established"
-	
-	
-	/*	SVC CONSTANTS	*/
-	#define SVC_DEFAULT_TIMEOUT 1000
-	#define SVC_DEFAULT_BUFSIZ 65536	
-	const uint8_t SVC_DATA_FRAME = 0;
-	const uint8_t SVC_COMMAND_FRAME = 1;
-	
-	string SVC_DAEMON_PATH = "/tmp/svc-daemon";
-	string SVC_CLIENT_PATH_PREFIX = "/tmp/svc-client-";
-	
-	/*	DONT CHANGE THIS, THIS IS ABI!	*/	
-	enum SVCCommand : uint8_t{
-		SVC_CMD_REGISTER_APP,
-		SVC_CMD_NEGOTIATION_STEP1,
-		SVC_CMD_NEGOTIATION_STEP2,
-		SVC_CMD_NEGOTIATION_STEP3,
-		SVC_CMD_NEGOTIATION_STEP4								
+	#define sigev_notify_thread_id _sigev_un._tid
+	#define gettid() syscall(SYS_gettid)
+		
+	typedef void (*SVCDataReceiveHandler)(const uint8_t* data, size_t datalen, void* args);
+	struct SVCCommandReceiveHandler{
+		SVCDataReceiveHandler handler;
+		int repeat;
+		enum SVCCommand command;
+		void* params;
 	};
 	
-	enum SVCPriority: uint8_t{
-		SVC_URGENT_PRIORITY,
-		SVC_HIGH_PRIORITY,
-		SVC_NORMAL_PRIORITY,
-		SVC_LOW_PRIORITY
-	};
-	
-	/*	END OF ABI	*/
-	
-	typedef void (*SVCDataReceiveHandler)(const uint8_t* data, size_t datalen);
-	
-	
-	class SVCCommandParam{
-		int length;
-		uint8_t* param;
-		public:
-			
-			SVCCommandParam(int length, uint8_t* param){
-				this->length = length;
-				this->param = (uint8_t*)malloc(length);
-				memcpy(this->param, param, length);
-			}
-			
-			~SVCCommandParam(){
-				delete param;
-			}
-			
-			int getLength(){
-				return this->length;
-			}
-			
-			uint8_t* getParam(){
-				return param;
-			}			
-	};		
 
 	class SVC{				
-	
-		string svcClientPath;
-	
+				
 		bool isAuthenticated;
 		SVCHost* host;
 		SVCApp* localApp;
 		SVCAuthenticator* authenticator;
-		SVCDataReceiveHandler dataHandler;
 
+		string svcClientPath;
 		struct sockaddr_un daemonSocketAddress;
 		struct sockaddr_un svcSocketAddress;
 		int svcSocket;
+		int svcDaemonSocket;
 		
-		//private methods
-		ssize_t _sendCommand(enum SVCCommand command, vector<SVCCommandParam*> params);
+		pthread_t readingThread;
+		volatile bool working;
 		
-		//	WAIT FOR A SPECIFIC COMMAND FROM DAEMON, AFTER TIMEOUT RETURN WITH FALSE ELSE RETURN WITH TRUE
-		bool _waitCommand(enum SVCCommand command, vector<SVCCommandParam*> &params, int timeout);
+		vector<SVCCommandReceiveHandler*> commandHandlers;
+		SVCDataReceiveHandler dataHandler;
+		mutex handlerMutex;
 	
+		static void* processPacket(void* args);			
+		//wait for a specific command from the lower layer, return false if timeout or error, params will be filled with received parameters
+		bool _waitCommand(enum SVCCommand command, vector<SVCCommandParam*>* params, int timeout);
+		
 		public:		
-			
+			~SVC();
 			SVC(SVCApp* localApp, SVCAuthenticator* authenticator);
-			bool establishConnecion(SVCHost* remoteHost);
+			bool establishConnection(SVCHost* remoteHost);
 			int sendData(const uint8_t* data, size_t dalalen, SVCPriority priority, bool tcp);
 			bool setDataReceiveHandler(SVCDataReceiveHandler handler);
 	};
-
-
+				
+	
 #endif

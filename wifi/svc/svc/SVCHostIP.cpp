@@ -1,10 +1,11 @@
 #include "SVCHostIP.h"
 
+using namespace std;
 
 SVCHostIP::SVCHostIP(string ipAddress){
 	this->ipAddress = ipAddress;
 }
 
 string SVCHostIP::getHostAddress(){
-	retur this->ipAddress;
+	return this->ipAddress;
 }

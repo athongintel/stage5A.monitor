@@ -1,20 +1,15 @@
-#include "SendFileApp.h"
+#include "SendFileAppServer.h"
 
 using namespace std;
 
 int main(int argc, char** argv){
-	try{
-		SendFileApp* app = new SendFileApp();
-		cout<<"app initiated!"<<endl;
-	}
-	catch(const char* err){
-		cout<<err<<endl;
-	}	
+	SendFileAppServer* app = new SendFileAppServer();
+	cout<<"server app initiated!"<<endl;
 }
 
-SendFileApp::SendFileApp(){
+SendFileAppServer::SendFileAppServer(){
 	
-	SVCHost* remotehost = new SVCHostIP("149.56.142.13");
+	SVCHost* remotehost = new SVCHostIP("0.0.0.0");
 	
 	SVC* svc = new SVC(this, this);
 	if (!svc->establishConnection(remotehost)){
@@ -29,21 +24,21 @@ string SendFileApp::getAppID(){
 }
 
 bool SendFileApp::isServer(){
-	return false;
+	return true;
 }
 
 string SendFileApp::getIdentity(){
-	return "IM_THE_CLIENT";
+	return "IM_THE_SERVER";
 }
 
 bool SendFileApp::verifyIdentity(string identity, string challenge, string proof){
-	return (identity.compare("IM_THE_SERVER")==0 && challenge.append("OK").compare(proof)==0);
+	return (identity.compare("IM_THE_CLIENT")==0 && challenge.append("OK").compare(proof)==0);
 }
 
 string SendFileApp::generateProof(string challenge){
 	return challenge.append("OK");
 }
 
-string SendFileApp::generateChallenge(){
-	return string("this can be anything");
+string SendFileApp::generateChalenge(){
+	return string("this can be another thing");
 }

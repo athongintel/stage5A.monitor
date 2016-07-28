@@ -1,12 +1,17 @@
+#ifndef __SCV_HOSTIP__
+
+#define __SVC_HOSTIP__
+
+#include "SVCHost.h"
 #include <string>
 
-using namespace std;
+class SVCHostIP : public SVCHost {
 
-class SVCHostIP : SVCHost {
-
-	string ipAddress;
+	std::string ipAddress;
 
 	public:
-		SVCHostIP(string ipAddress);
-	
-}
+		SVCHostIP(std::string ipAddress);
+		std::string getHostAddress();
+};
+
+#endif
