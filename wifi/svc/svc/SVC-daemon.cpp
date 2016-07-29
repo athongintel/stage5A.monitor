@@ -18,10 +18,11 @@ struct SVCCmd{
 };
 
 class DaemonService{
-	public:
-		sockaddr_un sockAddress;
-		int sock;
+	
+	public:	
 		string svcClientPath;
+		sockaddr_un sockAddress;
+		int sock;		
 		
 		DaemonService(uint32_t appID){
 			//create socket address
@@ -49,6 +50,8 @@ volatile bool working;
 
 //receive buffer and msghdr
 uint8_t receiveBuffer[SVC_DEFAULT_BUFSIZ];
+const int ADDRESS_LEN = 256;
+uint8_t messageAddress[ADDRESS_LEN];
 struct msghdr messageHeader;
 struct iovec io[1];
 
@@ -57,6 +60,7 @@ void* readingLoop(void* args){
 	while (working){
 		size_t len = recvmsg(daemonSocket, &messageHeader, 0);
 		cout<<"read a message of "<<len<<endl;
+		printf("from: %s\n", messageAddress);
 		//process message. message is stored in receiveBuffer
 		if (len>0){
 			if (receiveBuffer[0]==SVC_COMMAND_FRAME){
@@ -101,7 +105,11 @@ void* readingLoop(void* args){
 						//a.3 repsonse to SVC app interface
 						params.push_back(new SVCCommandParam(1, &response));
 						printf("send back response %d to SVC interface %d %s\n", response, appTable[appID]->sock, appTable[appID]->sockAddress.sun_path);
-						_sendCommand(appTable[appID]->sock, SVC_CMD_REGISTER_APP, &params);
+						ssize_t sendResult;
+						sendResult = _sendCommand(appTable[appID]->sock, SVC_CMD_REGISTER_APP, &params);
+						if (sendResult<0){
+							printf("error sending: %d, errno: %d\n", sendResult, errno);
+						}
 						break;
 						
 					default:
@@ -126,6 +134,8 @@ int main(int argc, char** argv){
 	io[0].iov_len = SVC_DEFAULT_BUFSIZ;
 	messageHeader.msg_iov = io;
 	messageHeader.msg_iovlen = 1;
+	messageHeader.msg_name = messageAddress;
+	messageHeader.msg_namelen = ADDRESS_LEN;
 
 	string errorString;
 	

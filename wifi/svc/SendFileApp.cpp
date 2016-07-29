@@ -16,8 +16,9 @@ SendFileApp::SendFileApp(){
 	
 	SVCHost* remotehost = new SVCHostIP("149.56.142.13");
 	
-	SVC* svc = new SVC(this, this);
+	this->svc = new SVC(this, this);
 	if (!svc->establishConnection(remotehost)){
+		svc->~SVC();
 		throw "Error establishing connection";
 	}
 }

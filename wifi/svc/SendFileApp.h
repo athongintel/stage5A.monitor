@@ -6,6 +6,8 @@
 
 class SendFileApp : SVCApp, SVCAuthenticator{
 
+	SVC* svc;
+
 	public:
 		SendFileApp();
 		

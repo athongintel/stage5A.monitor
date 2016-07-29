@@ -39,16 +39,15 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	this->svcSocketAddress.sun_family = AF_LOCAL;
 	memcpy(this->svcSocketAddress.sun_path, this->svcClientPath.c_str(), this->svcClientPath.size());
 	//1.3 	create new diagram socket and bind to svc's endpoint
-	this->svcSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
-	this->svcDaemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
+	this->svcSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);	
 	if (bind(this->svcSocket, (struct sockaddr*)&this->svcSocketAddress, sizeof(this->svcSocketAddress))==-1){
 		errorString = SVC_ERROR_BINDING;
 		goto errorInit;	
 	}
 	//1.4	connect to daemon
+	this->svcDaemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
 	connect(this->svcDaemonSocket, (struct sockaddr*) &this->daemonSocketAddress, sizeof(this->daemonSocketAddress));
-	//1.5	create reading thread
-	
+	//1.5	create reading thread	
 	sigset_t sig;
 	sigfillset(&sig);
 	sigaddset(&sig, SIGUSR2);
@@ -56,8 +55,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	if (pthread_sigmask(SIG_BLOCK, &sig, NULL)!=0){
 		errorString = SVC_ERROR_CRITICAL;
 		goto errorInit;
-	}
-		
+	}		
 	this->working = true;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
@@ -84,6 +82,8 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	errorInit:
 		//destruct params manually
 		params.clear();
+		//unlink socket 
+		unlink(this->svcClientPath.c_str());
 		throw errorString;
 		
 	success:
@@ -93,10 +93,10 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 SVC::~SVC(){
 	//NOTE: may have to change to non-blocking read, otherwise the join could be
 	//blocked by recv
-	this->working = false;
-	cout<<"join reading thread";
+	this->working = false;	
 	pthread_join(this->readingThread, NULL);
-	cout<<"svc descontructed";
+	unlink(this->svcClientPath.c_str());
+	cout<<"svc descontructed\n";
 }
 
 /* SVC PRIVATE FUNCTION IMPLEMENTATION	*/
@@ -109,11 +109,14 @@ void* SVC::processPacket(void* args){
 	while (svcInstance->working){
 		//read packet from svcSocket in blocking mode
 		printf("in reading thread, call recv in blocking mode at %d\n", svcInstance->svcSocket);	
+		do{
+			byteRead = recv(svcInstance->svcSocket, buffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT);
+			//if (byteRead!=-1) printf("recv returned %d errno %d\n", byteRead, errno);
+		}
+		while((byteRead==-1) && svcInstance->working);
 		
-		byteRead = recv(svcInstance->svcSocket, buffer, SVC_DEFAULT_BUFSIZ, 0);		
-		printf("recv returned %d\n", byteRead);
-		if (byteRead>=0){
-			printf("read a packet");
+		if (byteRead>0){
+			printf("read a packet: ");
 			printBuffer(buffer, byteRead);
 			if (buffer[0] == SVC_DATA_FRAME){
 				svcInstance->dataHandler(buffer, byteRead, NULL);

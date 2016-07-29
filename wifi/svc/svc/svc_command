@@ -1,5 +1,6 @@
 SVC frame format for daemon
 
+- appID: 4 byte
 - data type: 1 byte
 	+ 0: data packet
 	+ 1: command packet

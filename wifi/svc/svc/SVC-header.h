@@ -56,7 +56,8 @@ class SVCCommandParam{
 			memcpy(this->param, param, length);
 		}
 		
-		~SVCCommandParam(){
+		~SVCCommandParam(){	
+			printf("param destructed\n");		
 			delete param;
 		}				
 };
