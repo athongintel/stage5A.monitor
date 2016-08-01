@@ -3,8 +3,6 @@
 #ifndef __SVC__
 #define __SVC__
 
-	//#define _POSIX_C_SOURCE 199309L
-
 
 	#include "authenticator/SVCAuthenticator.h"
 	#include "SVC-header.h"
@@ -47,6 +45,8 @@
 		struct sockaddr_un svcSocketAddress;
 		int svcSocket;
 		int svcDaemonSocket;
+		
+		uint32_t sessionID;
 		
 		pthread_t readingThread;
 		volatile bool working;

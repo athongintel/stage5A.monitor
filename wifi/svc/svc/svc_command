@@ -1,6 +1,6 @@
 SVC frame format for daemon
 
-- appID: 4 byte
+- sessionID : 4 byte (00 00 00 00 for SVC_CMD_REGISTER_APP)
 - data type: 1 byte
 	+ 0: data packet
 	+ 1: command packet
@@ -17,8 +17,8 @@ SVC frame format for daemon
 - command packet structure
 	+ command id: 1 byte
 		° 0: resgister app to daemon:
-			- request : 1 argument: [(4 byte - appID)]
-			- response: 1 argument: [(1 byte - success = 1; fail = 0)]
+			- request : 2 argument: [(4 byte - appID), (4 byte - session secret)]
+			- response: 2 argument: [(4 byte - sessionID), (4 byte - the same session secret)]
 		° 1: init connection
 			- client: 2 argument: [(1 byte - isClient = 0); (n bytes - challenge)]
 			- server: 1 argument: [(1 byte - isServer = 1)]

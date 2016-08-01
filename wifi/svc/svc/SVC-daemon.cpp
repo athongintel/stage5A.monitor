@@ -7,14 +7,14 @@
 #include <sys/un.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstdlib>
 
 using namespace std;
 
 
 struct SVCCmd{
 	enum SVCCommand cmdID;
-	uint8_t argc;
-	vector<SVCCommandParam*>* argv;
+	uint8_t argc;	
 };
 
 class DaemonService{
@@ -22,9 +22,11 @@ class DaemonService{
 	public:	
 		string svcClientPath;
 		sockaddr_un sockAddress;
-		int sock;		
+		int sock;
+		uint32_t appID;	
 		
 		DaemonService(uint32_t appID){
+			this->appID = appID;			
 			//create socket address
 			this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(appID);
 			memset(&this->sockAddress, 0, sizeof(this->sockAddress));
@@ -49,93 +51,141 @@ pthread_attr_t readingThreadAttr;
 volatile bool working;
 
 //receive buffer and msghdr
-uint8_t receiveBuffer[SVC_DEFAULT_BUFSIZ];
-const int ADDRESS_LEN = 256;
-uint8_t messageAddress[ADDRESS_LEN];
-struct msghdr messageHeader;
-struct iovec io[1];
+uint8_t* receiveBuffer;
+struct sockaddr messageAddress;
+socklen_t messageAddressLen;
+
+//check app existed
+
+uint32_t appExisted(uint32_t appID){
+	for (auto& service : appTable){
+		if (service.second->appID == appID){
+			return service.first;
+		}
+	}
+	return 0;
+}
+
+void processCommand(const uint8_t* buffer, size_t len){
+	cout<<"a command frame"<<endl;
+
+	uint32_t sessionID = *((uint32_t*)receiveBuffer);
+	
+	//extract params
+	printBuffer(receiveBuffer, len);
+	
+	//pass 4 byte session and 1 byte frame type
+	const uint8_t* pointer = receiveBuffer + 5;
+	
+	struct SVCCmd* cmd = (struct SVCCmd*)(pointer);
+	vector<SVCCommandParam*> argv;
+
+	//pass 2 byte of command type and argc
+	pointer+= 2;
+	
+	printf("param count: %d\n",cmd->argc);
+	
+	for (int i=0; i<cmd->argc; i++){
+		uint16_t length = *(pointer);
+		printf("param %d length: %04x, param: ",i, length);
+		printBuffer(pointer+2, length);
+		argv.push_back(new SVCCommandParam(length, pointer+2));
+		//add 2 byte of length and the arg's length
+		pointer+= 2+length;
+	}
+
+	vector<SVCCommandParam*> params;
+	switch(cmd->cmdID){
+		case SVC_CMD_REGISTER_APP:						
+			uint32_t appID;
+			ssize_t sendResult;
+			bool newAppAllowed;
+			
+			//a.1 check if app existed
+			appID = *((uint32_t*)(argv[0]->param));
+			printf("appID: %08x\n",appID);
+			
+			newAppAllowed = false;
+			sessionID = appExisted(appID);
+			if (sessionID!=0){
+				//check if alive
+				sendResult = _sendCommand(appTable[sessionID]->sock, sessionID, SVC_CMD_CHECK_ALIVE, &params);
+				newAppAllowed = (sendResult == ECONNREFUSED || sendResult == ENOTCONN);	
+			}
+			else{
+				newAppAllowed = true;
+			}
+			
+			if (newAppAllowed){
+				//a.2 add new record to appTable
+				//create sessionID = hash(appID & rand)							
+				hash<string> hasher;
+				sessionID = (uint32_t)hasher(to_string(appID) + to_string(rand()));
+				appTable[sessionID] = new DaemonService(appID);
+				//a.3 repsonse sessionID to SVC app interface							
+				params.push_back(new SVCCommandParam(4, (uint8_t*)(&sessionID)));
+				params.push_back(new SVCCommandParam(4, (uint8_t*)(argv[1]->param)));				
+				_sendCommand(appTable[sessionID]->sock, 0, SVC_CMD_REGISTER_APP, &params);
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+
+void processData(uint8_t* buffer, size_t len){
+}
 
 void* readingLoop(void* args){
 	//read message from socket in blocking-mode
 	while (working){
-		size_t len = recvmsg(daemonSocket, &messageHeader, 0);
-		cout<<"read a message of "<<len<<endl;
-		printf("from: %s\n", messageAddress);
+		size_t len = recvfrom(daemonSocket, receiveBuffer, SVC_DEFAULT_BUFSIZ, 0, &messageAddress, &messageAddressLen);
+		printf("read a message of %d\n", len);
+		printBuffer(receiveBuffer, len);
 		//process message. message is stored in receiveBuffer
 		if (len>0){
-			if (receiveBuffer[0]==SVC_COMMAND_FRAME){
-				cout<<"a command frame"<<endl;
-				//this is command frame
-				//extract params
-				printBuffer(receiveBuffer, len);
-				const uint8_t* pointer = receiveBuffer;
-				//pass 1 byte of frame type
-				pointer = pointer+1;
-				struct SVCCmd* cmd = (struct SVCCmd*)(pointer);
-				cmd->argv = new vector<SVCCommandParam*>();
-				vector<SVCCommandParam*> &refVector = *(cmd->argv);
-				//pass 2 byte of command type and argc
-				pointer+=2;
-				printf("param count: %d\n",cmd->argc);
-				for (int i=0; i<cmd->argc; i++){
-					//printf("before length\n");
-					uint16_t length = *(pointer);
-					printf("param %d length: %d\n",i, length); 
-					refVector.push_back(new SVCCommandParam(length, pointer+2));
-					pointer+=2+length;
+			//check if sessionID is registered
+			uint32_t sessionID = *((uint32_t*)receiveBuffer);
+			printf("sessionID of this message: %08x\n", sessionID);
+			if (sessionID==0){				
+				if (receiveBuffer[4]==SVC_COMMAND_FRAME && receiveBuffer[5]==SVC_CMD_REGISTER_APP){
+					processCommand(receiveBuffer, len);
 				}
-				
-				vector<SVCCommandParam*> params;
-				switch(cmd->cmdID){
-					case SVC_CMD_REGISTER_APP:						
-						uint8_t response;
-						uint32_t appID;				
-						//a.1 check if app existed						
-						appID = *((uint32_t*)(refVector[0]->param));
-						printf("appID: %08x\n",appID);
-						if (appTable[appID]!=NULL){
-							//app existed
-							response = 0;
-						}
-						else{
-							response = 1;
-							//a.2 add new record to appTable
-							appTable[appID] = new DaemonService(appID);	
-						}					
-						//a.3 repsonse to SVC app interface
-						params.push_back(new SVCCommandParam(1, &response));
-						printf("send back response %d to SVC interface %d %s\n", response, appTable[appID]->sock, appTable[appID]->sockAddress.sun_path);
-						ssize_t sendResult;
-						sendResult = _sendCommand(appTable[appID]->sock, SVC_CMD_REGISTER_APP, &params);
-						if (sendResult<0){
-							printf("error sending: %d, errno: %d\n", sendResult, errno);
-						}
-						break;
-						
-					default:
-						break;
-				}
+				/*
+				else: frame error, ignore. sessionID = 0 only allowed for SVC_CMD_REGISTER_APP
+				*/
 			}
-			else{
-				//this is data frame
+			else{				
+				if (appTable[sessionID]!=NULL){
+					if (receiveBuffer[4]==SVC_COMMAND_FRAME){
+						processCommand(receiveBuffer, len);
+					}
+					else if (receiveBuffer[4]==SVC_DATA_FRAME) {
+						processData(receiveBuffer, len);
+					}
+					/*
+					else: invalid frame format, justs ignore
+					*/
+				}
+				else{
+					printf("sessionID: %08x not existed\n", sessionID);
+				}
+				/*
+				else: sessionID not existed
+				*/
 			}
 		}
 		else{
 			//read error
 		}
 	}
-	cout<<"Exit reading loop"<<endl;
-	
+	cout<<"Exit reading loop"<<endl;	
 }
 
 int main(int argc, char** argv){
 
-	io[0].iov_base = receiveBuffer;
-	io[0].iov_len = SVC_DEFAULT_BUFSIZ;
-	messageHeader.msg_iov = io;
-	messageHeader.msg_iovlen = 1;
-	messageHeader.msg_name = messageAddress;
-	messageHeader.msg_namelen = ADDRESS_LEN;
+	receiveBuffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
 
 	string errorString;
 	
@@ -153,9 +203,8 @@ int main(int argc, char** argv){
 	memcpy(daemonAddress.sun_path, SVC_DAEMON_PATH.c_str(), SVC_DAEMON_PATH.size());	
 	
 	//2.1 bind the socket
-	daemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
-	if (bind(daemonSocket, (struct sockaddr*) &daemonAddress, sizeof(daemonAddress)) == -1) {
-		cout<<"err no :"<<errno;
+	daemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);	
+	if (bind(daemonSocket, (struct sockaddr*) &daemonAddress, sizeof(daemonAddress)) == -1) {		
 		errorString = SVC_ERROR_BINDING;
         goto errorInit;
     }
@@ -173,8 +222,9 @@ int main(int argc, char** argv){
     	
     initSuccess:
     	//do something
-    	cout<<"SVC daemon is running...";
+    	printf("SVC daemon is running...\n");
     	pthread_join(readingThread, NULL);
+    	unlink(SVC_DAEMON_PATH.c_str());
 }
 
 

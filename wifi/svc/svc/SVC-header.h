@@ -8,7 +8,7 @@
 using namespace std;
 
 /*	SVC ERROR DESCRIPTION	*/
-#define SVC_ERROR_NAME_EXISTED			"Application is already existed"
+#define SVC_ERROR_NAME_EXISTED			"Application is already running"
 #define SVC_ERROR_UNEXPECTED_RESPONSE	"Unexpected response"
 #define SVC_ERROR_NOT_ESTABLISHED		"Connection not established"
 #define SVC_ERROR_REQUEST_TIMEDOUT		"Request timed out"
@@ -30,6 +30,7 @@ static string SVC_CLIENT_PATH_PREFIX = "/tmp/svc-client-";
 
 /*	DONT CHANGE THIS, THIS IS ABI!	*/	
 enum SVCCommand : uint8_t{
+	SVC_CMD_CHECK_ALIVE,
 	SVC_CMD_REGISTER_APP,
 	SVC_CMD_NEGOTIATION_STEP1,
 	SVC_CMD_NEGOTIATION_STEP2,
@@ -50,19 +51,22 @@ class SVCCommandParam{
 	public:
 		uint16_t length;
 		uint8_t* param;
+		bool copy;
+		
 		SVCCommandParam(uint16_t length, const uint8_t* param){
 			this->length = length;
 			this->param = (uint8_t*)malloc(length);
 			memcpy(this->param, param, length);
+			this->copy = true;
 		}
 		
 		~SVCCommandParam(){	
 			printf("param destructed\n");		
-			delete param;
-		}				
+			if (this->copy) delete param;
+		}
 };
 
-ssize_t _sendCommand(int socket, enum SVCCommand command, const vector<SVCCommandParam*>* params);
+ssize_t _sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
 
 
 void printBuffer(const uint8_t* buffer, size_t len);

@@ -9,22 +9,27 @@ using namespace std;
 
 SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 
-	//local variables
+	hash<string> hasher;
+	uint32_t sessionSecret;
+	uint32_t sessionSecretResponded;
 	vector<SVCCommandParam*> params;	
 	uint8_t buffer[3];
 	const char* errorString;
 	
+	this->sessionID = 0;
 	this->authenticator = authenticator;
 	this->localApp = localApp;
 	
+	sessionSecret = (uint32_t)hasher(to_string(rand()));
+	
 	//0. 	check for existed socket
-	hash<string> hasher;
-	int hashedID = (int)hasher(localApp->getAppID());
+	
+	uint32_t hashedID = (uint32_t)hasher(localApp->getAppID());
 	this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(hashedID);
 	
 	int unlinkResult = unlink(this->svcClientPath.c_str());
-	if (!(unlinkResult==0 || (unlinkResult==-1 && errno==ENOENT))){
-		cout<<"unlink result "<<unlinkResult<<", error: "<<errno<<endl;
+	//printf("unlink result: %d, errno: %d", unlinkResult, errno);
+	if (unlinkResult==0){
 		errorString = SVC_ERROR_NAME_EXISTED;
 		goto errorInit;
 	}
@@ -64,21 +69,29 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	//2.	register localApp to daemon
 	//2.1	send command to daemon
 	params.push_back(new SVCCommandParam(4, (uint8_t*) &hashedID));
-	_sendCommand(this->svcDaemonSocket, SVC_CMD_REGISTER_APP, &params);
+	params.push_back(new SVCCommandParam(4, (uint8_t*) &sessionSecret));
+	_sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_REGISTER_APP, &params);
 	
-	//2.2	wait for response, 1 argument expected
-	params.clear();
-	cout<<"wait response of RESIGTER APP\n";
+	//2.2	wait for response, 2 argument expected
+	params.clear();	
 	if (!_waitCommand(SVC_CMD_REGISTER_APP, &params, SVC_DEFAULT_TIMEOUT)){
 		errorString = SVC_ERROR_REQUEST_TIMEDOUT;
 		goto errorInit;
 	}
 	
-	if (params[0]->param[0] == 1)
+	//2.3 get sessionID from response
+	this->sessionID = *((uint32_t*)(params[0]->param));
+	sessionSecretResponded = *((uint32_t*)(params[1]->param));
+	printf("session ID: %08x, sessionSecret: %08x\n", this->sessionID, sessionSecret);
+	if (sessionSecretResponded == sessionSecret){
+		//ok, this came from the daemon	
 		goto success;
-	else
-		errorString = SVC_ERROR_NAME_EXISTED;
-			
+	}
+	else{
+		//this is a fake response from elsewhere		
+		goto errorInit;
+	}
+	
 	errorInit:
 		//destruct params manually
 		params.clear();
@@ -96,7 +109,7 @@ SVC::~SVC(){
 	this->working = false;	
 	pthread_join(this->readingThread, NULL);
 	unlink(this->svcClientPath.c_str());
-	cout<<"svc descontructed\n";
+	cout<<"svc destructed\n";
 }
 
 /* SVC PRIVATE FUNCTION IMPLEMENTATION	*/
@@ -105,10 +118,11 @@ void* SVC::processPacket(void* args){
 	int byteRead;
 	uint8_t* buffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
 	SVC* svcInstance = (SVC*)args;
+	uint32_t sessionID;
 	
 	while (svcInstance->working){
 		//read packet from svcSocket in blocking mode
-		printf("in reading thread, call recv in blocking mode at %d\n", svcInstance->svcSocket);	
+		printf("in reading thread, call recv in blocking mode\n");
 		do{
 			byteRead = recv(svcInstance->svcSocket, buffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT);
 			//if (byteRead!=-1) printf("recv returned %d errno %d\n", byteRead, errno);
@@ -117,29 +131,36 @@ void* SVC::processPacket(void* args){
 		
 		if (byteRead>0){
 			printf("read a packet: ");
-			printBuffer(buffer, byteRead);
-			if (buffer[0] == SVC_DATA_FRAME){
-				svcInstance->dataHandler(buffer, byteRead, NULL);
-			}
-			else{
-				svcInstance->handlerMutex.lock();
-				for (int i=0; i<svcInstance->commandHandlers.size(); i++){
-					SVCCommandReceiveHandler* handler = svcInstance->commandHandlers[i];
-					//check if the received command matches handler's command
-					if (handler->command == buffer[1]){
-						//remove expired handler
-						if (handler->repeat == 0){
-							svcInstance->commandHandlers.erase(svcInstance->commandHandlers.begin()+i);
-						}
-						//perform callback
-						else{													
-							handler->handler(buffer, byteRead, handler->params);
-							if (handler->repeat>0) handler->repeat--;
+			printBuffer(buffer, byteRead);			
+			
+			sessionID = *((uint32_t*)buffer);
+			printf("sessionID: %08x, buffer[6]: %02x, svcSessionID: %08x\n", sessionID, buffer[5], svcInstance->sessionID);
+			if ((sessionID==0 && buffer[5]==SVC_CMD_REGISTER_APP) || (sessionID==svcInstance->sessionID)){				
+				if (buffer[4] == SVC_DATA_FRAME){
+					svcInstance->dataHandler(buffer, byteRead, NULL);
+				}
+				else{
+					svcInstance->handlerMutex.lock();
+					printf("process data frame\n");
+					for (int i=0; i<svcInstance->commandHandlers.size(); i++){
+						SVCCommandReceiveHandler* handler = svcInstance->commandHandlers[i];
+						//check if the received command matches handler's command
+						if (handler->command == buffer[5]){
+							//remove expired handler
+							if (handler->repeat == 0){
+								svcInstance->commandHandlers.erase(svcInstance->commandHandlers.begin()+i);
+							}
+							//perform callback
+							else{				
+								printf("call handler\n");									
+								handler->handler(buffer, byteRead, handler->params);
+								if (handler->repeat>0) handler->repeat--;
+							}
 						}
 					}
-				}
-				svcInstance->handlerMutex.unlock();
-			}			
+					svcInstance->handlerMutex.unlock();
+				}	
+			}		
 		}
 	}
 	
@@ -147,9 +168,9 @@ void* SVC::processPacket(void* args){
 }
 
 void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
-	int argc = (int)buffer[2];
+	int argc = (int)buffer[6];
 	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)args;	
-	const uint8_t* pointer = buffer+3;
+	const uint8_t* pointer = buffer+7;
 	for (int i=0; i<argc; i++){
 		uint16_t len;
 		uint8_t* param;
@@ -157,6 +178,8 @@ void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
 		param = (uint8_t*)malloc(len);
 		memcpy(param, pointer+2, len);
 		params->push_back(new SVCCommandParam(len, param));
+		printf("push a param: ");
+		printBuffer(param, len);
 		free(param);
 		pointer += len+2;
 	}
@@ -226,7 +249,7 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 		challengeSent = this->authenticator->generateChallenge();
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));
 	}
-	_sendCommand(this->svcDaemonSocket, SVC_CMD_NEGOTIATION_STEP1, &params);
+	_sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_NEGOTIATION_STEP1, &params);
 	
 	
 	if (isServer == 0){
@@ -241,7 +264,7 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 				//a2.3 ok, server's identity verified. request daemon to perform keyexchange. the daemon responds the success of encrypting process
 				params.clear();
-				_sendCommand(this->svcDaemonSocket, SVC_CMD_NEGOTIATION_STEP3, &params);
+				_sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_NEGOTIATION_STEP3, &params);
 				//wait for daemon. from then on data are encrypted.
 				if (_waitCommand(SVC_CMD_NEGOTIATION_STEP3, &params, SVC_DEFAULT_TIMEOUT)){			
 					//a.3 perform SVC_CMD_NEGOTIATION_STEP4, send identity + proof
@@ -250,7 +273,7 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 					proof = this->authenticator->generateProof(challengeReceived);
 					params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
 					params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
-					_sendCommand(this->svcDaemonSocket, SVC_CMD_NEGOTIATION_STEP4, &params);
+					_sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_NEGOTIATION_STEP4, &params);
 					
 					//a.4 authenticated
 					this->isAuthenticated = true;					
@@ -287,7 +310,7 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 			params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 			params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));	
 			//b.2.3 send response
-			_sendCommand(this->svcDaemonSocket, SVC_CMD_NEGOTIATION_STEP2, &params);
+			_sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_NEGOTIATION_STEP2, &params);
 			
 			//b.3. wait for SVC_CMD_NEGOTIATION_STEP4, step3 is handled by the daemon
 			params.clear();

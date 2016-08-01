@@ -1,17 +1,18 @@
 #include "SVC-header.h"
 
-ssize_t _sendCommand(int socket, enum SVCCommand command, const vector<SVCCommandParam*>* params){	
-	size_t bufferLength = 3;
+ssize_t _sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params){	
+	size_t bufferLength = 7;
 	for (int i=0; i<params->size(); i++){
 		bufferLength += 2 + (*params)[i]->length; //2 bytes for param length, then the param itself
 	}
 	uint8_t* const buffer = (uint8_t*)malloc(bufferLength);
-	uint8_t* pointer = buffer + 3;
+	uint8_t* pointer = buffer + 7;
 	
 	//add header
-	buffer[0] = SVC_COMMAND_FRAME;
-	buffer[1] = command;
-	buffer[2] = params->size();
+	memcpy(buffer, (uint8_t*) &sessionID, 4);
+	buffer[4] = SVC_COMMAND_FRAME;
+	buffer[5] = command;
+	buffer[6] = params->size();
 	//add params
 	for (int i=0; i<params->size(); i++){
 		memcpy(pointer, (uint16_t*) &((*params)[i]->length), 2);
