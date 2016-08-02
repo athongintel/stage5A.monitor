@@ -16,11 +16,14 @@ SVC frame format for daemon
 	
 - command packet structure
 	+ command id: 1 byte
-		° 0: resgister app to daemon:
-			- request : 2 argument: [(4 byte - appID), (4 byte - session secret)]
-			- response: 2 argument: [(4 byte - sessionID), (4 byte - the same session secret)]
-		° 1: init connection
-			- client: 2 argument: [(1 byte - isClient = 0); (n bytes - challenge)]
+		° SVC_CMD_CHECK_ALIVE: check if the socket is still listened by app
+			- daemon to client: 0 argument	
+		° SVC_CMD_REGISTER_APP: resgister app to daemons
+			- client to daemon : 2 argument: [(4 byte - appID), (4 byte - session secret)]
+			- daemon to client: 2 argument: [(4 byte - sessionID), (4 byte - the same session secret)]
+		° SVC_CMD_CONNECT_STEP1:
+			- client to daemon: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
+			- daemon to daemon: 
 			- server: 1 argument: [(1 byte - isServer = 1)]
 	+ number of arguments: 1 byte
 	+ [arguments' lengths in 2 bytes followed by arguments]

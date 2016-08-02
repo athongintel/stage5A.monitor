@@ -47,7 +47,7 @@ int htpSocket;
 pthread_t readingThread;
 pthread_attr_t readingThreadAttr;
 
-
+string errorString;
 volatile bool working;
 
 //receive buffer and msghdr
@@ -55,8 +55,7 @@ uint8_t* receiveBuffer;
 struct sockaddr messageAddress;
 socklen_t messageAddressLen;
 
-//check app existed
-
+//check app existed, return sessionID
 uint32_t appExisted(uint32_t appID){
 	for (auto& service : appTable){
 		if (service.second->appID == appID){
@@ -67,13 +66,11 @@ uint32_t appExisted(uint32_t appID){
 }
 
 void processCommand(const uint8_t* buffer, size_t len){
-	cout<<"a command frame"<<endl;
-
-	uint32_t sessionID = *((uint32_t*)receiveBuffer);
 	
 	//extract params
 	printBuffer(receiveBuffer, len);
 	
+	uint32_t sessionID = *((uint32_t*)receiveBuffer);			
 	//pass 4 byte session and 1 byte frame type
 	const uint8_t* pointer = receiveBuffer + 5;
 	
@@ -81,9 +78,7 @@ void processCommand(const uint8_t* buffer, size_t len){
 	vector<SVCCommandParam*> argv;
 
 	//pass 2 byte of command type and argc
-	pointer+= 2;
-	
-	printf("param count: %d\n",cmd->argc);
+	pointer+= 2;	
 	
 	for (int i=0; i<cmd->argc; i++){
 		uint16_t length = *(pointer);
@@ -103,7 +98,7 @@ void processCommand(const uint8_t* buffer, size_t len){
 			
 			//a.1 check if app existed
 			appID = *((uint32_t*)(argv[0]->param));
-			printf("appID: %08x\n",appID);
+			//printf("appID: %08x\n",appID);
 			
 			newAppAllowed = false;
 			sessionID = appExisted(appID);
@@ -147,7 +142,7 @@ void* readingLoop(void* args){
 		if (len>0){
 			//check if sessionID is registered
 			uint32_t sessionID = *((uint32_t*)receiveBuffer);
-			printf("sessionID of this message: %08x\n", sessionID);
+			//printf("sessionID of this message: %08x\n", sessionID);
 			if (sessionID==0){				
 				if (receiveBuffer[4]==SVC_COMMAND_FRAME && receiveBuffer[5]==SVC_CMD_REGISTER_APP){
 					processCommand(receiveBuffer, len);
@@ -168,9 +163,6 @@ void* readingLoop(void* args){
 					else: invalid frame format, justs ignore
 					*/
 				}
-				else{
-					printf("sessionID: %08x not existed\n", sessionID);
-				}
 				/*
 				else: sessionID not existed
 				*/
@@ -185,9 +177,7 @@ void* readingLoop(void* args){
 
 int main(int argc, char** argv){
 
-	receiveBuffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
-
-	string errorString;
+	receiveBuffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);	
 	
 	//1. check if the daemon is already existed
 	int unlinkResult = unlink(SVC_DAEMON_PATH.c_str());

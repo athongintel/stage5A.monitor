@@ -13,7 +13,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	uint32_t sessionSecret;
 	uint32_t sessionSecretResponded;
 	vector<SVCCommandParam*> params;	
-	uint8_t buffer[3];
+	//uint8_t buffer[3];
 	const char* errorString;
 	
 	this->sessionID = 0;
@@ -82,9 +82,9 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	//2.3 get sessionID from response
 	this->sessionID = *((uint32_t*)(params[0]->param));
 	sessionSecretResponded = *((uint32_t*)(params[1]->param));
-	printf("session ID: %08x, sessionSecret: %08x\n", this->sessionID, sessionSecret);
+	//printf("session ID: %08x, sessionSecret: %08x\n", this->sessionID, sessionSecret);
 	if (sessionSecretResponded == sessionSecret){
-		//ok, this came from the daemon	
+		//ok, this came from the daemon
 		goto success;
 	}
 	else{
@@ -100,6 +100,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 		throw errorString;
 		
 	success:
+		printf("svc init success\n");
 		params.clear();
 }
 
@@ -134,14 +135,14 @@ void* SVC::processPacket(void* args){
 			printBuffer(buffer, byteRead);			
 			
 			sessionID = *((uint32_t*)buffer);
-			printf("sessionID: %08x, buffer[6]: %02x, svcSessionID: %08x\n", sessionID, buffer[5], svcInstance->sessionID);
+			//printf("sessionID: %08x, buffer[6]: %02x, svcSessionID: %08x\n", sessionID, buffer[5], svcInstance->sessionID);
 			if ((sessionID==0 && buffer[5]==SVC_CMD_REGISTER_APP) || (sessionID==svcInstance->sessionID)){				
 				if (buffer[4] == SVC_DATA_FRAME){
 					svcInstance->dataHandler(buffer, byteRead, NULL);
 				}
 				else{
 					svcInstance->handlerMutex.lock();
-					printf("process data frame\n");
+					//printf("process data frame\n");
 					for (int i=0; i<svcInstance->commandHandlers.size(); i++){
 						SVCCommandReceiveHandler* handler = svcInstance->commandHandlers[i];
 						//check if the received command matches handler's command
@@ -152,7 +153,7 @@ void* SVC::processPacket(void* args){
 							}
 							//perform callback
 							else{				
-								printf("call handler\n");									
+								//printf("call handler\n");									
 								handler->handler(buffer, byteRead, handler->params);
 								if (handler->repeat>0) handler->repeat--;
 							}
