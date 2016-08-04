@@ -1,17 +1,19 @@
 #ifndef __SCV_HOSTIP__
-
 #define __SVC_HOSTIP__
 
-#include "SVCHost.h"
-#include <string>
+	#include "SVCHost.h"
+	#include <string>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	
+	class SVCHostIP : public SVCHost {
 
-class SVCHostIP : public SVCHost {
+		struct in_addr hostAddr;
+		std::string ipAddress;
 
-	std::string ipAddress;
-
-	public:
-		SVCHostIP(std::string ipAddress);
-		std::string getHostAddress();
-};
+		public:
+			SVCHostIP(std::string ipAddress);
+			uint32_t getHostAddress();
+	};
 
 #endif

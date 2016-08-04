@@ -20,7 +20,7 @@ SVC frame format for daemon
 			- daemon to client: 0 argument	
 		° SVC_CMD_REGISTER_APP: resgister app to daemons
 			- client to daemon : 2 argument: [(4 byte - appID), (4 byte - session secret)]
-			- daemon to client: 2 argument: [(4 byte - sessionID), (4 byte - the same session secret)]
+			- daemon to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
 		° SVC_CMD_CONNECT_STEP1:
 			- client to daemon: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
 			- daemon to daemon: 

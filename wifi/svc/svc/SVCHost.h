@@ -9,7 +9,7 @@ class SVCHost{
 	public:
 		SVCHost(){}
 		virtual ~SVCHost(){};
-		virtual std::string getHostAddress()=0;
+		virtual uint32_t getHostAddress()=0;
 
 };
 

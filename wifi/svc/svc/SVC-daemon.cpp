@@ -31,8 +31,7 @@ class DaemonService{
 			this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(appID);
 			memset(&this->sockAddress, 0, sizeof(this->sockAddress));
 			this->sockAddress.sun_family = AF_LOCAL;
-			memcpy(this->sockAddress.sun_path, this->svcClientPath.c_str(), this->svcClientPath.size());
-			printf("connect to sock: %s\n", this->svcClientPath.c_str());
+			memcpy(this->sockAddress.sun_path, this->svcClientPath.c_str(), this->svcClientPath.size());			
 			//create new diagram socket and bind
 			this->sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
 			connect(this->sock, (struct sockaddr*) &this->sockAddress, sizeof(this->sockAddress));
@@ -68,8 +67,6 @@ uint32_t appExisted(uint32_t appID){
 void processCommand(const uint8_t* buffer, size_t len){
 	
 	//extract params
-	printBuffer(receiveBuffer, len);
-	
 	uint32_t sessionID = *((uint32_t*)receiveBuffer);			
 	//pass 4 byte session and 1 byte frame type
 	const uint8_t* pointer = receiveBuffer + 5;
@@ -104,8 +101,8 @@ void processCommand(const uint8_t* buffer, size_t len){
 			sessionID = appExisted(appID);
 			if (sessionID!=0){
 				//check if alive
-				sendResult = _sendCommand(appTable[sessionID]->sock, sessionID, SVC_CMD_CHECK_ALIVE, &params);
-				newAppAllowed = (sendResult == ECONNREFUSED || sendResult == ENOTCONN);	
+				sendResult = _sendCommand(appTable[sessionID]->sock, sessionID, SVC_CMD_CHECK_ALIVE, &params);				
+				newAppAllowed = (sendResult ==-1) && (errno == ECONNREFUSED || errno == ENOTCONN);	
 			}
 			else{
 				newAppAllowed = true;
@@ -124,6 +121,11 @@ void processCommand(const uint8_t* buffer, size_t len){
 			}
 			break;
 
+		case SVC_CMD_CONNECT_STEP1:
+			printf("got connect step 1 command\n");
+			
+			break;
+			
 		default:
 			break;
 	}
