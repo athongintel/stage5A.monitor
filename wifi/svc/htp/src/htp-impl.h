@@ -4,7 +4,13 @@
 
 	#include <linux/net.h>
 	#include <linux/types.h>
-
+	#include <net/inet_sock.h>
+	
+	 //use this protocol to alias HTP, in hope that the system doesn't implement it yet
+	#define AF_HTP				AF_PHONET
+	#define PF_HTP				PF_PHONET
+	#define HTP_PROTOCOL_NAME 	"HTP"
+	
 	struct sock;
 	struct socket;
 	struct net;
@@ -14,6 +20,8 @@
 	struct poll_table_struct;
 	struct vm_area_struct;
 	struct page;
+	
+	static int count=0;
 
 	/*	struct proto */
 	extern void				htp_close(struct sock* sk, long timeout);
@@ -22,7 +30,7 @@
 	extern struct sock*		htp_accept(struct sock* sk, int flags, int* err);
 	extern int				htp_ioctl(struct sock* sk, int cmd, unsigned long arg);
 	extern int				htp_init_sock(struct sock* sk);
-	extern void				htp_desstroy(struct sock* sk);
+	extern void				htp_destroy(struct sock* sk);
 	extern void				htp_shutdown(struct sock* sk, int how);
 	extern int				htp_setsockopt(struct sock* sk, int level, int optname, char* __user optval, unsigned int optlen);
 	extern int				htp_getsockopt(struct sock* sk, int level, int optname, char* __user optval, int* __user option);
@@ -56,5 +64,65 @@
 	extern int				htp_ops_set_peek_off(struct sock* sk, int val);
 
 	extern int				htp_create_socket(struct net* net, struct socket* sock, int protocol, int kern);
+
+	
+
+	struct htp_sock {
+		struct inet_sock isk;
+		/* custom new-socket implementation*/
+	};
+
+	static struct proto htp_proto = {
+		.close = htp_close,
+		.connect = htp_connect,
+		.disconnect = htp_disconnect,
+		.accept = htp_accept,
+		.ioctl = htp_ioctl,
+		.init = htp_init_sock,
+		.shutdown = htp_shutdown,
+		.setsockopt = htp_setsockopt,
+		.getsockopt = htp_getsockopt,
+		.sendmsg = htp_sendmsg,
+		.recvmsg = htp_recvmsg,
+		.unhash = htp_unhash,
+		.get_port = htp_get_port,
+		//.enter_memory_pressure = htp_enter_memory_pressure,
+		//.sockets_allocated = &sockets_allocated,
+		//.memory_allocated = &memory_allocated,
+		//.memory_pressure = &memory_pressure,
+		//.orphan_count = &orphan_count,
+		//.sysctl_mem = sysctl_tcp_mem,
+		//.sysctl_wmem = sysctl_tcp_wmem,
+		//.sysctl_rmem = sysctl_tcp_rmem,
+		.max_header = 0,
+		.obj_size = sizeof(struct htp_sock),
+		.owner = THIS_MODULE,
+		.name = HTP_PROTOCOL_NAME,
+	};
+
+	static struct proto_ops htp_proto_ops = {
+		.family = PF_INET,
+		.owner = THIS_MODULE,
+		.release = htp_ops_release,
+		.bind = htp_ops_bind,
+		.connect = htp_ops_connect,
+		.socketpair = sock_no_socketpair,
+		.accept = htp_ops_accept,
+		.getname = htp_ops_getname,
+		.poll = htp_ops_poll,
+		.ioctl = htp_ops_ioctl,
+		//.listen = htp_inet_listen,
+		//.shutdown = htp_ops_shutdown,
+		//.setsockopt = htp_ops_setsockopt,
+		//.getsockopt = htp_ops_getsockopt,
+		//.sendmsg = htp_ops_sendmsg,
+		//.recvmsg = htp_ops_recvmsg,
+	};
+
+	static struct net_proto_family 	htp_proto_family = {
+		.family = AF_HTP, //by modifying 
+		.create = htp_create_socket,
+		.owner = THIS_MODULE,
+	};
 
 #endif

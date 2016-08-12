@@ -19,7 +19,7 @@ SVC frame format for daemon
 		° SVC_CMD_CHECK_ALIVE: check if the socket is still listened by app
 			- daemon to client: 0 argument	
 		° SVC_CMD_REGISTER_APP: resgister app to daemons
-			- client to daemon : 2 argument: [(4 byte - appID), (4 byte - session secret)]
+			- client to daemon: 2 argument: [(4 byte - appID), (4 byte - session secret)]
 			- daemon to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
 		° SVC_CMD_CONNECT_STEP1:
 			- client to daemon: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
@@ -28,3 +28,7 @@ SVC frame format for daemon
 	+ number of arguments: 1 byte
 	+ [arguments' lengths in 2 bytes followed by arguments]
 	
+	
+- session exchange at and after connection:
+	+ SVC_CMD_CONNECT_STEP1, set sessionID = 0 send sessionID and appID
+	+ at receiving, 

@@ -153,7 +153,7 @@ void* SVC::processPacket(void* args){
 						}
 					}
 					svcInstance->handlerMutex.unlock();
-				}	
+				}
 			}		
 		}
 	}

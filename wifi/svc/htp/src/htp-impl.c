@@ -125,6 +125,29 @@ int htp_ops_set_peek_off(struct sock *sk, int val){
 }
 
 int	htp_create_socket(struct net *net, struct socket *sock, int protocol, int kern){
+
+	count++;
+	
+	printk(KERN_ALERT "htp_create_socket called %d, kernel = %d", count, kern);
+	struct sock* sk;
+	
+	sk = sk_alloc(net, PF_HTP, GFP_KERNEL, &htp_proto);
+	if (!sk){
+		printk(KERN_ALERT "htp_create_socket failed");
+		return -ENOMEM;
+	}
+	
+	sock_init_data(sock, sk);
+	/*	this is simply a number to distinguish this socket type again other possible types in the family
+		as we have only one socket type of this family, can be set to 0
+	 */
+	sk->sk_protocol = 0;
+	sock->ops = &htp_proto_ops;
+	sock->state = SS_UNCONNECTED;
+	
+	//additional socket init
+	
+	printk(KERN_ALERT "htp_create_socket success");
 	
 	return 0;
 }
