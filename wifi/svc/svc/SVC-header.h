@@ -64,7 +64,9 @@
 			uint16_t length;
 			uint8_t* param;
 			bool copy;
-		
+			
+			SVCCommandParam(){}
+					
 			SVCCommandParam(uint16_t length, const uint8_t* param){
 				this->length = length;
 				this->param = (uint8_t*)malloc(length);
@@ -96,12 +98,17 @@
 			~MessageQueue();
 		
 			int enqueue(const uint8_t* message, const size_t* len);
-			int dequeue(uint8_t* returnedMessage, size_t* len);
+			int peak(uint8_t* message, size_t* len);
+			int dequeue();
 			bool notEmpty();
 		
 	};
 
-	ssize_t _sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
+	void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
+	
+	ssize_t _sendCommand(int socket, const uint8_t* buffer, size_t len);
+	ssize_t _sendCommand(MessageQueue* messageQueue, const uint8_t* buffer, size_t len);
+	
 	void printBuffer(const uint8_t* buffer, size_t len);
 	bool isEncryptedCommand(enum SVCCommand command);
 	
