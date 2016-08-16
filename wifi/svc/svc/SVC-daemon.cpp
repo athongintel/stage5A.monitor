@@ -36,6 +36,10 @@ class DaemonService{
 	public:	
 
 		uint32_t appID;
+				
+		/*	one incomming and one outgoing queue */
+		MessageQueue* outgoingQueue;
+		MessageQueue* incomingQueue;
 		
 		volatile bool working;
 	
@@ -229,7 +233,6 @@ uint32_t appExisted(uint32_t appID){
 	return 0;
 }
 
-
 void signal_handler(int sig){
 	if (sig == SIGINT){
 		printf("SIGINT caught, stopping daemon\n");
@@ -409,10 +412,6 @@ void* unixRedirectingLoop(void* args){
 			*/			
 		}
 	}
-	
-	delete buffer;
-}
-
 
 int main(int argc, char** argv){
 
@@ -503,6 +502,7 @@ int main(int argc, char** argv){
 		delete unixReceiveBuffer;
 		delete htpReceiveBuffer;
     	unlink(SVC_DAEMON_PATH.c_str());
+
 }
 
 

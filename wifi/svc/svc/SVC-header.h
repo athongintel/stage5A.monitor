@@ -108,7 +108,6 @@
 	
 	ssize_t _sendCommand(int socket, const uint8_t* buffer, size_t len);
 	ssize_t _sendCommand(MessageQueue* messageQueue, const uint8_t* buffer, size_t len);
-	
 	void printBuffer(const uint8_t* buffer, size_t len);
 	bool isEncryptedCommand(enum SVCCommand command);
 	

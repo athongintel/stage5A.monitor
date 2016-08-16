@@ -35,7 +35,6 @@ int MessageQueue::enqueue(const uint8_t* message, size_t len){
 	return rs;
 }
 
-
 /*
 	This function will only return the address of the message inside the queue.
 	The routine which calls this function can thus use the returned pointer to modify the content of the message.
@@ -62,7 +61,7 @@ int peak(uint8_t** message, size_t& len){
 int dequeue(){
 	int rs;
 	this->messageMutex.lock();
-	if (this->size>0){				
+	if (this->size>0){
 		if (this->head==0) this->head=this->maxsize;
 		this->size--;
 		delete this->array[this->head];
@@ -111,8 +110,9 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	buffer[4] = buffer[4] | SVC_COMMAND_FRAME;
 	buffer[4] = buffer[4] | SVC_URGENT_PRIORITY; 	//commands are always urgent
 	buffer[4] = buffer[4] | SVC_USING_TCP; 			//to ensure the delivery of commands
-	
+
 	if (isEncryptedCommand(command)) buffer[4] = buffer[4] | SVC_ECRYPTED;
+
 	
 	//3. 1 byte command ID
 	buffer[5] = command;
