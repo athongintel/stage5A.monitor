@@ -22,13 +22,21 @@
 
 
 	/*	SVC CONSTANTS	*/
-	#define SVC_DEFAULT_TIMEOUT 2000
-	#define SVC_DEFAULT_BUFSIZ 65536
-	#define SVC_USING_TCP 0x04
+	#define SVC_DEFAULT_TIMEOUT 			2000
+	#define SVC_DEFAULT_BUFSIZ 				65536
 
-	static const uint8_t SVC_DATA_FRAME = 0;
-	static const uint8_t SVC_COMMAND_FRAME = 1;
+	/*	SVC INFO BIT	*/
+	#define SVC_COMMAND_FRAME  				0x80
+		
+	#define SVC_ENCRYPTED					0x08	
+	#define SVC_USING_TCP					0x04
+	#define SVC_URGENT_PRIORITY 			0x03
+	#define	SVC_HIGH_PRIORITY				0x02
+	#define SVC_NORMAL_PRIORITY				0x01
+	#define SVC_LOW_PRIORITY				0x00
 
+
+	static uint32_t SVC_DEFAULT_SESSIONID = 0x00000000;
 	static string SVC_DAEMON_PATH = "/tmp/svc-daemon";
 	static string SVC_CLIENT_PATH_PREFIX = "/tmp/svc-client-";
 
@@ -39,7 +47,7 @@
 		SVC_CMD_CONNECT_STEP1,
 		SVC_CMD_CONNECT_STEP2,
 		SVC_CMD_CONNECT_STEP3,
-		SVC_CMD_CONNECT_STEP4								
+		SVC_CMD_CONNECT_STEP4
 	};
 
 	enum SVCPriority: uint8_t{
@@ -78,21 +86,23 @@
 		int maxsize;
 		uint8_t** array;	
 		size_t* arrayLen;
-		mutex messageMutex;
+		
 
-		public:
+		public:	
 			const int MESSAGE_QUEUE_DEFAULT_SIZE = 4096;
+			mutex messageMutex;
+	
 			MessageQueue(int maxsize=MessageQueue::MESSAGE_QUEUE_DEFAULT_SIZE);
 			~MessageQueue();
 		
 			int enqueue(const uint8_t* message, const size_t* len);
-			size_t dequeue(uint8_t* returnedMessage);
+			int dequeue(uint8_t* returnedMessage, size_t* len);
 			bool notEmpty();
 		
 	};
 
 	ssize_t _sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
 	void printBuffer(const uint8_t* buffer, size_t len);
-	
+	bool isEncryptedCommand(enum SVCCommand command);
 	
 #endif

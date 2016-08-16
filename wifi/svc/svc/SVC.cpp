@@ -50,6 +50,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	//1.4	connect to daemon
 	this->svcDaemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
 	connect(this->svcDaemonSocket, (struct sockaddr*) &this->daemonSocketAddress, sizeof(this->daemonSocketAddress));
+	
 	//1.5	create reading thread	
 	sigset_t sig;
 	sigfillset(&sig);
