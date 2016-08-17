@@ -3,3 +3,8 @@
 *.exe
 *.cmd
 *.o
+wifi/mini-linux.vdi
+wifi/svc/htp/.tmp_versions/
+wifi/svc/htp/Module.symvers
+wifi/svc/htp/htp-protocol.ko
+wifi/svc/htp/modules.order
