@@ -22,12 +22,16 @@ using namespace std;
 #define		SVC_DAEPORT			1221
 
 class DaemonService;
+<<<<<<< HEAD
 
 static SignalNotificator signalNotificator;
 static unordered_map<uint32_t, DaemonService*> appTable;
 static shared_mutex appTableMutex;
 
 
+=======
+unordered_map<uint32_t, DaemonService*> appTable;
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 uint32_t appExisted(uint32_t appID);
 
 struct sockaddr_un daemonSockUnAddress;
@@ -56,8 +60,13 @@ socklen_t messageAddressLen;
 
 class DaemonService{
 
+<<<<<<< HEAD
 	uint8_t* tempBuffer1;
 	uint8_t* tempBuffer2;
+=======
+	uint8_t** tempBuffer1;
+	uint8_t** tempBuffer2;
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 	size_t tempSize1;
 	size_t tempSize2;
 	
@@ -97,6 +106,10 @@ class DaemonService{
 			this->outQueue = new MessageQueue();		
 			
 			//printf("init 4 queues\n");
+<<<<<<< HEAD
+=======
+			
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 			
 			this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(appID);
 			/*	create unix socket and connect to send packet	*/
@@ -106,8 +119,11 @@ class DaemonService{
 			this->unSock = socket(AF_LOCAL, SOCK_DGRAM, 0);
 			connect(this->unSock, (struct sockaddr*) &this->unSockAddress, sizeof(this->unSockAddress));
 			
+<<<<<<< HEAD
 			//printf("finished cons\n");
 			
+=======
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 		}
 		
 		void startService(){
@@ -125,12 +141,16 @@ class DaemonService{
 		int receiveMessageFromOutside(const uint8_t* buffer, size_t len){
 			this->incomingQueue->enqueue(buffer, len);
 			/*	check whether one thread is waiting for this message*/
+<<<<<<< HEAD
 			checkNotificationList(buffer, len);
+=======
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 		}
 		
 		int receiveMessageFromApp(const uint8_t* buffer, size_t len){
 			//printf("try to enqueue:\n");
 			this->outgoingQueue->enqueue(buffer, len);
+<<<<<<< HEAD
 			checkNotificationList(buffer, len);
 		}
 		
@@ -155,14 +175,23 @@ class DaemonService{
 			/*
 			else: no notification for data frame
 			*/
+=======
+			/*	check whether one thread is waiting for this message*/
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 		}
 		
 		void sendPacketToApp(){
 			/*	dequeue message	*/			
 			if (this->inQueue->notEmpty()){
+<<<<<<< HEAD
 				if (this->inQueue->peak(&tempBuffer1, &tempSize1)!=-1){
 					/*	send message to the app	*/
 					this->sendToApp(tempBuffer1, tempSize1);
+=======
+				if (this->inQueue->peak(tempBuffer1, &tempSize1)!=-1){
+					/*	send message to the app	*/
+					this->sendToApp(*tempBuffer1, tempSize1);
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 					this->inQueue->dequeue();
 				}
 				/*
@@ -177,8 +206,13 @@ class DaemonService{
 		void sendPacketOutside(){
 			if (this->outQueue->notEmpty()){
 				/*	peak the message, only dequeue after used	*/
+<<<<<<< HEAD
 				if (this->outQueue->peak(&tempBuffer2, &tempSize2)!=-1){
 					this->sendOutside(tempBuffer2, tempSize2);
+=======
+				if (this->outQueue->peak(tempBuffer2, &tempSize2)!=-1){
+					this->sendOutside(*tempBuffer2, tempSize2);
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 					this->outQueue->dequeue();
 				}
 				/*
@@ -224,6 +258,7 @@ class DaemonService{
 						
 			while (_this->working){
 				if (_this->outgoingQueue->peak(&buffer, &len)){
+<<<<<<< HEAD
 					uint32_t sessionID;
 					uint8_t infoByte;
 					
@@ -237,6 +272,18 @@ class DaemonService{
 						/*	command frame, extract arguments	*/												
 						
 						uint8_t argc = buffer[6];
+=======
+					/*	for easy reference	*/
+					buffer = *buf;
+					/*	data or command	*/
+					uint32_t sessionID = *((uint32_t*)buffer);
+					uint8_t infoByte = buffer[5];
+	
+					if (infoByte & SVC_COMMAND_FRAME){
+						/*	command frame, extract arguments	*/
+						
+						uint8_t argc = buffer[7];
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 						SVCCommandParam* argv[argc];
 						uint8_t* pointer = buffer+7;
 						
@@ -251,7 +298,11 @@ class DaemonService{
 						/*	use this 'params' to hold params for response	*/
 						vector<SVCCommandParam*> params;
 		
+<<<<<<< HEAD
 						enum SVCCommand cmd = (enum SVCCommand)buffer[5];
+=======
+						enum SVCCommand cmd = (enum SVCCommand)buffer[6];
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 						switch (cmd){
 							case SVC_CMD_CHECK_ALIVE:
 								/* do nothing	*/
@@ -264,6 +315,7 @@ class DaemonService{
 								printf("processing CMD_REGISTER_APP\n");
 
 								/*	check if app existed	*/
+<<<<<<< HEAD
 								appID = *((uint32_t*)(argv[0]->param));
 								printf("appID %08x\n", appID);
 								newAppAllowed = false;
@@ -309,7 +361,44 @@ class DaemonService{
 									//printBuffer(allocBuffer, size);
 									appTable[sessionID]->inQueue->enqueue(allocBuffer, size);
 									//printf("seg 4\n");									
+=======
+								appID = *((uint32_t*)(argv[0]->param));								
+
+								newAppAllowed = false;
+								sessionID = appExisted(appID);
+								if (sessionID != -1){
+									size_t size;
+									if (sessionID!=SVC_DEFAULT_SESSIONID){
+										
+										prepareCommand(buffer, &size, sessionID, SVC_CMD_CHECK_ALIVE, &params);
+										/*	send this to app	*/
+										_this->inQueue->enqueue(buffer, size);
+										/*	wait for alive response from app	*/
+										newAppAllowed = !waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_DEFAULT_TIMEOUT);			
+									}
+									else{
+										newAppAllowed = true;
+									}
+
+									if (newAppAllowed){
+										//a.2 add new record to appTable
+										//create sessionID = hash(appID & rand)							
+										hash<string> hasher;
+										sessionID = (uint32_t)hasher(to_string(appID) + to_string(rand()));
+										appTable[sessionID] = new DaemonService(appID);
+										appTable[sessionID]->startService();
+					
+										//a.3 repsonse sessionID to SVC app
+										params.push_back(new SVCCommandParam(4, (uint8_t*)(&sessionID)));
+										params.push_back(new SVCCommandParam(4, (uint8_t*)(argv[1]->param)));				
+										prepareCommand(buffer, &size, SVC_DEFAULT_SESSIONID, SVC_CMD_REGISTER_APP, &params);
+										_this->inQueue->enqueue(buffer, size);
+									}
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 								}
+								/*
+								else: session ID not exist
+								*/
 								break;
 							default:
 								break;
@@ -349,19 +438,29 @@ uint32_t appExisted(uint32_t appID){
 	apptableMutex.lock_shared();
 	for (auto& it : appTable){
 		if (it.second->appID == appID){
+<<<<<<< HEAD
 			appTableMutex.unlock_shared();
 			return it.first;
 		}
 	}
 	appTableMutex.unlock_shared();
 	return SVC_DEFAULT_SESSIONID;
+=======
+			return it.first;
+		}
+	}
+	return -1;
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 }
 
 void signal_handler(int sig){
 	if (sig == SIGINT){
 		printf("SIGINT caught, stopping daemon\n");
 		/*	stop all services	*/
+<<<<<<< HEAD
 		appTableMutex.lock_shared();
+=======
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 		for (auto& it : appTable){
 			it.second->working = false;
 		}
@@ -388,8 +487,13 @@ void* unixReadingLoop(void* args){
 			/*	check if sessionID is registered	*/
 			uint32_t sessionID = *((uint32_t*)unixReceiveBuffer);
 			
+<<<<<<< HEAD
 			appTableMutex.lock_shared();
 			if (appTable[sessionID]!=NULL){							
+=======
+			if (appTable[sessionID]!=NULL){			
+				printf("sessionID: %08x\n", sessionID);
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 				appTable[sessionID]->receiveMessageFromApp(unixReceiveBuffer, byteRead);	
 			}
 			appTableMutex.unlock_shared();
@@ -426,7 +530,10 @@ void* htpReadingLoop(void* args){
 			uint32_t sessionID = *((uint32_t*)htpReceiveBuffer);
 			appTableMutex.lock_shared();
 			DaemonService* service = appTable[sessionID];
+<<<<<<< HEAD
 			appTableMutex.unlock_shared();
+=======
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
 			
 			if (service != NULL){			
 				uint8_t infoByte = htpReceiveBuffer[4];
@@ -561,10 +668,15 @@ int main(int argc, char** argv){
 		add default DaemonService to handle non-encrypted request
 		we can use SVC_DEFAULT_SESSIONID for init DaemonService
 	*/
+<<<<<<< HEAD
 	appTableMutex.lock();
 	appTable[SVC_DEFAULT_SESSIONID] = new DaemonService(SVC_DEFAULT_SESSIONID);
 	appTable[SVC_DEFAULT_SESSIONID]->startService();
 	appTableMutex.unlock();
+=======
+	appTable[SVC_DEFAULT_SESSIONID] = new DaemonService(SVC_DEFAULT_SESSIONID);
+	//appTable[SVC_DEFAULT_SESSIONID]->startService();
+>>>>>>> ea171bda9971cf9c6ddf255801f8f23392e67eda
     
     //4.	create a thread to read from unix domain socket
     working = true;

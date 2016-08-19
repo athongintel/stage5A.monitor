@@ -1,6 +1,7 @@
 #include "SVC-header.h"
 
 MessageQueue::MessageQueue(int maxsize){
+
 	//printf("message queue init\n");
 	this->maxsize = maxsize;
 	this->array = (uint8_t**)malloc(sizeof(uint8_t*)*this->maxsize);
@@ -17,6 +18,7 @@ bool MessageQueue::notEmpty(){
 	this->messageMutex.unlock();
 	return rs;
 }
+
 
 bool MessageQueue::enqueue(const uint8_t* message, size_t len){
 	//printf("inside message queue ::enqueue\n");
@@ -43,6 +45,7 @@ bool MessageQueue::enqueue(const uint8_t* message, size_t len){
 	It's unneccessary (and wrongly - memory leaks) to allocate new memory.
 
 */
+
 bool MessageQueue::peak(uint8_t** message, size_t* len){
 	bool rs;
 	if (this->messageMutex.try_lock()){
@@ -63,8 +66,10 @@ bool MessageQueue::peak(uint8_t** message, size_t* len){
 }
 
 
+
 bool MessageQueue::dequeue(){
 	bool rs;
+
 	this->messageMutex.lock();
 	if (this->size>0){
 		if (this->head==0) this->head=this->maxsize;
@@ -100,7 +105,9 @@ bool isEncryptedCommand(enum SVCCommand command){
 */
 void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params){
 
+
 	//printf("1\n");
+
 	size_t bufferLength = 7;
 	uint8_t* pointer = buffer + bufferLength;
 	
@@ -121,6 +128,7 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	if (isEncryptedCommand(command)) buffer[4] = buffer[4] | SVC_ENCRYPTED;
 
 	//printf("4\n");	
+
 	//3. 1 byte command ID
 	buffer[5] = command;
 	//4. 1 byte param length
@@ -132,6 +140,7 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 		memcpy(pointer+2, (*params)[i]->param, (*params)[i]->length);
 		pointer += 2 + (*params)[i]->length;
 	}
+
 	//printf("5\n");
 	/*	return bufferLength to len	*/
 	*len = bufferLength;
@@ -149,6 +158,7 @@ void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const 
 
 /*	this is the default implementation of handler of waitCommand	*/
 void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
+
 	int argc = (int)buffer[6];
 	struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
 	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
@@ -171,6 +181,7 @@ void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen
 }
 
 bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout){
+
 	
 	/*	create new notificator */
 	struct SVCDataReceiveNotificator* notificator = new struct SVCDataReceiveNotificator();
@@ -185,7 +196,7 @@ bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*
 		which is processing the message and checking notificationList.
 		use mutex to synchonize multiple threads which may use the list at a same time
 	*/
-	
+
 	this->addNotificator(notificator);
 	printf("notiList addr: %d, size %d\n", &notificationList, notificationList.size());			
 

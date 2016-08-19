@@ -7,6 +7,7 @@
 	#include <string>
 	#include <cstring>
 	#include <mutex>
+
 	#include <shared_mutex>
 	#include <csignal>
 	#include <vector>
@@ -43,7 +44,7 @@
 	#define SVC_ACQUIRED_SIGNAL					SIGUSR1
 	#define SVC_TIMEOUT_SIGNAL					SIGUSR2
 	#define SVC_SHARED_MUTEX_SIGNAL				SIGUSR1
-	
+
 	#define SVC_DEFAULT_TIMEOUT 				2000
 	#define SVC_DEFAULT_BUFSIZ 					65536
 
@@ -82,6 +83,7 @@
 		enum SVCCommand command;
 		pthread_t thread;			
 	};
+
 
 	/*	CLASSES DEFINITIONS	*/
 	class SVCCommandParam{

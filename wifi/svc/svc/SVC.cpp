@@ -135,7 +135,7 @@ void* SVC::processPacket(void* args){
 			
 			sessionID = *((uint32_t*)buffer);
 			uint8_t infoByte = buffer[4];
-			
+
 			//printf("infoByte: %02x\n, after &: %02x\n", infoByte, infoByte & SVC_COMMAND_FRAME);	
 			if (infoByte & SVC_COMMAND_FRAME){				
 				enum SVCCommand cmd = (enum SVCCommand)buffer[5];
@@ -250,6 +250,7 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 		//b.	SERVER BUSINESS CODE
 		//b2.	wait for SVC_CMD_CONNECT_STEP1 from the daemon, challenge from client. version is retained at daemon level.
 		// if the call failed, may be the daemon rejected the packet because of not matching SVC version
+
 		if (signalNotificator.waitCommand(SVC_CMD_CONNECT_STEP1, &params, SVC_DEFAULT_TIMEOUT)){
 			//b.2.1	read the challenge, return identiy, proof, challenge. keyexchange will be inserted at daemon level			
 			challengeReceived = string((char*)params[0]);			
