@@ -203,11 +203,15 @@
 			void dequeue(){
 				this->countMutex.lock();
 				if (this->count>0){
-					
+					Node<T>* tmp = this->first;
+					this->first = tmp->getNext();
+					delete tmp;
+					this->count--;	
 				}
 				/*
 				else: queue is empty, do nothing
 				*/
+				this->countMutex.unlock();
 			}
 			
 			static const int MESSAGE_QUEUE_DEFAULT_SIZE = 4096;
