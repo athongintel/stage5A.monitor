@@ -95,7 +95,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 		this->destruct();
 		throw errorString;
 		
-	success:		
+	success:
 		params.clear();
 }
 
@@ -147,9 +147,9 @@ void* SVC::processPacket(void* args){
 					for (int i=0; i<signalNotificator.notificationList.size(); i++){
 						SVCDataReceiveNotificator* notificator = signalNotificator.notificationList[i];
 						//check if the received command matches handler's command
-						printf("inside noti for-loop\n");
+						//printf("inside noti for-loop\n");
 						if (notificator->command == cmd){
-							printf("perform callback\n");
+							//printf("perform callback\n");
 							//perform callback
 							notificator->handler(buffer, byteRead, notificator);
 							//remove handler

@@ -72,30 +72,26 @@ class DaemonService{
 	pthread_t incomingProcessingThread;
 	pthread_t outgoingProcessingThread;
 	
-	//ssize_t sendToApp(const uint8_t* buffer, size_t len);
-	//ssize_t sendOutside(const uint8_t* buffer, size_t len);
+	bool working;
+	shared_mutex workingMutex;
 	
 	public:	
 
 		uint32_t appID;			
 		
-		volatile bool working;
-
-		MessageQueue* incomingQueue; 	/*	this queue is to be processed by local threads	*/
-		MessageQueue* outgoingQueue; 	/*	this queue is to be processed by local threads	*/
-		MessageQueue* inQueue; 			/*	this queue is to be redirect to app	*/
-		MessageQueue* outQueue; 		/*	this queue is to be sent outside	*/
+		Queue<Message*>* incomingQueue; 	/*	this queue is to be processed by local threads	*/
+		Queue<Message*>* outgoingQueue; 	/*	this queue is to be processed by local threads	*/
+		Queue<Message*>* inQueue; 		/*	this queue is to be redirect to app	*/
+		Queue<Message*>* outQueue; 		/*	this queue is to be sent outside	*/
 		
 		DaemonService(uint32_t appID){
 			this->appID = appID;
 			
 			/*	init queues	*/
-			this->outgoingQueue = new MessageQueue();
-			this->incomingQueue = new MessageQueue();
-			this->inQueue = new MessageQueue();
-			this->outQueue = new MessageQueue();		
-			
-			//printf("init 4 queues\n");
+			this->incomingQueue = new Queue<Message*>();
+			this->outgoingQueue = new Queue<Message*>();
+			this->inQueue = new Queue<Message*>();
+			this->outQueue = new Queue<Message*>();
 			
 			this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(appID);
 			/*	create unix socket and connect to send packet	*/
@@ -108,7 +104,9 @@ class DaemonService{
 		}
 		
 		void startService(){
+			this->workingMutex.lock();
 			this->working = true;
+			this->workingMutex.unlock();
 			pthread_attr_init(&threadAttrIn);
 			pthread_attr_init(&threadAttrOut);
 			pthread_create(&incomingProcessingThread, &threadAttrIn, processIncomingMessage, this);
@@ -116,31 +114,41 @@ class DaemonService{
 		}
 		
 		void stopService(){
+			this->workingMutex.lock();
 			this->working = false;
+			this->workingMutex.unlock();
 		}
 		
-		int receiveMessageFromOutside(const uint8_t* buffer, size_t len){
-			this->incomingQueue->enqueue(buffer, len);
+		bool isWorking(){
+			bool rs;
+			this->workingMutex.lock_shared();
+			rs = this->working;
+			this->workingMutex.unlock_shared();
+			return rs;
+		}
+		
+		int receiveMessageFromOutside(Message* message){
+			this->incomingQueue->enqueue(message);
 			/*	check whether one thread is waiting for this message*/
-			checkNotificationList(buffer, len);
+			checkNotificationList(message);
 		}
 		
-		int receiveMessageFromApp(const uint8_t* buffer, size_t len){
-			//printf("try to enqueue:\n");
-			this->outgoingQueue->enqueue(buffer, len);
-			checkNotificationList(buffer, len);
+		int receiveMessageFromApp(Message* message){			
+			this->outgoingQueue->enqueue(message);
+			/*	check whether one thread is waiting for this message*/
+			checkNotificationList(message);
 		}
 		
-		void checkNotificationList(const uint8_t* buffer, size_t len){
-			uint8_t infoByte = buffer[5];
+		void checkNotificationList(Message* message){
+			uint8_t infoByte = message->data[5];
 			if (infoByte & SVC_COMMAND_FRAME){
-				enum SVCCommand cmd = (enum SVCCommand)buffer[6];
+				enum SVCCommand cmd = (enum SVCCommand)message->data[6];
 				for (int i=0; i<signalNotificator.notificationList.size(); i++){
 					SVCDataReceiveNotificator* notificator = signalNotificator.notificationList[i];
 					/*	check if the received command matches handler's command	*/
 					if (notificator->command == cmd){
 						/*	perform callback	*/
-						notificator->handler(buffer, len, notificator);
+						notificator->handler(message->data, message->len, notificator);
 						/*	remove handler	*/
 						signalNotificator.removeNotificator(signalNotificator.notificationList.begin()+i);
 					}
@@ -155,11 +163,14 @@ class DaemonService{
 		}
 		
 		void sendPacketToApp(){
-			/*	dequeue message	*/			
+			/*	dequeue message	*/		
 			if (this->inQueue->notEmpty()){
-				if (this->inQueue->peak(tempBuffer1, &tempSize1)!=-1){
+				printf("try to peak message and send to app");
+				Message* message;
+				if (this->inQueue->peak(&message)){
 					/*	send message to the app	*/
-					this->sendToApp(tempBuffer1, tempSize1);
+					printf("peak message and send to app");
+					this->sendToApp(message);
 					this->inQueue->dequeue();
 				}
 				/*
@@ -174,25 +185,26 @@ class DaemonService{
 		void sendPacketOutside(){
 			if (this->outQueue->notEmpty()){
 				/*	peak the message, only dequeue after used	*/
-				if (this->outQueue->peak(tempBuffer2, &tempSize2)!=-1){
-					this->sendOutside(tempBuffer2, tempSize2);
+				Message* message;
+				if (this->outQueue->peak(&message)){
+					this->sendOutside(message);
 					this->outQueue->dequeue();
 				}
 				/*
 				esle: peak failed, mutex locked
-				*/						
+				*/
     		}
     		/*
     		else: queue is empty
     		*/  		
 		}
 		
-		ssize_t sendToApp(const uint8_t* buffer, size_t len){
-			return send(this->unSock, buffer, len, 0);
+		ssize_t sendToApp(const Message* message){
+			return send(this->unSock, message->data, message->len, 0);
 		}
 		
-		ssize_t sendOutside(const uint8_t* buffer, size_t len){
-			return sendto(daemonInSocket, buffer, len, 0, (struct sockaddr*) &this->inSockAddress, sizeof(this->inSockAddress));
+		ssize_t sendOutside(const Message* message){
+			return sendto(daemonInSocket, message->data, message->len, 0, (struct sockaddr*) &this->inSockAddress, sizeof(this->inSockAddress));
 		}
 		
 		int encryptMessage(const uint8_t* plainMessage, const size_t* plainLen, uint8_t* encryptedMessage, size_t* encryptedLen){
@@ -206,7 +218,7 @@ class DaemonService{
 		static void* processIncomingMessage(void* args){
 			DaemonService* _this = (DaemonService*)args;
 			
-			while (_this->working){
+			while (_this->isWorking()){
 				
 			}
 		}
@@ -214,28 +226,29 @@ class DaemonService{
 		static void* processOutgoingMessage(void* args){
 			DaemonService* _this = (DaemonService*)args;
 
-			/*	iterate the outgoing queue	*/
-			uint8_t* buffer;
+			/*	iterate the outgoing queue	*/			
 			uint8_t* allocBuffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
 			size_t len;
+			
+			Message* message;
 						
-			while (_this->working){
-				if (_this->outgoingQueue->peak(&buffer, &len)){
+			while (_this->isWorking()){
+				if (_this->outgoingQueue->peak(&message)){
 					uint32_t sessionID;
 					uint8_t infoByte;
 					
 					printf("can peak\n");
 					/*	data or command	*/					
-					printBuffer(buffer, len);
-					sessionID = *((uint32_t*)buffer);
-					infoByte = buffer[4];					
+					//printBuffer(buffer, len);
+					sessionID = *((uint32_t*)message->data);
+					infoByte = message->data[4];					
 					
 					if (infoByte & SVC_COMMAND_FRAME){
 						/*	command frame, extract arguments	*/												
 						
-						uint8_t argc = buffer[6];
+						uint8_t argc = message->data[6];
 						SVCCommandParam* argv[argc];
-						uint8_t* pointer = buffer+7;
+						uint8_t* pointer = message->data+7;
 						
 						for (int i=0; i<argc; i++){
 							/*	just get pointer, not performing copy	*/
@@ -248,7 +261,7 @@ class DaemonService{
 						/*	use this 'params' to hold params for response	*/
 						vector<SVCCommandParam*> params;
 		
-						enum SVCCommand cmd = (enum SVCCommand)buffer[5];
+						enum SVCCommand cmd = (enum SVCCommand)message->data[5];
 
 						switch (cmd){
 							case SVC_CMD_CHECK_ALIVE:
@@ -275,7 +288,7 @@ class DaemonService{
 									params.clear();
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_CHECK_ALIVE, &params);
 									/*	send this to app	*/
-									_this->inQueue->enqueue(allocBuffer, size);
+									_this->inQueue->enqueue(new Message(allocBuffer, size));
 									newAppAllowed = !signalNotificator.waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_DEFAULT_TIMEOUT);
 								}
 								else
@@ -288,25 +301,27 @@ class DaemonService{
 									hash<string> hasher;
 									sessionID = (uint32_t)hasher(to_string(appID) + to_string(rand()));
 									printf("new sessionID : %08x\n", sessionID);
+
+
 									appTableMutex.lock();
+									
 									appTable[sessionID] = new DaemonService(appID);
 									appTable[sessionID]->startService();
-									appTableMutex.unlock();
+									appTableMutex.unlock();								
 									
-									printf("seg 1\n");
 									//a.3 repsonse sessionID to SVC app
 									params.clear();
 									params.push_back(new SVCCommandParam(4, (uint8_t*)(&sessionID)));
 									params.push_back(new SVCCommandParam(4, (uint8_t*)(argv[1]->param)));
-									//printf("seg 2\n");
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_REGISTER_APP, &params);
-									//printf("seg 3\n");
 									
 									/*	this service has now its own session ID	*/
-									//printf("return to app: ");
-									//printBuffer(allocBuffer, size);
-									appTable[sessionID]->inQueue->enqueue(allocBuffer, size);
-									//printf("seg 4\n");									
+
+									appTableMutex.lock_shared();
+									
+									appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
+									appTableMutex.unlock_shared();			
+									printf("seg 4\n");									
 								}
 								/*
 								else: session ID not exist
@@ -347,11 +362,13 @@ class DaemonService{
 
 //check app existed, return sessionID
 uint32_t appExisted(uint32_t appID){
-	apptableMutex.lock_shared();
+	appTableMutex.lock_shared();
 	for (auto& it : appTable){
-		if (it.second->appID == appID){
-			appTableMutex.unlock_shared();
-			return it.first;
+		if (it.second != NULL){
+			if (it.second->appID == appID){
+				appTableMutex.unlock_shared();
+				return it.first;
+			}
 		}
 	}
 	appTableMutex.unlock_shared();
@@ -364,7 +381,9 @@ void signal_handler(int sig){
 		/*	stop all services	*/
 		appTableMutex.lock_shared();
 		for (auto& it : appTable){
-			it.second->working = false;
+			if(it.second!=NULL){ 
+				it.second->stopService();
+			}
 		}
 		appTableMutex.unlock_shared();
 		/*	stop main threads	*/
@@ -391,7 +410,7 @@ void* unixReadingLoop(void* args){
 			
 			appTableMutex.lock_shared();
 			if (appTable[sessionID]!=NULL){							
-				appTable[sessionID]->receiveMessageFromApp(unixReceiveBuffer, byteRead);	
+				appTable[sessionID]->receiveMessageFromApp(new Message(unixReceiveBuffer, byteRead));
 			}
 			appTableMutex.unlock_shared();
 			/*
@@ -440,7 +459,7 @@ void* htpReadingLoop(void* args){
 							/*	update new size	*/
 							byteRead = 5 + decryptedLen;
 							/*	add this message to processing queue	*/
-							service->receiveMessageFromOutside(htpReceiveBuffer, byteRead);
+							service->receiveMessageFromOutside(new Message(htpReceiveBuffer, byteRead));
 						}
 						/*
 						else: failed to decrypt message, ignore
@@ -455,7 +474,7 @@ void* htpReadingLoop(void* args){
 					if ((infoByte & SVC_COMMAND_FRAME)){
 						enum SVCCommand cmd = (enum SVCCommand)htpReceiveBuffer[5];
 						if (!isEncryptedCommand(cmd)){
-							service->receiveMessageFromOutside(htpReceiveBuffer, byteRead);
+							service->receiveMessageFromOutside(new Message(htpReceiveBuffer, byteRead));
 						}
 						/*
 						else: non-encrypted commands are only allowed for certain commands
@@ -480,15 +499,16 @@ void* htpReadingLoop(void* args){
 
 void* htpRedirectingLoop(void* args){
 	
-	uint32_t sessionID;
 	DaemonService* service;
 	
 	while (working){
 		appTableMutex.lock_shared();
-  		for (auto& it : appTable){  			
-    		service = it.second;
-    		if (service->working){
-				service->sendPacketOutside();
+  		for (auto& it : appTable){
+  			if (service!=NULL){ 			
+				service = it.second;
+				if (service->isWorking()){
+					service->sendPacketOutside();
+				}
 	    	}
     	}
     	appTableMutex.unlock_shared();
@@ -504,10 +524,14 @@ void* unixRedirectingLoop(void* args){
 	/*	read from service in queue	*/
 	while(working){
 		appTableMutex.lock_shared();
-		for (auto& it : appTable){				
+		for (auto& it : appTable){	
+			//if (it.first != SVC_DEFAULT_SESSIONID) printf("ok1\n");	
 			service = it.second;
-			if (service->working){
-				service->sendPacketToApp();
+			if (service!=NULL){
+				if (service->isWorking()){
+					//if (it.first != SVC_DEFAULT_SESSIONID) printf("ok2\n");
+					service->sendPacketToApp();
+				}
 			}
 		}
 		appTableMutex.unlock_shared();
@@ -606,7 +630,8 @@ int main(int argc, char** argv){
     	/*	remove all DaemonService instances	*/
     	appTableMutex.lock();
 		for (auto& it : appTable){
-			delete it.second;
+			if (it.second!=NULL)
+				delete it.second;
 		}
 		appTableMutex.unlock();
 		

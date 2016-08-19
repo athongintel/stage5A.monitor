@@ -1,97 +1,5 @@
 #include "SVC-header.h"
 
-MessageQueue::MessageQueue(int maxsize){
-
-	//printf("message queue init\n");
-	this->maxsize = maxsize;
-	this->array = (uint8_t**)malloc(sizeof(uint8_t*)*this->maxsize);
-	this->arrayLen = (size_t*)malloc(sizeof(size_t)*this->maxsize);
-	this->size=0;
-	this->head=0;
-	this->tail=0;
-}
-
-bool MessageQueue::notEmpty(){
-	bool rs;
-	this->messageMutex.lock();
-	rs = this->size!=0;
-	this->messageMutex.unlock();
-	return rs;
-}
-
-
-bool MessageQueue::enqueue(const uint8_t* message, size_t len){
-	//printf("inside message queue ::enqueue\n");
-	bool rs;
-	this->messageMutex.lock();
-	if (this->size<this->maxsize){
-		this->array[this->tail] = (uint8_t*)malloc(len);
-		memcpy(this->array[this->tail], message, len);
-		this->arrayLen[this->tail] = len;
-		if (this->tail==this->maxsize) this->tail=0;
-		this->size++;
-		rs = true;
-	}
-	else{
-		rs = false;
-	}
-	this->messageMutex.unlock();
-	return rs;
-}
-
-/*
-	This function will only return the address of the message inside the queue.
-	The routine which calls this function can thus use the returned pointer to modify the content of the message.
-	It's unneccessary (and wrongly - memory leaks) to allocate new memory.
-
-*/
-
-bool MessageQueue::peak(uint8_t** message, size_t* len){
-	bool rs;
-	if (this->messageMutex.try_lock()){
-		if (this->size>0){
-			*message = this->array[this->head];
-			*len = this->arrayLen[this->head];
-			rs = true;
-		}
-		else{
-			rs = false;
-		}
-		this->messageMutex.unlock();
-	}
-	else{
-		rs = false;
-	}
-	return rs;
-}
-
-
-
-bool MessageQueue::dequeue(){
-	bool rs;
-
-	this->messageMutex.lock();
-	if (this->size>0){
-		if (this->head==0) this->head=this->maxsize;
-		this->size--;
-		delete this->array[this->head];
-		rs = true;
-	}
-	else{
-		rs = false;
-	}
-	this->messageMutex.unlock();
-	return rs;
-}
-
-MessageQueue::~MessageQueue(){
-	while (this->notEmpty()){
-		this->dequeue();
-	}
-	delete this->array;
-	delete this->arrayLen;
-}
-
 bool isEncryptedCommand(enum SVCCommand command){
 	return (command != SVC_CMD_CHECK_ALIVE 
 					&& command != SVC_CMD_REGISTER_APP 
@@ -215,7 +123,7 @@ bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){
 	struct sigevent evt;
 	evt.sigev_notify = SIGEV_SIGNAL;
 	evt.sigev_signo = timeoutSignal;
-	evt.sigev_notify_thread_id = gettid();
+	evt.sigev_notify_thread_id = pthread_self();
 	timer_create(CLOCK_REALTIME, &evt, &timer);
 	
 	struct itimerspec time;

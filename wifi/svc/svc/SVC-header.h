@@ -3,6 +3,8 @@
 #ifndef __SVC_HEADEAR__
 #define __SVC_HEADER__
 
+	#include "Queue.h"
+
 	#include <vector>
 	#include <string>
 	#include <cstring>
@@ -13,13 +15,11 @@
 	#include <vector>
 	#include <sys/time.h>
 	#include <sys/socket.h>
-	#include <sys/syscall.h>
 	#include <functional>
 	#include <unistd.h>
 	
 	/*	COMPTIBILITY	*/
 	#define sigev_notify_thread_id _sigev_un._tid
-	#define gettid() syscall(SYS_gettid)
 	
 	
 	using namespace std;
@@ -83,6 +83,23 @@
 		enum SVCCommand command;
 		pthread_t thread;			
 	};
+	
+	class Message{
+		public:
+			uint8_t* data;
+			size_t len;
+			
+			Message(const uint8_t* data, size_t len){
+				this->data = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
+				this->len = len;
+				memcpy(this->data, data, this->len);
+			}
+			
+			~Message(){
+				delete data;
+			}
+		
+	};
 
 
 	/*	CLASSES DEFINITIONS	*/
@@ -111,122 +128,7 @@
 			}
 	};
 
-	template <class T>
-	class Node{
-		private:
-			T data;
-			Node* next;
-		public:
-			void setData(T data){
-				this->data = data;
-			}
-			void setNext(const Node* next){
-				this->next = next;
-			}
-			T getData(){
-				return this->data;
-			}
-			Node* getNext(){
-				return this->next;
-			}
-	}
-	
-	class Queue{
-	
-		private:
-			Node<T>* first;
-			Node<T>* last;
-			int count;			
-			mutex countMutex;
-	
-		/*int head;
-		int tail;
-		int size;
-		int maxsize;
-		uint8_t** array;	
-		size_t* arrayLen;
-		*/
-
-		public:
 		
-			Queue(){
-				this->first = NULL;
-				this->last = NULL;
-				this->count = 0;
-			}
-			
-			~Queue(){
-				while (this->notEmpty()){
-					this->dequeue();
-				}
-			}
-			
-			bool notEmpty(){
-				bool rs;
-				this->countMutex.lock();
-				rs = count>0;
-				this->countMutex.unlock();
-				return rs;
-			}
-			
-			void enqueue(T data){
-				Node<T>* element = new Node<T>();
-				element->setData(T);
-				element->setNext(NULL);
-				this->countMutex.lock();
-				if (this->count==0){
-					this->first = element;
-					this->last = element;
-				}
-				else{
-					this->last->setNext(element);
-					this->last = element;				
-				}
-				this->count++;
-				this->countMutex.unlock();				
-			}
-			
-			bool peak(T* data){
-				bool rs;
-				this->countMutex.lock();
-				if (this->count>0){
-					*T = this->first->getData();
-					rs = true;
-				}
-				else{
-					rs = false;
-				}
-				this->countMutex.unlock();
-				return rs;				
-			}
-			
-			void dequeue(){
-				this->countMutex.lock();
-				if (this->count>0){
-					Node<T>* tmp = this->first;
-					this->first = tmp->getNext();
-					delete tmp;
-					this->count--;	
-				}
-				/*
-				else: queue is empty, do nothing
-				*/
-				this->countMutex.unlock();
-			}
-			
-			static const int MESSAGE_QUEUE_DEFAULT_SIZE = 4096;
-			mutex messageMutex;
-	
-			MessageQueue(int maxsize=MessageQueue::MESSAGE_QUEUE_DEFAULT_SIZE);
-			~MessageQueue();
-		
-			bool enqueue(const uint8_t* message, size_t len);
-			bool peak(uint8_t** message, size_t* len);
-			bool dequeue();
-			bool notEmpty();
-		
-	};
-	
 	class SignalNotificator{
 		static	void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args);		
 		public:
@@ -255,8 +157,8 @@
 					
 		int readerPresence;
 		int writerPresence;		
-		vector<pthread_t*> readWaitQueue;
-		vector<pthread_t*> writeWaitQueue;
+		Queue<pthread_t> readWaitQueue;
+		Queue<pthread_t> writeWaitQueue;
 		
 		mutex readerPresenceMutex;
 		mutex writerPresenceMutex;
@@ -276,9 +178,7 @@
 		public:
 	
 		shared_mutex(){
-			readWaitQueue.empty();
-			writeWaitQueue.empty();
-			readerPrecence = 0;
+			readerPresence = 0;
 			writerPresence = 0;
 		}
 		
@@ -316,7 +216,7 @@
 				writerPresenceMutex.unlock();
 				/*	add this thread to queue	*/
 				writeWaitQueueMutex.lock();
-				writeWaitQueue.enqueue(gettid());
+				writeWaitQueue.enqueue(pthread_self());
 				writeWaitQueueMutex.unlock();
 				/*	wait for signal from preceeded thread	*/
 				waitSignal();
@@ -340,7 +240,7 @@
 				readerPresence++;
 				readerPresenceMutex.unlock();
 				readWaitQueueMutex.lock();
-				readWaitQueue.enqueue(gettid());
+				readWaitQueue.enqueue(pthread_self());
 				readWaitQueueMutex.unlock();
 				/*	wait to be notified	*/
 				waitSignal();
