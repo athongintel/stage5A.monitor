@@ -19,7 +19,7 @@
 using namespace std;
 
 
-#define		SVC_DAEPORT			1221
+#define		SVC_DAEPORT			1223
 
 class DaemonService;
 
@@ -81,8 +81,8 @@ class DaemonService{
 		
 		Queue<Message*>* incomingQueue; 	/*	this queue is to be processed by local threads	*/
 		Queue<Message*>* outgoingQueue; 	/*	this queue is to be processed by local threads	*/
-		Queue<Message*>* inQueue; 		/*	this queue is to be redirect to app	*/
-		Queue<Message*>* outQueue; 		/*	this queue is to be sent outside	*/
+		Queue<Message*>* inQueue; 			/*	this queue is to be redirect to app	*/
+		Queue<Message*>* outQueue; 			/*	this queue is to be sent outside	*/
 		
 		DaemonService(uint32_t appID){
 			this->appID = appID;
@@ -268,20 +268,22 @@ class DaemonService{
 								uint32_t appID;
 								ssize_t rs;
 								bool newAppAllowed;
+								bool serviceRemoved;
 								
 								printf("processing CMD_REGISTER_APP\n");
 
 								/*	check if app existed	*/
-								appID = *((uint32_t*)(argv[0]->param));
-								printf("appID %08x\n", appID);
-								newAppAllowed = false;
-								sessionID = appExisted(appID);
-								printf("sessionID %08x\n", sessionID);
 								size_t size;
+								appID = *((uint32_t*)(argv[0]->param));
+								sessionID = appExisted(appID);
+								newAppAllowed = false;
+								serviceRemoved = false;
+								//printf("appID %08x\n", appID);								
+								//printf("sessionID %08x\n", sessionID);
 
 								/*	wait for alive response from app if sessionID != SVC_DEFAULT_SESSIONID	*/
 								if (sessionID != SVC_DEFAULT_SESSIONID){
-									printf("check for app alive\n");
+									//printf("check for app alive\n");
 									params.clear();
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_CHECK_ALIVE, &params);
 									/*	send this to app	*/
@@ -291,32 +293,50 @@ class DaemonService{
 										newAppAllowed = !(appTable[sessionID]->signalNotificator.waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_SHORT_TIMEOUT));
 										if (newAppAllowed){
 											/*	remove old service */
+											serviceRemoved = true;
 											appTable[sessionID]->stopService();
 											delete appTable[sessionID];
 										}
 										/*
-										else:
+										else: do nothing with this request
 										*/
 									}
 									else{
 										newAppAllowed = true;
-									}									
-									appTableMutex.unlock_shared();									
+									}
+									//printf("before unlock shared\n");
+									appTableMutex.unlock_shared();
+									//printf("after unlock shared\n");								
 								}
 								else
 									newAppAllowed = true;											
 
 								if (newAppAllowed){
-									printf("add new service for: %08x\n", appID);
-									/*	create sessionID = hash(appID & rand)	*/
+									if (serviceRemoved){
+										printf("a\n");
+										appTableMutex.lock();
+										printf("b\n");
+										appTable[sessionID] = NULL;
+										printf("c\n");
+										appTableMutex.unlock();
+										printf("d\n");
+									}
+									
+									/*	create new sessionID = hash(appID & rand)	*/
 									hash<string> hasher;
 									sessionID = (uint32_t)hasher(to_string(appID) + to_string(rand()));
+
+									printf("add new service for: %08x\n", appID);
 									printf("new sessionID : %08x\n", sessionID);
 
-									appTableMutex.lock();									
+									printf("e\n");
+									appTableMutex.lock();
+									printf("f\n");
 									appTable[sessionID] = new DaemonService(appID);
 									appTable[sessionID]->startService();
-									appTableMutex.unlock();								
+									printf("g\n");
+									appTableMutex.unlock();							
+									printf("h\n");
 									
 									/*	repsonse sessionID to SVC app	*/
 									params.clear();
@@ -325,9 +345,13 @@ class DaemonService{
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_REGISTER_APP, &params);
 									
 									/*	this service has now its own session ID	*/
-									appTableMutex.lock_shared();									
+									printf("1\n");
+									appTableMutex.lock_shared();
+									printf("2\n");
 									appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
+									printf("3\n");
 									appTableMutex.unlock_shared();
+									printf("4\n");
 								}
 								/*
 								else: session ID not exist
@@ -341,10 +365,8 @@ class DaemonService{
 						/*	This is a data frame	*/
 						
 					}
-					/*	done, remove message from queue	*/
-					//printf("seg 1\n");
+					/*	done, remove message from queue	*/			
 					_this->outgoingQueue->dequeue();
-					//printf("seg 2\n");
 				}
 				/*
 				else: peak failed, mutex locked
@@ -356,7 +378,9 @@ class DaemonService{
 	
 		~DaemonService(){
 			printf("stopping service for appID %08x\n", this->appID);
+			this->workingMutex.lock();
 			this->working = false;
+			this->workingMutex.unlock();
 			pthread_join(incomingProcessingThread, NULL);
 			pthread_join(outgoingProcessingThread, NULL);
 			printf("child threads joined\n");
@@ -514,8 +538,8 @@ void* htpRedirectingLoop(void* args){
 	while (working){
 		appTableMutex.lock_shared();
   		for (auto& it : appTable){
-  			if (service!=NULL){ 			
-				service = it.second;
+  			service = it.second;
+  			if (service!=NULL){ 							
 				if (service->isWorking()){
 					service->sendPacketOutside();
 				}
@@ -530,16 +554,13 @@ void* htpRedirectingLoop(void* args){
 void* unixRedirectingLoop(void* args){
 	
 	DaemonService* service;
-	
-	/*	read from service in queue	*/
+		
 	while(working){
-		appTableMutex.lock_shared();
-		for (auto& it : appTable){	
-			//if (it.first != SVC_DEFAULT_SESSIONID) printf("ok1\n");	
+		appTableMutex.lock_shared();			
+		for (auto& it : appTable){				
 			service = it.second;
 			if (service!=NULL){
-				if (service->isWorking()){
-					//if (it.first != SVC_DEFAULT_SESSIONID) printf("ok2\n");
+				if (service->isWorking()){					
 					service->sendPacketToApp();
 				}
 			}
@@ -644,7 +665,7 @@ int main(int argc, char** argv){
     	/*	wait here until catch SIGINT	*/
     	
     	/*	DO CLEANING UP BEFORE EXIT	*/
-    	printf("SVC daemon stopped.\n");
+    	
     	/*	remove all DaemonService instances	*/
     	appTableMutex.lock();
 		for (auto& it : appTable){
@@ -656,6 +677,8 @@ int main(int argc, char** argv){
 		delete unixReceiveBuffer;
 		delete htpReceiveBuffer;
     	unlink(SVC_DAEMON_PATH.c_str());
+    	
+    	printf("SVC daemon stopped.\n");
 
 }
 

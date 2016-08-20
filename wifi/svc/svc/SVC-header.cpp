@@ -100,7 +100,6 @@ bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*
 	this->addNotificator(cmd, notificator);		
 
 	/*	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL	*/
-	printf("calling waitSignal\n");
 	return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
 }
 
@@ -127,9 +126,7 @@ bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){
 	
 	/*	wait for either timeoutSignal or watingSignal	*/
 	int caughtSignal;
-	printf("before sigwait\n");
 	sigwait(&sig, &caughtSignal);
-	printf("after sigwait\n");
 	
 	return caughtSignal == waitingSignal;	
 }
