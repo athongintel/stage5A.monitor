@@ -38,14 +38,15 @@
 	#define SVC_ERROR_AUTHENTICATION_FAILED		"Authentication failed"
 	#define SVC_ERROR_CRITICAL					"Critical error"
 	#define SVC_ERROR_BINDING					"Error binding socket"
-
+	#define SVC_ERROR_NOTIFICATOR_DUPLICATED	"Notificator duplicated"	
 
 	/*	SVC CONSTANTS	*/
 	#define SVC_ACQUIRED_SIGNAL					SIGUSR1
 	#define SVC_TIMEOUT_SIGNAL					SIGUSR2
-	#define SVC_SHARED_MUTEX_SIGNAL				SIGUSR1
+	#define SVC_SHARED_MUTEX_SIGNAL				SVC_ACQUIRED_SIGNAL
 
 	#define SVC_DEFAULT_TIMEOUT 				2000
+	#define SVC_SHORT_TIMEOUT					500
 	#define SVC_DEFAULT_BUFSIZ 					65536
 
 	/*	SVC INFO BIT	*/
@@ -64,14 +65,15 @@
 	static string SVC_CLIENT_PATH_PREFIX = 		"/tmp/svc-client-";
 	
 	
-	/*	SVC COMMAND	*/
+	/*	ABI, DO NOT MODIFY UNLESS YOU KNOW EXACTLY WHAT	YOU DO	*/
 	enum SVCCommand : uint8_t{
 		SVC_CMD_CHECK_ALIVE,
 		SVC_CMD_REGISTER_APP,
 		SVC_CMD_CONNECT_STEP1,
 		SVC_CMD_CONNECT_STEP2,
 		SVC_CMD_CONNECT_STEP3,
-		SVC_CMD_CONNECT_STEP4
+		SVC_CMD_CONNECT_STEP4,
+		_SVC_CMD_COUNT
 	};
 	/*	END OF ABI	*/
 
@@ -79,8 +81,7 @@
 	
 	struct SVCDataReceiveNotificator{
 		SVCDataReceiveHandler handler;
-		void* args;		
-		enum SVCCommand command;
+		void* args;
 		pthread_t thread;			
 	};
 	
@@ -97,8 +98,7 @@
 			
 			~Message(){
 				delete data;
-			}
-		
+			}		
 	};
 
 
@@ -126,31 +126,6 @@
 				printf("param destructed\n");		
 				if (this->copy) delete param;
 			}
-	};
-
-		
-	class SignalNotificator{
-		static	void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args);		
-		public:
-			vector<struct SVCDataReceiveNotificator*> notificationList;
-			mutex notificationListMutex;
-			
-			SignalNotificator(){}
-			~SignalNotificator(){}
-			
-			void removeNotificator(vector<SVCDataReceiveNotificator*>::const_iterator position){
-				notificationListMutex.lock();
-				notificationList.erase(position);
-				printf("noti removed\n");
-				notificationListMutex.unlock();
-			}
-			void addNotificator(SVCDataReceiveNotificator* notificator){
-				notificationListMutex.lock();
-				notificationList.push_back(notificator);
-				printf("noti added\n");
-				notificationListMutex.unlock();
-			}
-			bool waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout);
 	};
 	
 	class shared_mutex{	
@@ -320,7 +295,56 @@
 			}
 		}
 	};
-	
+
+
+	/*	just make sure that there will be no wait for 2 same cmd on a single list	*/	
+	class SignalNotificator{
+		static void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args);		
+		public:
+			struct SVCDataReceiveNotificator* notificationArray[_SVC_CMD_COUNT];
+			shared_mutex notificationArrayMutex;
+			
+			SignalNotificator(){
+				/*	need to init this array to NULL, otherwise left memory will cause addNotificator to throw exception	*/
+				for (uint8_t cmd = 0; cmd<_SVC_CMD_COUNT; cmd++){
+					this->notificationArray[cmd] = NULL;
+				}			
+			}
+			~SignalNotificator(){}
+			
+			SVCDataReceiveNotificator* getNotificator(enum SVCCommand cmd){
+				SVCDataReceiveNotificator* rs;
+				notificationArrayMutex.lock_shared();
+				rs = notificationArray[cmd];
+				notificationArrayMutex.unlock_shared();
+				return rs;
+			}
+			
+			void removeNotificator(enum SVCCommand cmd){
+				notificationArrayMutex.lock();
+				if (notificationArray[cmd]!=NULL){
+					delete notificationArray[cmd];
+					notificationArray[cmd]=NULL;
+					printf("noti removed, cmd: %d\n", cmd);
+				}
+				notificationArrayMutex.unlock();				
+			}
+			
+			void addNotificator(enum SVCCommand cmd, SVCDataReceiveNotificator* notificator){
+				notificationArrayMutex.lock();
+				if (notificationArray[cmd]!=NULL){
+					notificationArrayMutex.unlock();
+					throw SVC_ERROR_NOTIFICATOR_DUPLICATED;
+				}
+				else{
+					notificationArray[cmd] = notificator;
+					notificationArrayMutex.unlock();
+					printf("noti added, cmd: %d\n", cmd);
+				}					
+			}
+			bool waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout);
+	};
+			
 	/*	END OF CLASSES DEFINITIONS	*/
 	
 

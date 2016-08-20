@@ -1,7 +1,13 @@
 #include "Node.h"
 #include <mutex>
 
+
 using namespace std;
+
+/* 
+	Author: Immort
+	This queue is implemented to be generic and thread-safe
+*/
 
 template <class T>
 class Queue{
@@ -26,14 +32,11 @@ class Queue{
 			}
 		}
 		
-		bool notEmpty(){
-			//printf("check not empty 1\n");
+		bool notEmpty(){			
 			bool rs;
-			//this->countMutex.lock();
-			//printf("check not empty 2\n");
+			this->countMutex.lock();
 			rs = count>0;
-			//this->countMutex.unlock();
-			//printf("check not empty 3\n");
+			this->countMutex.unlock();		
 			return rs;
 		}
 		

@@ -23,7 +23,6 @@ using namespace std;
 
 class DaemonService;
 
-static SignalNotificator signalNotificator;
 static unordered_map<uint32_t, DaemonService*> appTable;
 static shared_mutex appTableMutex;
 
@@ -71,6 +70,7 @@ class DaemonService{
 	pthread_attr_t threadAttrOut;
 	pthread_t incomingProcessingThread;
 	pthread_t outgoingProcessingThread;
+	SignalNotificator signalNotificator;
 	
 	bool working;
 	shared_mutex workingMutex;
@@ -142,20 +142,18 @@ class DaemonService{
 		void checkNotificationList(Message* message){
 			uint8_t infoByte = message->data[5];
 			if (infoByte & SVC_COMMAND_FRAME){
-				enum SVCCommand cmd = (enum SVCCommand)message->data[6];
-				for (int i=0; i<signalNotificator.notificationList.size(); i++){
-					SVCDataReceiveNotificator* notificator = signalNotificator.notificationList[i];
-					/*	check if the received command matches handler's command	*/
-					if (notificator->command == cmd){
-						/*	perform callback	*/
-						notificator->handler(message->data, message->len, notificator);
-						/*	remove handler	*/
-						signalNotificator.removeNotificator(signalNotificator.notificationList.begin()+i);
-					}
-					/*
-					else: current notificator not waiting this command
-					*/
+				enum SVCCommand cmd = (enum SVCCommand)message->data[6];			
+				SVCDataReceiveNotificator* notificator = signalNotificator.getNotificator(cmd);
+				/*	check if the received command matches handler's command	*/
+				if (notificator != NULL){
+					/*	perform callback	*/
+					notificator->handler(message->data, message->len, notificator);
+					/*	remove handler	*/
+					signalNotificator.removeNotificator(cmd);
 				}
+				/*
+				else: there is no notificator for this command
+				*/			
 			}
 			/*
 			else: no notification for data frame
@@ -163,13 +161,12 @@ class DaemonService{
 		}
 		
 		void sendPacketToApp(){
-			/*	dequeue message	*/		
+			/*	dequeue message	*/
 			if (this->inQueue->notEmpty()){
-				printf("try to peak message and send to app");
 				Message* message;
 				if (this->inQueue->peak(&message)){
 					/*	send message to the app	*/
-					printf("peak message and send to app");
+
 					this->sendToApp(message);
 					this->inQueue->dequeue();
 				}
@@ -238,8 +235,8 @@ class DaemonService{
 					uint8_t infoByte;
 					
 					printf("can peak\n");
-					/*	data or command	*/					
-					//printBuffer(buffer, len);
+					/*	data or command	*/
+					printBuffer(message->data, message->len);
 					sessionID = *((uint32_t*)message->data);
 					infoByte = message->data[4];					
 					
@@ -288,40 +285,49 @@ class DaemonService{
 									params.clear();
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_CHECK_ALIVE, &params);
 									/*	send this to app	*/
-									_this->inQueue->enqueue(new Message(allocBuffer, size));
-									newAppAllowed = !signalNotificator.waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_DEFAULT_TIMEOUT);
+									appTableMutex.lock_shared();
+									if (appTable[sessionID]!=NULL){
+										appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
+										newAppAllowed = !(appTable[sessionID]->signalNotificator.waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_SHORT_TIMEOUT));
+										if (newAppAllowed){
+											/*	remove old service */
+											appTable[sessionID]->stopService();
+											delete appTable[sessionID];
+										}
+										/*
+										else:
+										*/
+									}
+									else{
+										newAppAllowed = true;
+									}									
+									appTableMutex.unlock_shared();									
 								}
 								else
 									newAppAllowed = true;											
 
 								if (newAppAllowed){
 									printf("add new service for: %08x\n", appID);
-									//a.2 add new record to appTable
-									//create sessionID = hash(appID & rand)							
+									/*	create sessionID = hash(appID & rand)	*/
 									hash<string> hasher;
 									sessionID = (uint32_t)hasher(to_string(appID) + to_string(rand()));
 									printf("new sessionID : %08x\n", sessionID);
 
-
-									appTableMutex.lock();
-									
+									appTableMutex.lock();									
 									appTable[sessionID] = new DaemonService(appID);
 									appTable[sessionID]->startService();
 									appTableMutex.unlock();								
 									
-									//a.3 repsonse sessionID to SVC app
+									/*	repsonse sessionID to SVC app	*/
 									params.clear();
 									params.push_back(new SVCCommandParam(4, (uint8_t*)(&sessionID)));
 									params.push_back(new SVCCommandParam(4, (uint8_t*)(argv[1]->param)));
 									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_REGISTER_APP, &params);
 									
 									/*	this service has now its own session ID	*/
-
-									appTableMutex.lock_shared();
-									
+									appTableMutex.lock_shared();									
 									appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
-									appTableMutex.unlock_shared();			
-									printf("seg 4\n");									
+									appTableMutex.unlock_shared();
 								}
 								/*
 								else: session ID not exist
@@ -349,13 +355,17 @@ class DaemonService{
 		}
 	
 		~DaemonService(){
+			printf("stopping service for appID %08x\n", this->appID);
 			this->working = false;
 			pthread_join(incomingProcessingThread, NULL);
 			pthread_join(outgoingProcessingThread, NULL);
+			printf("child threads joined\n");
+			/*	these queues are warrantied to dequeue all left message in destructor */
 			delete this->outgoingQueue;
 			delete this->incomingQueue;
 			delete this->inQueue;
 			delete this->outQueue;
+			printf("service for appID %08x stopped\n", this->appID);
 		}
 };
 
@@ -575,6 +585,14 @@ int main(int argc, char** argv){
     	goto errorInit;
     }
     
+    /*	set thread signal mask	*/
+    sigset_t sigset;
+    sigemptyset(&sigset);    
+    sigaddset(&sigset, SVC_ACQUIRED_SIGNAL);
+    sigaddset(&sigset, SVC_TIMEOUT_SIGNAL);
+    sigaddset(&sigset, SVC_SHARED_MUTEX_SIGNAL);
+    pthread_sigmask(SIG_BLOCK, &sigset, NULL);
+    
     //3.	handle signals
 	struct sigaction act;
 	act.sa_handler = signal_handler;
@@ -582,7 +600,7 @@ int main(int argc, char** argv){
 	sigdelset(&act.sa_mask, SIGINT);
 	sigaction(SIGINT, &act, NULL);
 	
-	/*	
+	/*
 		add default DaemonService to handle non-encrypted request
 		we can use SVC_DEFAULT_SESSIONID for init DaemonService
 	*/

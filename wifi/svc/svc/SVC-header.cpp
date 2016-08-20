@@ -74,14 +74,8 @@ void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen
 	
 	for (int i=0; i<argc; i++){
 		uint16_t len;
-		//uint8_t* param;
 		memcpy(&len, pointer, 2);
-		//param = (uint8_t*)malloc(len);
-		//memcpy(param, pointer+2, len);
 		params->push_back(new SVCCommandParam(len, pointer+2));
-		//printf("push a param: ");
-		//printBuffer(param, len);
-		//free(param);
 		pointer += len+2;
 	}
 	//signal the thread calling waitCommand
@@ -89,11 +83,9 @@ void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen
 }
 
 bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout){
-
 	
 	/*	create new notificator */
 	struct SVCDataReceiveNotificator* notificator = new struct SVCDataReceiveNotificator();
-	notificator->command = cmd;
 	notificator->args = params;
 	notificator->thread = pthread_self();
 	notificator->handler = waitCommandHandler;
@@ -105,10 +97,10 @@ bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*
 		use mutex to synchonize multiple threads which may use the list at a same time
 	*/
 
-	this->addNotificator(notificator);
-	printf("notiList addr: %d, size %d\n", &notificationList, notificationList.size());			
+	this->addNotificator(cmd, notificator);		
 
 	/*	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL	*/
+	printf("calling waitSignal\n");
 	return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
 }
 
@@ -135,7 +127,9 @@ bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){
 	
 	/*	wait for either timeoutSignal or watingSignal	*/
 	int caughtSignal;
-	sigwait(&sig, &caughtSignal);		
+	printf("before sigwait\n");
+	sigwait(&sig, &caughtSignal);
+	printf("after sigwait\n");
 	
 	return caughtSignal == waitingSignal;	
 }

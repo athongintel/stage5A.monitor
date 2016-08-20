@@ -71,13 +71,14 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	params.push_back(new SVCCommandParam(4, (uint8_t*) &sessionSecret));
 	sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_REGISTER_APP, &params);
 	
+	params.clear();
 	if (!signalNotificator.waitCommand(SVC_CMD_REGISTER_APP, &params, SVC_DEFAULT_TIMEOUT)){
 		errorString = SVC_ERROR_REQUEST_TIMEDOUT;
 		goto errorInit;
-	}
-	
+	}	
 	//2.3 get sessionID from response
 	this->sessionID = *((uint32_t*)(params[0]->param));
+	printf("sessionID: %08x\n", this->sessionID);
 	sessionSecretResponded = *((uint32_t*)(params[1]->param));
 	if (sessionSecretResponded == sessionSecret){
 		//ok, this came from the daemon
@@ -102,6 +103,10 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 void SVC::destruct(){
 	this->working = false;	
 	pthread_join(this->readingThread, NULL);
+	//remove remaining notificator
+	for (uint8_t cmd=0; cmd<_SVC_CMD_COUNT; cmd++){
+		signalNotificator.removeNotificator((enum SVCCommand)cmd);
+	}
 	unlink(this->svcClientPath.c_str());
 	cout<<"svc destructed\n";
 }
@@ -136,29 +141,21 @@ void* SVC::processPacket(void* args){
 			sessionID = *((uint32_t*)buffer);
 			uint8_t infoByte = buffer[4];
 
-			//printf("infoByte: %02x\n, after &: %02x\n", infoByte, infoByte & SVC_COMMAND_FRAME);	
+			//printf("infoByte: %02x, after &: %02x\n", infoByte, infoByte & SVC_COMMAND_FRAME);	
 			if (infoByte & SVC_COMMAND_FRAME){				
-				enum SVCCommand cmd = (enum SVCCommand)buffer[5];
-				//printf("command %d", cmd);
+				enum SVCCommand cmd = (enum SVCCommand)buffer[5];				
 				if ((sessionID==svcInstance->sessionID) || (cmd == SVC_CMD_REGISTER_APP)){								
-					/*	call COMMAND handler	*/
-					printf("call command handler\n");
-					//printf("notiList addr: %d, size %d\n", &notificationList, notificationList.size());
-					for (int i=0; i<signalNotificator.notificationList.size(); i++){
-						SVCDataReceiveNotificator* notificator = signalNotificator.notificationList[i];
-						//check if the received command matches handler's command
-						//printf("inside noti for-loop\n");
-						if (notificator->command == cmd){
-							//printf("perform callback\n");
-							//perform callback
-							notificator->handler(buffer, byteRead, notificator);
-							//remove handler
-							signalNotificator.removeNotificator(signalNotificator.notificationList.begin()+i);
-						}
-						/*
-						else: current notificator not waiting this command
-						*/
+					/*	call COMMAND handler	*/												
+					SVCDataReceiveNotificator* notificator = signalNotificator.getNotificator(cmd);						
+					if (notificator!=NULL){						
+						//perform callback
+						notificator->handler(buffer, byteRead, notificator);
+						//remove handler
+						signalNotificator.removeNotificator(cmd);
 					}
+					/*
+					else: no notificator for this cmd on this list
+					*/
 				}
 				/*
 				else: invalid sessionID
