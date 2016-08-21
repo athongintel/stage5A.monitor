@@ -6,5 +6,5 @@ client:
 
 	
 server:
-	$(CC) -o server.exe SendFileAppServer.cpp $(CFLAGS)
+	$(CC) -o server.exe SendFileAppServer.cpp ./svc/SVCHostIP.cpp ./svc/SVC.cpp ./svc/SVC-header.cpp $(CFLAGS)
 

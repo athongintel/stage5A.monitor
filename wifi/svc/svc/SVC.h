@@ -8,8 +8,8 @@
 	#include "SVC-header.h"
 	#include "SVCHost.h"
 	#include "SVCApp.h"
-	#include <string>
-	#include <cstring>
+
+	#include <cstring>	//for 'memcpy'
 	#include <sys/un.h>
 	#include <sys/socket.h>
 	#include <sys/types.h>

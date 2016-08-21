@@ -13,7 +13,6 @@ bool isEncryptedCommand(enum SVCCommand command){
 */
 void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params){
 
-
 	//printf("1\n");
 
 	size_t bufferLength = 7;
@@ -21,7 +20,7 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	
 	for (int i=0; i<params->size(); i++){
 		/*	2 bytes for param length, then the param itself	*/
-		bufferLength += 2 + (*params)[i]->length; 
+		bufferLength += 2 + (*params)[i]->length;
 	}
 	//printf("2\n");
 	/*	add header	*/
@@ -35,7 +34,7 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	//printf("3\n");
 	if (isEncryptedCommand(command)) buffer[4] = buffer[4] | SVC_ENCRYPTED;
 
-	//printf("4\n");	
+	//printf("4\n");
 
 	//3. 1 byte command ID
 	buffer[5] = command;
@@ -44,8 +43,10 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	//printf("5\n");
 	//5. add params
 	for (int i=0; i<params->size(); i++){
-		memcpy(pointer, (uint16_t*) &((*params)[i]->length), 2);
-		memcpy(pointer+2, (*params)[i]->param, (*params)[i]->length);
+		//printf("copy len %d, data: ", (*params)[i]->length);
+		//printBuffer((*params)[i]->param, (*params)[i]->length);
+		memcpy(pointer, (uint8_t*) &((*params)[i]->length), 2);
+		memcpy(pointer+2, (*params)[i]->data, (*params)[i]->length);
 		pointer += 2 + (*params)[i]->length;
 	}
 

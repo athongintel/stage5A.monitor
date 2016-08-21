@@ -20,17 +20,25 @@ SVC frame format for daemon
 			- daemon to client: 0 argument	
 			
 		° SVC_CMD_REGISTER_APP: resgister app to daemon
-			- client to daemon: 2 argument: [(4 byte - appID), (4 byte - session secret)]
-			- daemon to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
+			- client to daemon1: 2 argument: [(4 byte - appID), (4 byte - session secret)]
+			- daemon1 to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
 			
 		° SVC_CMD_CONNECT_STEP1:
-			- client to daemon: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
-			- server to daemon: 1 argument: [(1 byte - isServer = 1)]
-			- daemon to daemon: 4 argument: [(1 byte - isClient = 0 at 0th bit, version at 7th and 6th bits), (4 byte - address), (n bytes - challenge), (4 bytes - appID)]		
-			- daemon to server: 1 argument: [(n bytes - challenge)]
+			- client to daemon1: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
+			- server to daemon2: 1 argument: [(1 byte - isServer = 1)]
+			- daemon1 to daemon2: 2 argument: [(4 bytes - appID), (n bytes - challenge)]
+			- daemon2 to server: 1 argument: [(n bytes - challenge)]
 			
 		° SVC_CMD_CONNECT_STEP2:
+			- server to daemon: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+			- daemon to daemon: 4 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge), (4 bytes - appID)]
+			- daemon to client: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
 			
+		° SVC_CMD_CONNECT_STEP3:
+			- client to daemon: 0 argument
+			- daemon1 to daemon2: 4 argument: [key-exchange]
+			- daemon2 to server: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+			- daemon1 to client: 0 argument
 		
 	+ number of arguments: 1 byte
 	+ [arguments' lengths in 2 bytes followed by arguments]

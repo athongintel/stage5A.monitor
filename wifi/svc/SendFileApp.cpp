@@ -21,6 +21,7 @@ SendFileApp::SendFileApp(){
 		svc->~SVC();
 		throw "Error establishing connection";
 	}
+	printf("connection established!");
 }
 
 //interface implementation

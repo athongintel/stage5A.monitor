@@ -39,8 +39,13 @@
 	#define SVC_DEFAULT_TIMEOUT 				2000
 	#define SVC_SHORT_TIMEOUT					100
 	#define SVC_DEFAULT_BUFSIZ 					65536
+	#define	SVC_DAEPORT			1223
 
 	/*	SVC INFO BIT	*/
+	#define SVC_ROLE_CLIENT						0x00
+	#define SVC_ROLE_SERVER						0x01
+	#define SVC_ROLE_UNDEFINED					0x02
+	
 	#define SVC_COMMAND_FRAME  					0x80
 	#define SVC_DATA_FRAME  					0x00
 	#define SVC_ENCRYPTED						0x08
@@ -99,23 +104,23 @@
 		bool copy;
 		public:
 			uint16_t length;
-			uint8_t* param;
+			uint8_t* data;
 			
 			
 			SVCCommandParam(){
 				this->copy = false;
 			}
 					
-			SVCCommandParam(uint16_t length, const uint8_t* param){
+			SVCCommandParam(uint16_t length, const uint8_t* data){
 				this->length = length;
-				this->param = (uint8_t*)malloc(length);
-				memcpy(this->param, param, length);
+				this->data = (uint8_t*)malloc(length);
+				memcpy(this->data, data, length);
 				this->copy = true;
 			}
 		
 			~SVCCommandParam(){	
 				//printf("param destructed\n");		
-				if (this->copy) delete param;
+				if (this->copy) delete this->data;
 			}
 	};
 

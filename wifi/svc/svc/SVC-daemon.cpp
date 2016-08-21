@@ -15,10 +15,9 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 
+#define SVC_VERSION 0x01<<6
+
 using namespace std;
-
-
-#define		SVC_DAEPORT			1223
 
 class DaemonService;
 
@@ -52,27 +51,48 @@ struct sockaddr messageAddress;
 socklen_t messageAddressLen;
 
 class DaemonService{
-
-	uint8_t* tempBuffer1;
-	uint8_t* tempBuffer2;
-	size_t tempSize1;
-	size_t tempSize2;
 	
-	int unSock;
-	sockaddr_un unSockAddress;
-	/*	this inSockAddress use the global htpSocket	*/
-	struct sockaddr_in inSockAddress;
+	private:
+		/*	this is unix domain socket	*/
+		string svcClientPath;
+		int unSock;
+		struct sockaddr_un unSockAddress;
 	
-	string svcClientPath;
+		/*TODO:	this must be changed to htp socket	*/
+		int inSock;
+		struct sockaddr_in inSockAddress;		
 	
-	pthread_attr_t threadAttrIn;
-	pthread_attr_t threadAttrOut;
-	pthread_t incomingProcessingThread;
-	pthread_t outgoingProcessingThread;
-	SignalNotificator signalNotificator;
+		/**/
+		pthread_attr_t threadAttrIn;
+		pthread_attr_t threadAttrOut;
+		pthread_t incomingProcessingThread;
+		pthread_t outgoingProcessingThread;
+		SignalNotificator signalNotificator;
 	
-	bool working;
-	//shared_mutex* workingMutex;
+		/*	infos concern service status	*/
+		uint8_t svcRole;
+		bool working;
+		bool isConnected;
+	
+		/*	private functions	*/
+		void setAddress(uint32_t address){
+			/*	to be changed to AF_HTP	*/
+			this->inSock = socket(AF_INET, SOCK_DGRAM, 0);
+			
+			this->inSockAddress.sin_addr.s_addr = address;
+			this->inSockAddress.sin_port = htons(SVC_DAEPORT);			
+			this->inSockAddress.sin_family = AF_INET;
+						
+			connect(this->inSock, (struct sockaddr*) &(this->inSockAddress), sizeof(this->inSockAddress));
+		}
+		
+		ssize_t sendToApp(const Message* message){
+			return send(this->unSock, message->data, message->len, 0);
+		}
+		
+		ssize_t sendOutside(const Message* message){
+			return send(this->inSock, message->data, message->len, 0);
+		}
 	
 	public:	
 
@@ -84,8 +104,12 @@ class DaemonService{
 		Queue<Message*>* outQueue; 			/*	this queue is to be sent outside	*/
 		
 		DaemonService(uint32_t appID){
+			/*	default state*/			
+			this->working = false;
+			this->isConnected = false;
+			this->svcRole = SVC_ROLE_UNDEFINED;
 			this->appID = appID;
-			//this->workingMutex = new shared_mutex();
+			
 			/*	init queues	*/
 			this->incomingQueue = new Queue<Message*>();
 			this->outgoingQueue = new Queue<Message*>();
@@ -207,15 +231,7 @@ class DaemonService{
     		/*
     		else: queue is empty
     		*/  		
-		}
-		
-		ssize_t sendToApp(const Message* message){
-			return send(this->unSock, message->data, message->len, 0);
-		}
-		
-		ssize_t sendOutside(const Message* message){
-			return sendto(daemonInSocket, message->data, message->len, 0, (struct sockaddr*) &this->inSockAddress, sizeof(this->inSockAddress));
-		}
+		}	
 		
 		int encryptMessage(const uint8_t* plainMessage, const size_t* plainLen, uint8_t* encryptedMessage, size_t* encryptedLen){
 		
@@ -266,10 +282,17 @@ class DaemonService{
 							enum SVCCommand cmd = (enum SVCCommand) decryptedMessage[5];
 							switch (cmd){
 								case SVC_CMD_CHECK_ALIVE:
-								case SVC_CMD_REGISTER_APP:									
-								case SVC_CMD_CONNECT_STEP1:
+								case SVC_CMD_REGISTER_APP:								
 									/*	do nothing	*/
 									break;
+									
+								case SVC_CMD_CONNECT_STEP1:
+									if (_this->svcRole == SVC_ROLE_SERVER){
+										/*	read appID 	*/
+										
+									}
+									break;
+									
 								case SVC_CMD_CONNECT_STEP2:
 									break;
 								case SVC_CMD_CONNECT_STEP3:
@@ -283,6 +306,9 @@ class DaemonService{
 							_this->inQueue->enqueue(new Message(decryptedMessage, decryptedLen));
 						}
 					}
+					
+					/*	process finished, remove message from queue	*/
+					_this->incomingQueue->dequeue();
 				}
 			}
 			
@@ -296,7 +322,9 @@ class DaemonService{
 
 			/*	iterate the outgoing queue	*/
 			uint8_t* allocBuffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
-			size_t len;
+			size_t allocSize;
+			
+			//size_t len;
 			
 			Message* message;
 						
@@ -312,7 +340,8 @@ class DaemonService{
 					infoByte = message->data[4];					
 					
 					if (infoByte & SVC_COMMAND_FRAME){
-						/*	command frame, extract arguments	*/												
+					
+						/*	command frame, extract arguments to argv	*/												
 						
 						uint8_t argc = message->data[6];
 						SVCCommandParam* argv[argc];
@@ -322,7 +351,7 @@ class DaemonService{
 							/*	just get pointer, not performing copy	*/
 							argv[i] = new SVCCommandParam();
 							argv[i]->length = *((uint16_t*)pointer);
-							argv[i]->param = pointer + 2;
+							argv[i]->data = pointer + 2;
 							pointer += 2+argv[i]->length;
 						}						
 						
@@ -336,16 +365,15 @@ class DaemonService{
 								/* do nothing	*/
 								break;
 							case SVC_CMD_REGISTER_APP:
+								printf("processing CMD_REGISTER_APP\n");
+								
 								uint32_t appID;
 								ssize_t rs;
 								bool newAppAllowed;
 								bool serviceRemoved;
-								
-								printf("processing CMD_REGISTER_APP\n");
 
-								/*	check if app existed	*/
-								size_t size;
-								appID = *((uint32_t*)(argv[0]->param));
+								/*	check if app existed	*/								
+								appID = *((uint32_t*)(argv[0]->data));
 								sessionID = appExisted(appID);
 								newAppAllowed = false;
 								serviceRemoved = false;								
@@ -354,11 +382,11 @@ class DaemonService{
 								if (sessionID != SVC_DEFAULT_SESSIONID && sessionID!=-1){
 									//printf("check for app alive\n");
 									params.clear();
-									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_CHECK_ALIVE, &params);
+									prepareCommand(allocBuffer, &allocSize, sessionID, SVC_CMD_CHECK_ALIVE, &params);
 									/*	send this to app	*/
 									appTableMutex->lock_shared();
 									if (appTable[sessionID]!=NULL){
-										appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
+										appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, allocSize));
 										newAppAllowed = !(appTable[sessionID]->signalNotificator.waitCommand(SVC_CMD_CHECK_ALIVE, &params, SVC_SHORT_TIMEOUT));
 										if (newAppAllowed){
 											/*	remove old service */
@@ -418,15 +446,15 @@ class DaemonService{
 									
 									/*	repsonse sessionID to SVC app	*/
 									params.clear();
-									params.push_back(new SVCCommandParam(4, (uint8_t*)(&sessionID)));
-									params.push_back(new SVCCommandParam(4, (uint8_t*)(argv[1]->param)));
-									prepareCommand(allocBuffer, &size, sessionID, SVC_CMD_REGISTER_APP, &params);
+									params.push_back(new SVCCommandParam(4, (uint8_t*) &sessionID));
+									params.push_back(new SVCCommandParam(4, argv[1]->data));
+									prepareCommand(allocBuffer, &allocSize, sessionID, SVC_CMD_REGISTER_APP, &params);
 									
 									/*	this service has now its own session ID	*/
 									//printf("1\n");
 									appTableMutex->lock_shared();
 									//printf("2\n");
-									appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, size));
+									appTable[sessionID]->inQueue->enqueue(new Message(allocBuffer, allocSize));
 									//printf("3\n");
 									appTableMutex->unlock_shared();
 									//printf("4\n");
@@ -435,8 +463,55 @@ class DaemonService{
 								else: session ID not exist
 								*/
 								break;
-							case SVC_CMD_CONNECT_STEP1:
 								
+							case SVC_CMD_CONNECT_STEP1:
+								printf("processing SVC_CMD_CONNECT_STEP1\n");
+								if (!_this->isConnected){	
+									_this->svcRole = *(argv[0]->data);				
+									if (_this->svcRole == SVC_ROLE_CLIENT){
+										/*	get 4 bytes remote address then connect to server SVC-daemon	*/
+										_this->setAddress(*((uint32_t*)(argv[1]->data)));
+										
+										/*	prepare to send out SVC_CMD_CONNECT_STEP1	*/											
+										params.clear();
+										/*	append appID	*/
+										params.push_back(new SVCCommandParam(4, (uint8_t*) &(_this->appID)));
+										/*	add version info	*/
+										uint8_t version = _this->svcRole | SVC_VERSION;
+										params.push_back(new SVCCommandParam(argv[0]->length, &version));
+										params.push_back(new SVCCommandParam(argv[2]->length, argv[2]->data));
+										prepareCommand(allocBuffer, &allocSize, SVC_DEFAULT_SESSIONID, SVC_CMD_CONNECT_STEP1, &params);
+										/*	send out	*/
+										_this->outQueue->enqueue(new Message(allocBuffer, allocSize));
+									}
+									else{
+										/*	do nothing - for now	*/
+									}
+								}
+								/*
+								else: connected state require disconnect first
+								*/
+								break;
+								
+							case SVC_CMD_CONNECT_STEP2:
+								if (_this->svcRole==SVC_ROLE_SERVER){
+									/*	prepare to send out SVC_CMD_CONNECT_STEP2	*/											
+									params.clear();
+									params.push_back(new SVCCommandParam(4, (uint8_t*) &(_this->appID)));
+									/*	add version info	*/
+									params.push_back(new SVCCommandParam(argv[0]->length, argv[0]->data));
+									params.push_back(new SVCCommandParam(argv[2]->length, argv[2]->data));
+									prepareCommand(allocBuffer, &allocSize, SVC_DEFAULT_SESSIONID, SVC_CMD_CONNECT_STEP2, &params);
+									/*	send out	*/
+									_this->outQueue->enqueue(new Message(allocBuffer, allocSize));
+								}
+								/*
+								else:	only server sends this command
+								*/
+								break;
+								
+							case SVC_CMD_CONNECT_STEP3:
+							
 							default:
 								break;
 						}
@@ -533,10 +608,12 @@ void* htpReadingLoop(void* args){
 	
 	/*	forward packet to correspondind incoming queue	*/
 	size_t byteRead;
+	socklen_t socklen;
+	struct sockaddr src_addr;
 	
 	while (working){	
 		do{
-			byteRead = recv(daemonInSocket, htpReceiveBuffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT);
+			byteRead = recvfrom(daemonInSocket, htpReceiveBuffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT, &src_addr, &socklen);
 		}
 		while((byteRead==-1 && (errno==EAGAIN || errno==EWOULDBLOCK)) && working);		
 		
@@ -544,6 +621,8 @@ void* htpReadingLoop(void* args){
 		if ((int)byteRead>0){			
 			printf("byte read from htp: %d\n", (int)byteRead);
 			printBuffer(htpReceiveBuffer, byteRead);
+			printf("address read from htp: ");
+			printBuffer((uint8_t*) &(src_addr), socklen);
 			
 			/*	check if sessionID is registered	*/
 			uint32_t sessionID = *((uint32_t*)htpReceiveBuffer);

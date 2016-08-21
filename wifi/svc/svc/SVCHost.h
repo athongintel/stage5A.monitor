@@ -10,7 +10,6 @@ class SVCHost{
 		SVCHost(){}
 		virtual ~SVCHost(){};
 		virtual uint32_t getHostAddress()=0;
-
 };
 
 #endif

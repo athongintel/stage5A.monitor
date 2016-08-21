@@ -77,9 +77,9 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 		goto errorInit;
 	}	
 	//2.3 get sessionID from response
-	this->sessionID = *((uint32_t*)(params[0]->param));
+	this->sessionID = *((uint32_t*)(params[0]->data));
 	printf("sessionID: %08x\n", this->sessionID);
-	sessionSecretResponded = *((uint32_t*)(params[1]->param));
+	sessionSecretResponded = *((uint32_t*)(params[1]->data));
 	if (sessionSecretResponded == sessionSecret){
 		//ok, this came from the daemon
 		goto success;
@@ -187,21 +187,22 @@ bool SVC::establishConnection(SVCHost* remoteHost){
 	
 	//1.	send establishing request to the daemon with appropriate params
 	//1.1	dertemine this is a client or server
-	uint8_t isServer = localApp->isServer()? 1:0;
+	uint8_t svcRole = localApp->isServer()? SVC_ROLE_SERVER : SVC_ROLE_CLIENT;
 	//1.2	add params
-	params.push_back(new SVCCommandParam(1, &isServer));
+	params.clear();
+	params.push_back(new SVCCommandParam(1, &svcRole));
 	//1.3	add challenge from app and send to the daemon
 	
-	if (isServer == 0){
+	if (svcRole == SVC_ROLE_CLIENT){
 		uint32_t serverAddress  = this->host->getHostAddress();
 		//this app is the CLIENT, get challenge from localApp and send to daemon
 		challengeSent = this->authenticator->generateChallenge();
-		params.push_back(new SVCCommandParam(4, (uint8_t*)&serverAddress));
+		params.push_back(new SVCCommandParam(4, (uint8_t*)&serverAddress));		
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));
 	}
 	
 	sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_CONNECT_STEP1, &params);
-	if (isServer == 0){
+	if (svcRole == SVC_ROLE_CLIENT){
 		//a.	CLIENT BUSSINESS CODE
 		//a.2	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.
 		if (signalNotificator.waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
