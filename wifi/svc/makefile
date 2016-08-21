@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -pthread -I./ -std=c++1y -lrt
+CFLAGS = -pthread -I./ -std=c++11 -lrt
 
 client:
 	$(CC) -o client.exe SendFileApp.cpp ./svc/SVCHostIP.cpp ./svc/SVC.cpp ./svc/SVC-header.cpp $(CFLAGS)
