@@ -608,8 +608,10 @@ void* htpReadingLoop(void* args){
 	
 	/*	forward packet to correspondind incoming queue	*/
 	size_t byteRead;
-	socklen_t socklen;
+	
 	struct sockaddr_in src_addr;
+	/*	init to avoid garbage when performing recvfrom	*/
+	socklen_t socklen = sizeof(src_addr);
 	
 	while (working){	
 		do{
