@@ -2,7 +2,7 @@
 #define __SVC_QUEUE__
 
 	#include "Node.h"
-	#include <mutex>
+	#include "shared_mutex"
 
 	using namespace std;
 
@@ -16,9 +16,12 @@
 	
 		private:
 			Node<T>* first;
-			Node<T>* last;
-			int count;			
-			mutex countMutex;
+			Node<T>* last;			
+			int count;
+			
+			shared_mutex* countMutex;
+			shared_mutex* firstMutex;
+			shared_mutex* lastMutex;
 
 		public:
 	
@@ -26,6 +29,9 @@
 				this->first = NULL;
 				this->last = NULL;
 				this->count = 0;
+				countMutex = new shared_mutex();
+				firstMutex = new shared_mutex();
+				lastMutex = new shared_mutex();
 			}
 		
 			~Queue(){
@@ -36,60 +42,65 @@
 		
 			bool notEmpty(){			
 				bool rs;
-				this->countMutex.lock();
+				this->countMutex.lock_shared();
 				rs = count>0;
-				this->countMutex.unlock();		
+				this->countMutex.unlock_shared();
 				return rs;
 			}
-		
+
 			void enqueue(T data){
 				Node<T>* element = new Node<T>();
 				element->setData(data);
 				element->setNext(NULL);
-				this->countMutex.lock();
-				if (this->count==0){
+				
+				if (this->notEmpty()){
+					this->lastMutex->lock();
+					this->last->setNext(element);
+					this->last = element;
+					this->lastMutex->unlock();
+				}
+				else{
+					this->firstMutex->lock();
+					this->lastMutex->lock();
 					this->first = element;
 					this->last = element;
+					this->lastMutex->unlock();
+					this->firstMutex->unlock();				
 				}
-				else{
-					this->last->setNext(element);
-					this->last = element;				
-				}
+				this->countMutex->lock();
 				this->count++;
-				this->countMutex.unlock();				
+				this->countMutex->unlock();
 			}
-		
-			bool peak(T* data){
-				bool rs;
-				if (this->countMutex.try_lock()){
-					if (this->count>0){
-						*data = this->first->getData();
-						rs = true;
-					}
-					else{
-						rs = false;
-					}
-					this->countMutex.unlock();
-				}
-				else{
-					rs = false;
-				}
-				return rs;				
-			}
-		
+			
 			void dequeue(){
-				this->countMutex.lock();
-				if (this->count>0){
+				if (this->notEmpty()){
+					this->firstMutex->lock();
 					Node<T>* tmp = this->first;
 					this->first = tmp->getNext();
 					delete tmp;
-					this->count--;	
+					this->firstMutex->unlock();
 				}
 				/*
 				else: queue is empty, do nothing
 				*/
+				this->countMutex.lock();
+				this->count--;				
 				this->countMutex.unlock();
-			}			
+			}
+		
+			bool peak(T* data){
+				bool rs;				
+				if (this->notEmpty()){
+					this->firstMutex->lock_shared();
+					*data = this->first->getData();
+					this->firstMutex->unlock_shared();
+					rs = true;
+				}
+				else{
+					rs = false;
+				}				
+				return rs;				
+			}						
 	};
 
 #endif

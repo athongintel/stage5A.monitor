@@ -42,9 +42,9 @@
 	#define	SVC_DAEPORT			1223
 
 	/*	SVC INFO BIT	*/
-	#define SVC_ROLE_CLIENT						0x00
-	#define SVC_ROLE_SERVER						0x01
-	#define SVC_ROLE_UNDEFINED					0x02
+	//#define SVC_ROLE_CLIENT						0x00
+	//#define SVC_ROLE_SERVER						0x01
+	//#define SVC_ROLE_UNDEFINED					0x02
 	
 	#define SVC_COMMAND_FRAME  					0x80
 	#define SVC_DATA_FRAME  					0x00
@@ -183,6 +183,7 @@
 	
 	/*	UTILS FUNCTIONS	*/
 	/*	print current buffer in hex bytes	*/
+	void extractParams(const uint8_t* buffer, vector<SVCCommandParam*>* params);
 	void printBuffer(const uint8_t* buffer, size_t len);
 	/*	timeoutSignal and waitingSignal must be differrent, or the behavior is undefined*/
 	bool waitSignal(int waitingSignal, int timeoutSignal, int timeout);	

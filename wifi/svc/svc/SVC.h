@@ -9,45 +9,54 @@
 	#include "SVCHost.h"
 	#include "SVCApp.h"
 
-	#include <cstring>	//for 'memcpy'
 	#include <sys/un.h>
-	#include <sys/socket.h>
 	#include <sys/types.h>
 
 	static SignalNotificator signalNotificator;
-			
+	static hash<string> hasher;
+	
+	class SVCEndPoint(){
+		
+		private:
+			Queue<Message*>* dataQueue;
+		
+		public:
+			SVCEndPoint(){};
+			~SVCEndPoint();
+				
+			int sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp);
+			int readData(uint8_t* data, size_t& len);			
+	}
+	
 	class SVC{				
 				
-		bool isAuthenticated;
-		SVCHost* host;
 		SVCApp* localApp;
 		SVCAuthenticator* authenticator;
 
 		string svcClientPath;
-		struct sockaddr_un daemonSocketAddress;
-		struct sockaddr_un svcSocketAddress;
+		struct sockaddr_un daemonSocketAddress;		/* 	read from	*/
+		struct sockaddr_un svcSocketAddress;		/*	write to	*/
 		int svcSocket;
 		int svcDaemonSocket;
-		
-		uint32_t sessionID;
-		
+
 		pthread_t readingThread;
 		volatile bool working;
 		
+		uint32_t sessionID;
 		
-		SVCDataReceiveHandler dataHandler;
+		shared_mutex* connectionRequestMutex;
+		Queue<Message*>* connectionRequest;
+			
 	
 		void destruct();
-		static void* processPacket(void* args);			
-		//wait for a specific command from the lower layer, return false if timeout or error, params will be filled with received parameters
+		static void* processPacket(void* args);	
 				
 		public:	
 			~SVC();
 			SVC(SVCApp* localApp, SVCAuthenticator* authenticator);
-			bool establishConnection(SVCHost* remoteHost);
-			int sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp);
-			bool setDataReceiveHandler(SVCDataReceiveHandler handler);
-	};
-				
+					
+			SVCEndPoint* establishConnection(SVCHost* remoteHost);
+			SVCEndPoint* listenConnection();					
+	};		
 	
 #endif

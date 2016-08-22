@@ -12,7 +12,7 @@ class SendFileApp : SVCApp, SVCAuthenticator{
 		SendFileApp();
 		
 		string getAppID();
-		bool isServer();
+		//bool isServer();
 		std::string getIdentity();
 		bool verifyIdentity(std::string identity, std::string challenge, std::string proof);
 		std::string generateProof(std::string challenge);

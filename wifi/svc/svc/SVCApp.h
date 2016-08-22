@@ -9,7 +9,7 @@ class SVCApp{
 		SVCApp(){}
 		virtual ~SVCApp(){}
 		virtual std::string getAppID()=0;
-		virtual bool isServer()=0;
+		//virtual bool isServer()=0;
 };
 
 #endif

@@ -30,10 +30,6 @@ string SendFileApp::getAppID(){
 	return string("SEND_FILE_APP");
 }
 
-bool SendFileApp::isServer(){
-	return false;
-}
-
 string SendFileApp::getIdentity(){
 	return "IM_THE_CLIENT";
 }

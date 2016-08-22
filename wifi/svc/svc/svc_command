@@ -24,8 +24,7 @@ SVC frame format for daemon
 			- daemon1 to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
 			
 		° SVC_CMD_CONNECT_STEP1:
-			- client to daemon1: 3 argument: [(1 byte - isClient = 0), (4 byte - address), (n bytes - challenge)]
-			- server to daemon2: 1 argument: [(1 byte - isServer = 1)]
+			- client to daemon1: 2 argument: [(4 byte - address), (n bytes - challenge)]
 			- daemon1 to daemon2: 2 argument: [(4 bytes - appID), (n bytes - challenge)]
 			- daemon2 to server: 1 argument: [(n bytes - challenge)]
 			

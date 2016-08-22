@@ -7,18 +7,14 @@ int main(int argc, char** argv){
 	cout<<"server app initiated!"<<endl;
 }
 
-SendFileAppServer::SendFileAppServer(){
-	
-	SVCHost* remotehost = new SVCHostIP("0.0.0.0");
+SendFileAppServer::SendFileAppServer(){		
 	
 	SVC* svc = new SVC(this, this);
-	if (!svc->establishConnection(remotehost)){
-		throw "Error establishing connection";
-	}
 }
 
 //interface implementation
 
+/*	SVCApp interface	*/
 string SendFileApp::getAppID(){
 	return string("SEND_FILE_APP");
 }
@@ -26,6 +22,8 @@ string SendFileApp::getAppID(){
 bool SendFileApp::isServer(){
 	return true;
 }
+
+/*	SVCAuthenticator interface	*/
 
 string SendFileApp::getIdentity(){
 	return "IM_THE_SERVER";

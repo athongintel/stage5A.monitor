@@ -21,7 +21,7 @@ using namespace std;
 
 class DaemonService;
 
-static unordered_map<uint32_t, DaemonService*> appTable;// = {};
+static unordered_map<uint32_t, DaemonService*> appTable;
 static shared_mutex* appTableMutex;
 
 uint32_t appExisted(uint32_t appID);
@@ -107,7 +107,7 @@ class DaemonService{
 			/*	default state*/			
 			this->working = false;
 			this->isConnected = false;
-			this->svcRole = SVC_ROLE_UNDEFINED;
+			//this->svcRole = SVC_ROLE_UNDEFINED;
 			this->appID = appID;
 			
 			/*	init queues	*/
@@ -287,10 +287,10 @@ class DaemonService{
 									break;
 									
 								case SVC_CMD_CONNECT_STEP1:
-									if (_this->svcRole == SVC_ROLE_SERVER){
-										/*	read appID 	*/
+									//if (_this->svcRole == SVC_ROLE_SERVER){
+									//	/*	read appID 	*/
 										
-									}
+									//}
 									break;
 									
 								case SVC_CMD_CONNECT_STEP2:
@@ -467,8 +467,8 @@ class DaemonService{
 							case SVC_CMD_CONNECT_STEP1:
 								printf("processing SVC_CMD_CONNECT_STEP1\n");
 								if (!_this->isConnected){	
-									_this->svcRole = *(argv[0]->data);				
-									if (_this->svcRole == SVC_ROLE_CLIENT){
+									//_this->svcRole = *(argv[0]->data);				
+									//if (_this->svcRole == SVC_ROLE_CLIENT){
 										/*	get 4 bytes remote address then connect to server SVC-daemon	*/
 										_this->setAddress(*((uint32_t*)(argv[1]->data)));
 										
@@ -483,10 +483,10 @@ class DaemonService{
 										prepareCommand(allocBuffer, &allocSize, SVC_DEFAULT_SESSIONID, SVC_CMD_CONNECT_STEP1, &params);
 										/*	send out	*/
 										_this->outQueue->enqueue(new Message(allocBuffer, allocSize));
-									}
-									else{
-										/*	do nothing - for now	*/
-									}
+								//	}
+									//else{
+								//		/*	do nothing - for now	*/
+									//}
 								}
 								/*
 								else: connected state require disconnect first
@@ -494,7 +494,7 @@ class DaemonService{
 								break;
 								
 							case SVC_CMD_CONNECT_STEP2:
-								if (_this->svcRole==SVC_ROLE_SERVER){
+								//if (_this->svcRole==SVC_ROLE_SERVER){
 									/*	prepare to send out SVC_CMD_CONNECT_STEP2	*/											
 									params.clear();
 									params.push_back(new SVCCommandParam(4, (uint8_t*) &(_this->appID)));
@@ -504,7 +504,7 @@ class DaemonService{
 									prepareCommand(allocBuffer, &allocSize, SVC_DEFAULT_SESSIONID, SVC_CMD_CONNECT_STEP2, &params);
 									/*	send out	*/
 									_this->outQueue->enqueue(new Message(allocBuffer, allocSize));
-								}
+								//}
 								/*
 								else:	only server sends this command
 								*/

@@ -68,17 +68,11 @@ void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const 
 /*	this is the default implementation of handler of waitCommand	*/
 void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
 
-	int argc = (int)buffer[6];
 	struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
 	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
 	const uint8_t* pointer = buffer+7;
 	
-	for (int i=0; i<argc; i++){
-		uint16_t len;
-		memcpy(&len, pointer, 2);
-		params->push_back(new SVCCommandParam(len, pointer+2));
-		pointer += len+2;
-	}
+	extractParams(buffer, params);
 	//signal the thread calling waitCommand
 	pthread_kill(notificator->thread, SVC_ACQUIRED_SIGNAL);
 }
@@ -102,6 +96,19 @@ bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*
 
 	/*	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL	*/
 	return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
+}
+
+void extractParams(const uint8_t* buffer, vector<SVCCommandParam*>* params){
+	
+	const uint8_t* pointer = buffer+7;
+	int argc = buffer[6];
+	uint16_t len;
+	
+	for (int i=0; i<argc; i++){		
+		len = *((uint16_t*)pointer);
+		params->push_back(new SVCCommandParam(len, pointer+2));
+		pointer += len+2;
+	}	
 }
 
 bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){
