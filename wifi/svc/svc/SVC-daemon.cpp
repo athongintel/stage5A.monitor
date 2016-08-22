@@ -609,7 +609,7 @@ void* htpReadingLoop(void* args){
 	/*	forward packet to correspondind incoming queue	*/
 	size_t byteRead;
 	socklen_t socklen;
-	struct sockaddr src_addr;
+	struct sockaddr_in src_addr;
 	
 	while (working){	
 		do{
