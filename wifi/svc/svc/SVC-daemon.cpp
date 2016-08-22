@@ -613,7 +613,7 @@ void* htpReadingLoop(void* args){
 	
 	while (working){	
 		do{
-			byteRead = recvfrom(daemonInSocket, htpReceiveBuffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT, &src_addr, &socklen);
+			byteRead = recvfrom(daemonInSocket, htpReceiveBuffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT, (struct sockaddr*) &src_addr, &socklen);
 		}
 		while((byteRead==-1 && (errno==EAGAIN || errno==EWOULDBLOCK)) && working);		
 		
