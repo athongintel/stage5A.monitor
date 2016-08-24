@@ -6,13 +6,18 @@ using namespace std;
 
 int main(int argc, char** argv){
 	SendFileAppServer* app = new SendFileAppServer();
-	printf("server app initiated!\n");
 }
 
 SendFileAppServer::SendFileAppServer(){		
 	
 	SVC* svc = new SVC(this, this);
-	SVCEndPoint* endPoint = svc->listenConnection();
+	SVCEndPoint* endPoint;
+	do{
+		endPoint = svc->listenConnection();
+		if (endPoint!=NULL){
+			printf("client connected\n");
+		}
+	while (endPoint == NULL);
 }
 
 //interface implementation

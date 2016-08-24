@@ -253,7 +253,6 @@ SVCEndPoint* SVC::listenConnection(){
 	string challengeReceived;
 	string proof;
 	
-	
 	if (this->connectionRequest->peak(&message)){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1
 		
