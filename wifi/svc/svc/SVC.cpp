@@ -196,9 +196,9 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	uint32_t serverAddress  = remoteHost->getHostAddress();
 	uint32_t appID = (uint32_t)hasher(this->localApp->getAppID());
 	clearParams(&params);
-	params.push_back(new SVCCommandParam(4, (uint8_t*) &serverAddress));
-	params.push_back(new SVCCommandParam(4, (uint8_t*) &appID));
 	params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));
+	params.push_back(new SVCCommandParam(4, (uint8_t*) &appID));
+	params.push_back(new SVCCommandParam(4, (uint8_t*) &serverAddress));
 	endPoint->sendCommand(SVC_CMD_CONNECT_STEP1, &params);
 	
 	//--	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.

@@ -44,6 +44,7 @@
 	
 	
 	/*	SVC CONSTANTS' LENGTHS	*/
+	#define APPID_LENGTH						4
 	#define	SESSIONID_LENGTH					4
 	#define ENDPOINTID_LENGTH					8
 
@@ -86,6 +87,7 @@
 		pthread_t thread;			
 	};
 	
+	
 	class Message{
 		public:
 			uint8_t* data;
@@ -99,6 +101,7 @@
 			
 			~Message(){
 				delete data;
+				printf("message destructed\n");
 			}		
 	};
 
@@ -135,15 +138,7 @@
 			struct SVCDataReceiveNotificator* notificationArray[_SVC_CMD_COUNT];
 			shared_mutex notificationArrayMutex;
 			
-			static void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
-				struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
-				vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
-				const uint8_t* pointer = buffer+7;
-	
-				extractParams(buffer, params);
-				//signal the thread calling waitCommand
-				pthread_kill(notificator->thread, SVC_ACQUIRED_SIGNAL);
-			}
+			static void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args);
 			
 		public:
 			SignalNotificator(){
@@ -154,67 +149,14 @@
 			}
 			~SignalNotificator(){}
 			
-			SVCDataReceiveNotificator* getNotificator(enum SVCCommand cmd){
-				SVCDataReceiveNotificator* rs;
-				notificationArrayMutex.lock_shared();
-				rs = notificationArray[cmd];
-				notificationArrayMutex.unlock_shared();
-				return rs;
-			}
-			
-			void removeNotificator(enum SVCCommand cmd){
-				notificationArrayMutex.lock();
-				if (notificationArray[cmd]!=NULL){
-					delete notificationArray[cmd];
-					notificationArray[cmd]=NULL;
-					//printf("noti removed, cmd: %d\n", cmd);
-				}
-				notificationArrayMutex.unlock();				
-			}
-			
-			void addNotificator(enum SVCCommand cmd, SVCDataReceiveNotificator* notificator){
-				notificationArrayMutex.lock();
-				if (notificationArray[cmd]!=NULL){
-					notificationArrayMutex.unlock();
-					throw SVC_ERROR_NOTIFICATOR_DUPLICATED;
-				}
-				else{
-					notificationArray[cmd] = notificator;
-					notificationArrayMutex.unlock();
-					//printf("noti added, cmd: %d\n", cmd);
-				}					
-			}
-			
-			bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout){
-				//--	create new notificator
-				clearParams(params);
-				struct SVCDataReceiveNotificator* notificator = new struct SVCDataReceiveNotificator();
-				notificator->args = params;
-				notificator->thread = pthread_self();
-				notificator->handler = waitCommandHandler;
-	
-				/*
-					add this notificator to notificationList
-					NOTE: To use 'waitCommand', make sure that there is at least one active thread
-					which is processing the message and checking notificationList.
-					use mutex to synchonize multiple threads which may use the list at a same time
-				*/
-
-				this->addNotificator(cmd, notificator);		
-
-				//--	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL
-				return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
-			}
+			SVCDataReceiveNotificator* getNotificator(enum SVCCommand cmd);			
+			void removeNotificator(enum SVCCommand cmd);
+			void addNotificator(enum SVCCommand cmd, SVCDataReceiveNotificator* notificator);			
+			bool waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout);
 	};
 			
 	/*	END OF CLASSES DEFINITIONS	*/	
 
-	
-	//void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
-	//void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);	
-	//ssize_t _sendPacket(int socket, const uint8_t* buffer, size_t len);			
-	
-	
 	//--	UTILS FUNCTIONS		--//
 	
 	//--	return if the command must be encrypted
@@ -231,6 +173,10 @@
 	
 	//--	timeoutSignal and waitingSignal must be differrent, otherwise the behavior is undefined
 	bool waitSignal(int waitingSignal, int timeoutSignal, int timeout);	
+	
+	//void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
+	//void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);	
+	//ssize_t _sendPacket(int socket, const uint8_t* buffer, size_t len);						
 	
 	
 #endif

@@ -1,8 +1,5 @@
 #include "svc/SVC.h"
-#include "svc/SVCHost.h"
-#include "svc/SVCHostIP.h"
-#include <string>
-#include <iostream>
+#include "svc/host/SVCHostIP.h"
 
 class SendFileApp : SVCApp, SVCAuthenticator{
 

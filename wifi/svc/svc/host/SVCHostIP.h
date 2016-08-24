@@ -2,7 +2,6 @@
 #define __SVC_HOSTIP__
 
 	#include "SVCHost.h"
-	#include <string>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
 	

@@ -1,5 +1,8 @@
 #include "SendFileApp.h"
 
+//--TODO: to be remove debugging headers
+#include <iostream>
+
 using namespace std;
 
 int main(int argc, char** argv){

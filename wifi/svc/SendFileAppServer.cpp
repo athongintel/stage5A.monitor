@@ -1,10 +1,12 @@
 #include "SendFileAppServer.h"
 
+//--TODO:	to be removed
+
 using namespace std;
 
 int main(int argc, char** argv){
 	SendFileAppServer* app = new SendFileAppServer();
-	cout<<"server app initiated!"<<endl;
+	printf("server app initiated!\n");
 }
 
 SendFileAppServer::SendFileAppServer(){		
@@ -15,28 +17,26 @@ SendFileAppServer::SendFileAppServer(){
 
 //interface implementation
 
-/*	SVCApp interface	*/
-/*
-string SendFileApp::getAppID(){
+//--	SVCApp interface
+
+string SendFileAppServer::getAppID(){
 	return string("SEND_FILE_APP");
 }
-*/
-
 
 /*	SVCAuthenticator interface	*/
 
-string SendFileApp::getIdentity(){
+string SendFileAppServer::getIdentity(){
 	return "IM_THE_SERVER";
 }
 
-bool SendFileApp::verifyIdentity(string identity, string challenge, string proof){
+bool SendFileAppServer::verifyIdentity(string identity, string challenge, string proof){
 	return (identity.compare("IM_THE_CLIENT")==0 && challenge.append("OK").compare(proof)==0);
 }
 
-string SendFileApp::generateProof(string challenge){
+string SendFileAppServer::generateProof(string challenge){
 	return challenge.append("OK");
 }
 
-string SendFileApp::generateChalenge(){
+string SendFileAppServer::generateChallenge(){
 	return string("this can be another thing");
 }

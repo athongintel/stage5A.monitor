@@ -8,7 +8,7 @@ SVC frame format for daemon
 	encrypted: 3th bit
 	using tcp: 2th bit	 //used by htp layer
 	priority: 1&0 th bit //used by htp layer
-
+-------------------------------------------------------
 - data packet structure
 	[encrypted]
 	+ data length: 4 byte	
@@ -17,29 +17,27 @@ SVC frame format for daemon
 	
 - command packet structure
 	[encrypted]
-	+ command id: 1 byte
-		° SVC_CMD_CHECK_ALIVE: check if the socket is still listened by app
-			- daemon to client: 0 argument	
-			
-		° SVC_CMD_REGISTER_APP: resgister app to daemon
-			- client to daemon1: 2 argument: [(4 byte - appID), (4 byte - session secret)]
-			- daemon1 to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
+	+ command id: 1 byte		
 			
 		° SVC_CMD_CONNECT_STEP1:
-			- client to daemon1: 2 argument: [(4 bytes - address), (4 bytes - appID), (n bytes - challenge)]
-			- daemon1 to daemon2: 2 argument: [(4 bytes - appID), (n bytes - challenge)]
+			- client to daemon1: 3 argument: [(n bytes - challenge), (4 bytes - appID), (4 bytes - address)]
+			- daemon1 to daemon2: 2 argument: [(n bytes - challenge), (4 bytes - appID), (n bytes - key exchange 1)]
 			- daemon2 to server: 1 argument: [(n bytes - challenge)]
 			
 		° SVC_CMD_CONNECT_STEP2:
-			- server to daemon: 3 argument: [(8 bytes - endpoint), (n bytes - identity), (n bytes - proof), (n bytes - challenge)]
-			- daemon to daemon: 4 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge), (4 bytes - appID)]
-			- daemon to client: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+			- server to daemon2: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+			- daemon2 to daemon1: 4 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge), (n bytes - key exchange 2)]
+			- daemon1 to client: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
 			
-		° SVC_CMD_CONNECT_STEP3:
-			- client to daemon: 0 argument
-			- daemon1 to daemon2: 4 argument: [key-exchange]
-			- daemon2 to server: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+		° SVC_CMD_CONNECT_STEP3:		
+			- daemon1 to daemon2: 1 argument: [(n bytes - key-exchange 3)]	
 			- daemon1 to client: 0 argument
+			
+		° SVC_CMD_CONNECT_STEP4:
+			- client to daemon1: 2 argument: [(n bytes - identity), (n bytes - proof)]
+			- daemon1 to daemon2: 2 argument: [(n bytes - identity), (n bytes - proof)]
+			- daemon2 to server: 2 argument: [(n bytes - identity), (n bytes - proof)]
+
 		
 	+ number of arguments: 1 byte
 	+ [arguments' lengths in 2 bytes followed by arguments]

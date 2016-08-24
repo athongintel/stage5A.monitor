@@ -6,7 +6,7 @@
 
 	#include "authenticator/SVCAuthenticator.h"
 	#include "SVC-header.h"
-	#include "SVCHost.h"
+	#include "host/SVCHost.h"
 	#include "SVCApp.h"
 
 	#include <unordered_map>

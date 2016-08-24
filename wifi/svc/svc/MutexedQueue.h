@@ -22,6 +22,8 @@
 			shared_mutex* countMutex;
 			shared_mutex* firstMutex;
 			shared_mutex* lastMutex;
+			
+			
 
 		public:
 	
@@ -72,21 +74,20 @@
 				this->countMutex->unlock();
 			}
 			
-			void dequeue(){
+			T dequeue(){
 				if (this->notEmpty()){
 					this->firstMutex->lock();
 					Node<T>* tmp = this->first;
-					this->first = tmp->getNext();
-					delete tmp;
+					this->first = tmp->getNext();					
 					this->firstMutex->unlock();
 					
 					this->countMutex->lock();
 					this->count--;				
 					this->countMutex->unlock();
+					
+					return tmp->getData();										
 				}
-				/*
-				else: queue is empty, do nothing
-				*/
+				return NULL;
 			}
 		
 			bool peak(T* data){		
