@@ -14,13 +14,15 @@ int main(int argc, char** argv){
 
 SendFileApp::SendFileApp(){
 	
-	SVCHost* remotehost = new SVCHostIP("149.56.142.13");
+	SVCHost* remoteHost = new SVCHostIP("149.56.142.13");
 	
 	this->svc = new SVC(this, this);
-	if (!svc->establishConnection(remotehost)){
+	this->endPoint = this->svc->establishConnection(remoteHost);
+	if (this->endPoint==NULL){
 		svc->~SVC();
 		throw "Error establishing connection";
 	}
+	
 	printf("connection established!");
 }
 
@@ -29,6 +31,7 @@ SendFileApp::SendFileApp(){
 string SendFileApp::getAppID(){
 	return string("SEND_FILE_APP");
 }
+
 
 string SendFileApp::getIdentity(){
 	return "IM_THE_CLIENT";

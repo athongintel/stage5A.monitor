@@ -11,6 +11,8 @@ bool isEncryptedCommand(enum SVCCommand command){
 /*
 	This function load the command, params and necessary infos into buffer
 */
+
+/*
 void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params){
 
 	//printf("1\n");
@@ -19,13 +21,11 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	uint8_t* pointer = buffer + bufferLength;
 	
 	for (int i=0; i<params->size(); i++){
-		/*	2 bytes for param length, then the param itself	*/
 		bufferLength += 2 + (*params)[i]->length;
 	}
 	//printf("2\n");
-	/*	add header	*/
 	//1. sessionID
-	memcpy(buffer, (uint8_t*) &sessionID, 4);
+	memcpy(buffer, (uint8_t*) &sessionID, SESSIONID_LENGTH);
 	//2. 1 info byte
 	buffer[4] = 0x00;
 	buffer[4] = buffer[4] | SVC_COMMAND_FRAME;
@@ -51,11 +51,11 @@ void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCo
 	}
 
 	//printf("5\n");
-	/*	return bufferLength to len	*/
 	*len = bufferLength;
 	//printf("6\n");
 }
-
+*/
+/*
 void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params){
 	uint8_t* buffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
 	size_t len;
@@ -64,51 +64,26 @@ void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const 
 	printBuffer(buffer, len);	
 	send(socket, buffer, len, 0);
 }
-
-/*	this is the default implementation of handler of waitCommand	*/
-void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
-
-	struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
-	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
-	const uint8_t* pointer = buffer+7;
-	
-	extractParams(buffer, params);
-	//signal the thread calling waitCommand
-	pthread_kill(notificator->thread, SVC_ACQUIRED_SIGNAL);
-}
-
-bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout){
-	
-	/*	create new notificator */
-	struct SVCDataReceiveNotificator* notificator = new struct SVCDataReceiveNotificator();
-	notificator->args = params;
-	notificator->thread = pthread_self();
-	notificator->handler = waitCommandHandler;
-	
-	/*	
-		add this notificator to notificationList
-		NOTE: To use 'waitCommand', make sure that there is at least one active thread
-		which is processing the message and checking notificationList.
-		use mutex to synchonize multiple threads which may use the list at a same time
-	*/
-
-	this->addNotificator(cmd, notificator);		
-
-	/*	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL	*/
-	return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
-}
+*/
 
 void extractParams(const uint8_t* buffer, vector<SVCCommandParam*>* params){
 	
-	const uint8_t* pointer = buffer+7;
-	int argc = buffer[6];
+	int argc = buffer[0];
+	int pointer = 1;
 	uint16_t len;
 	
 	for (int i=0; i<argc; i++){		
-		len = *((uint16_t*)pointer);
-		params->push_back(new SVCCommandParam(len, pointer+2));
+		len = *((uint16_t*)(buffer+pointer));
+		params->push_back(new SVCCommandParam(len, buffer + pointer + 2));
 		pointer += len+2;
-	}	
+	}
+}
+
+void clearParams(vector<SVCCommandParam*>* params){
+	for (int i=0; i<params->size(); i++){
+		delete (*params)[i];
+	}
+	params->clear();
 }
 
 bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){

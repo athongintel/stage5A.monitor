@@ -3,41 +3,34 @@
 //---for debugging, to be removed
 #include <iostream>
 #include <errno.h>
-//---
 
-using namespace std;
 
+//--	SVC IMPLEMENTATION	//
 SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
-
-	uint32_t sessionSecret;
-	uint32_t sessionSecretResponded;
-	vector<SVCCommandParam*> params;
 	
 	const char* errorString;
 	
-	this->sessionID = SVC_DEFAULT_SESSIONID;
-	this->authenticator = authenticator;
 	this->localApp = localApp;
+	this->authenticator = authenticator;
 	
-	sessionSecret = (uint32_t)hasher(to_string(rand()));
+	endPointsMutex = new shared_mutex();
 	
-	//0. 	check for existed socket
-	uint32_t hashedID = (uint32_t)hasher(localApp->getAppID());
-	this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(hashedID);	
+	//--	check for existed socket
+	this->appID = (uint32_t)hasher(localApp->getAppID());
+	this->svcClientPath = SVC_CLIENT_PATH_PREFIX + to_string(appID);	
 	if (unlink(this->svcClientPath.c_str())==0){
 		errorString = SVC_ERROR_NAME_EXISTED;
 		goto errorInit;
 	}
-	
-	//1. 	create a socket to svc daemon
-	//1.1 	daemon's endpoint to write to
+		
+	//--	daemon's endpoint to write to
 	memset(&this->daemonSocketAddress, 0, sizeof(this->daemonSocketAddress));
 	this->daemonSocketAddress.sun_family = AF_LOCAL;
 	memcpy(this->daemonSocketAddress.sun_path, SVC_DAEMON_PATH.c_str(), SVC_DAEMON_PATH.size());
 	this->svcDaemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
 	connect(this->svcDaemonSocket, (struct sockaddr*) &this->daemonSocketAddress, sizeof(this->daemonSocketAddress));
 	
-	//	svc's endpoint to read from
+	//--	svc's endpoint to read from
 	memset(&this->svcSocketAddress, 0, sizeof(this->svcSocketAddress));
 	this->svcSocketAddress.sun_family = AF_LOCAL;
 	memcpy(this->svcSocketAddress.sun_path, this->svcClientPath.c_str(), this->svcClientPath.size());
@@ -48,7 +41,6 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	}
 	
 	this->connectionRequest = new Queue<Message*>();
-	this->connectionRequestMutex = new shared_mutex();
 	
 	//1.5	create reading thread	
 	sigset_t sig;
@@ -64,6 +56,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	pthread_attr_init(&attr);
 	pthread_create(&this->readingThread, &attr, processPacket, this);
 	
+	/*
 	//2.	register localApp to daemon
 	//2.1	send command to daemon
 	params.push_back(new SVCCommandParam(4, (uint8_t*) &hashedID));
@@ -71,7 +64,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_REGISTER_APP, &params);
 	
 	params.clear();
-	if (!signalNotificator.waitCommand(SVC_CMD_REGISTER_APP, &params, SVC_DEFAULT_TIMEOUT)){
+	if (!sigNot->waitCommand(SVC_CMD_REGISTER_APP, &params, SVC_DEFAULT_TIMEOUT)){
 		errorString = SVC_ERROR_REQUEST_TIMEDOUT;
 		goto errorInit;
 	}
@@ -81,32 +74,28 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	printf("sessionID: %08x\n", this->sessionID);
 	sessionSecretResponded = *((uint32_t*)(params[1]->data));
 	if (sessionSecretResponded == sessionSecret){
-		/*	ok, this came from the daemon	*/
+
 		goto success;
 	}
 	else{
-		/*	this is a fake response from elsewhere	*/		
 		goto errorInit;
 	}
+	*/
+	
+	goto success;
 	
 	errorInit:
 		//destruct params manually
-		params.clear();
-		//unlink socket 
 		this->destruct();
 		throw errorString;
 		
 	success:
-		params.clear();
+		printf("svc created\n");	
 }
 
 void SVC::destruct(){
 	this->working = false;	
 	pthread_join(this->readingThread, NULL);
-	//remove remaining notificator
-	for (uint8_t cmd=0; cmd<_SVC_CMD_COUNT; cmd++){
-		signalNotificator.removeNotificator((enum SVCCommand)cmd);
-	}
 	unlink(this->svcClientPath.c_str());
 	cout<<"svc destructed\n";
 }
@@ -118,59 +107,63 @@ SVC::~SVC(){
 /* SVC PRIVATE FUNCTION IMPLEMENTATION	*/
 
 void* SVC::processPacket(void* args){
-	
+
+	SVC* _this = (SVC*)args;
+		
 	int byteRead;
 	uint8_t* buffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
-	SVC* svcInstance = (SVC*)args;
-	uint32_t sessionID;
+
+	uint64_t endPointID;	
+	vector<SVCCommandParam*> params;
+	SVCEndPoint* endPoint;
 	
-	while (svcInstance->working){
+	while (_this->working){
 		do{
-			byteRead = recv(svcInstance->svcSocket, buffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT);
-			//if (byteRead!=-1) printf("recv returned %d errno %d\n", byteRead, errno);
+			byteRead = recv(_this->svcSocket, buffer, SVC_DEFAULT_BUFSIZ, MSG_DONTWAIT);		
 		}
-		while((byteRead==-1) && svcInstance->working);
+		while((byteRead==-1) && _this->working);
 		
 		if (byteRead>0){
 			printf("read a packet: ");
-			printBuffer(buffer, byteRead);			
+			printBuffer(buffer, byteRead);
 			
-			sessionID = *((uint32_t*)buffer);
-			uint8_t infoByte = buffer[4];
+			endPointID = *((uint64_t*)buffer);
+			uint8_t infoByte = buffer[ENDPOINTID_LENGTH];
+			
+			_this->endPointsMutex->lock_shared();
+			endPoint = _this->endPoints[endPointID];
+			_this->endPointsMutex->unlock_shared();
 		
 			if (infoByte & SVC_COMMAND_FRAME){				
-				enum SVCCommand cmd = (enum SVCCommand)buffer[5];				
-				if ((sessionID==svcInstance->sessionID) || (cmd == SVC_CMD_REGISTER_APP)){
-					/*	check for connect commands	*/
+				extractParams(buffer + ENDPOINTID_LENGTH + 2, &params);
+				
+				enum SVCCommand cmd = (enum SVCCommand)buffer[ENDPOINTID_LENGTH + 1];
+				
+				if (endPoint==NULL){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
-						/*	forward to connectionRequest	*/
-						this->connectionRequestMutex->lock();
-						this->connectionRequest->
+						//--	add this to connection request
+						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
 					}
-					/*	call COMMAND handler	*/												
-					SVCDataReceiveNotificator* notificator = signalNotificator.getNotificator(cmd);						
-					if (notificator!=NULL){						
-						//perform callback
-						notificator->handler(buffer, byteRead, notificator);
-						//remove handler
-						signalNotificator.removeNotificator(cmd);
-					}
-					/*
-					else: no notificator for this cmd on this list
-					*/
+					//--	else: other commands not allows without endPoint
 				}
-				/*
-				else: invalid sessionID
-				*/
+				else{
+					//--	notify the corresponding endPoint
+					SVCDataReceiveNotificator* notificator = endPoint->signalNotificator->getNotificator(cmd);
+					if (notificator!=NULL){
+						notificator->handler(buffer, byteRead, notificator);
+						endPoint->signalNotificator->removeNotificator(cmd);
+					}
+				}				
 			}
 			else{
-				/*	call DATA handler	*/
-				svcInstance->dataHandler(buffer, byteRead, NULL);			
+				//--	forward to dataQueue
+				endPoint->dataQueue->enqueue(new Message(buffer, byteRead));
 			}
 		}
 	}
 	
 	free(buffer);
+	printf("svc process packet stopped\n");
 }
 
 
@@ -179,49 +172,56 @@ void* SVC::processPacket(void* args){
 SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	
 	SVCEndPoint* rs = NULL;
-
+	SVCEndPoint* endPoint;
+	SignalNotificator* sigNot;		
 	vector<SVCCommandParam*> params;
-	/*	authentication variables	*/
+	
+	sigNot = new SignalNotificator();
+	uint64_t endPointID = (uint64_t)hasher(this->localApp->getAppID()+to_string(rand()));	
+	endPoint = new SVCEndPoint(this, endPointID, sigNot);
+	
+	endPointsMutex->lock();
+	endPoints[endPointID] = endPoint;
+	endPointsMutex->unlock();
+
+	//--	authentication variables
 	string identity;
 	string challengeSent;
 	string challengeReceived;
 	string proof;
 	
-	//1.	send establishing request to the daemon with appropriate params
+	//--	send establishing request to the daemon with appropriate params			
 	
-	uint32_t serverAddress  = this->host->getHostAddress();
-
-	//1.2	add params
-	params.clear();
 	challengeSent = this->authenticator->generateChallenge();
-	params.push_back(new SVCCommandParam(4, (uint8_t*)&serverAddress));		
+	uint32_t serverAddress  = remoteHost->getHostAddress();
+	uint32_t appID = (uint32_t)hasher(this->localApp->getAppID());
+	clearParams(&params);
+	params.push_back(new SVCCommandParam(4, (uint8_t*) &serverAddress));
+	params.push_back(new SVCCommandParam(4, (uint8_t*) &appID));
 	params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));
-	sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_CONNECT_STEP1, &params);
+	endPoint->sendCommand(SVC_CMD_CONNECT_STEP1, &params);
 	
-	//a.2	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.
-	if (signalNotificator.waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
-		//a2.1 get identity, proof, challenge
+	//--	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.
+	if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
+		//--	get identity, proof, challenge
 		identity = string((char*)params[0]);
 		proof = string((char*)params[1]);
 		challengeReceived = string((char*)params[2]);
-		//a2.2 verify server's identity
+		//--	verify server's identity
 		if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
-			//a2.3 ok, server's identity verified. request daemon to perform keyexchange. the daemon responds the success of encrypting process
-			params.clear();
-			sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_CONNECT_STEP3, &params);
-			//wait for daemon. from then on data are encrypted.
-			if (signalNotificator.waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){			
+			//--	ok, server's identity verified. request daemon to perform keyexchange. the daemon responds the success of encrypting process
+			clearParams(&params);			
+			endPoint->sendCommand(SVC_CMD_CONNECT_STEP3, &params);
+			//--	wait for daemon. if the connection to this address is already secured, it will return shortly
+			if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){			
 				//a.3 perform SVC_CMD_CONNECT_STEP4, send identity + proof
-				params.clear();
+				clearParams(&params);
 				identity = this->authenticator->getIdentity();
 				proof = this->authenticator->generateProof(challengeReceived);
 				params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
 				params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
-				sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_CONNECT_STEP4, &params);
-				
-				//a.4 authenticated
-				this->isAuthenticated = true;					
-				rs = new SVCEndPoint();
+				endPoint->sendCommand(SVC_CMD_CONNECT_STEP4, &params);				
+				rs = endPoint;
 			}
 			/*
 			else: no response from daemon, error occured or timeout
@@ -240,72 +240,126 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 
 SVCEndPoint* SVC::listenConnection(){
 
+	vector<SVCCommandParam*> params;
 	SVCEndPoint* rs;
+	SVCEndPoint* endPoint;
 	Message* message;
+	uint64_t endPointID;
+	SignalNotificator* sigNot;
+
+	//--	authentication variablees	
+	string identity;
+	string challengeSent;
+	string challengeReceived;
+	string proof;
+	
 	
 	if (this->connectionRequest->peak(&message)){
-		/*	process this connection request, this is a SVC_CMD_CONNECT_STEP1	*/
-		vector<SVCCommandParam*> params;
+		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1
 		
-		params.clear();
-		extractParams(message->data, &params);
-		//b.2.1	read the challenge, return identiy, proof, challenge. keyexchange will be inserted at daemon level
+		clearParams(&params);
+		extractParams(message->data + ENDPOINTID_LENGTH + 2, &params);
+		
+		endPointID = *((uint64_t*)(params[0]->data));		
+		sigNot = new SignalNotificator();
+		endPoint = new SVCEndPoint(this, endPointID, sigNot);
+		
+		endPointsMutex->lock();
+		endPoints[endPointID] = endPoint;
+		endPointsMutex->unlock();
 			
-		challengeReceived = string((char*)params[0]->data);			
+		//--	read the challenge
+		challengeReceived = string((char*)params[1]->data);			
 		proof = this->authenticator->generateProof(challengeReceived);
 		identity = this->authenticator->getIdentity();
-		challengeSent = this->authenticator->generateChallenge();	//reuse this variable
-		//b.2.2	prepare response
-		params.clear();
+		challengeSent = this->authenticator->generateChallenge();
+		//--	send response
+		clearParams(&params);
 		params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
 		params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));	
-		//b.2.3 send response
-		sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_CONNECT_STEP2, &params);
+		endPoint->sendCommand(SVC_CMD_CONNECT_STEP2, &params);
 		
-		//b.3. wait for SVC_CMD_CONNECT_STEP4, step3 is handled by the daemon
-		params.clear();
-		if (signalNotificator.waitCommand(SVC_CMD_CONNECT_STEP4, &params, SVC_DEFAULT_TIMEOUT)){
-			//b3.1 read identity + proof
+		//--	wait for SVC_CMD_CONNECT_STEP4, step3 is handled by the daemon		
+		if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP4, &params, SVC_DEFAULT_TIMEOUT)){
+			//--	read identity + proof
 			identity = string((char*)params[0]);
 			proof = string((char*)params[1]);
 			
-			//b3.2 verify client's identity
-			this->isAuthenticated = this->authenticator->verifyIdentity(identity, challengeSent, proof);
-			return this->isAuthenticated;
+			//--	verify client's identity
+			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
+				rs = endPoint;
+			}
 		}
-		else{
-			//timed out
-			return false;
-		}
+		/*
+		else: time out
+		*/
+	}
+	/*
+	else: no pending request
+	*/
+	return rs;
 }
 
-bool SVC::setDataReceiveHandler(SVCDataReceiveHandler handler){
-	this->dataHandler = handler;
-}
 
-int SVC::sendData(const uint8_t* data, size_t datalen, uint8_t priority, bool tcp){
-	if (this->isAuthenticated){
-		size_t bufferLength = 9 + datalen;
-		uint8_t* buffer = (uint8_t*)malloc(bufferLength);
-		uint8_t infoByte = 0;
-		
-		if (tcp) infoByte = infoByte | SVC_USING_TCP;
-		infoByte = infoByte | priority;		
-		infoByte = infoByte | SVC_DATA_FRAME;
-		
-		memcpy(buffer, (uint8_t*)(&this->sessionID), sizeof(this->sessionID));
-		buffer[4] = infoByte;		
-		memcpy(buffer+5, (uint32_t*) &datalen, 4);
-		memcpy(buffer+9, data, datalen);
+//--	SVCENDPOINT IMPLEMENTATION	//
+
+SVCEndPoint::SVCEndPoint(SVC* svc, uint64_t endPointID, SignalNotificator* sigNot){
+	this->svc = svc;
+	this->endPointID = endPointID;
+	this->signalNotificator = sigNot;
+	this->dataQueue = new MutexedQueue<Message*>();
+};
+
+void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params){				
+
+	uint8_t* buffer = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
+	int pointer = 0;
+	size_t bufferLength = ENDPOINTID_LENGTH + 3;	//endpointid + info + cmd + argc
+
+	for (int i=0; i<params->size(); i++){
+		//--	2 bytes for param length, then the param itself
+		bufferLength += 2 + (*params)[i]->length;
+	}								
+			
+	//--	ADD HEADER	--//				
+	//--	endPointID
+	memcpy(buffer + pointer, (uint8_t*) &this->endPointID, ENDPOINTID_LENGTH);
+	pointer += ENDPOINTID_LENGTH;
+	//--	info byte				
+	buffer[pointer] = 0x00;
+	buffer[pointer] = buffer[pointer] | SVC_COMMAND_FRAME;
+	buffer[pointer] = buffer[pointer] | SVC_URGENT_PRIORITY; 	//commands are always urgent
+	buffer[pointer] = buffer[pointer] | SVC_USING_TCP; 			//to ensure the delivery of commands				
+	if (isEncryptedCommand(cmd)) buffer[pointer] = buffer[pointer] | SVC_ENCRYPTED;
+	pointer += 1;
+	//--	1 byte command ID				
+	buffer[pointer] = cmd;
+	pointer += 1;				
+	//--	1 byte param length				
+	buffer[pointer] = params->size();
+	pointer += 1;
 	
-		//send packet
-		send(this->svcSocket, buffer, bufferLength, 0);	
-		free(buffer);
+	//--	ADD PARAMS	--//
+	for (int i=0; i<params->size(); i++){					
+		memcpy(buffer + pointer, (uint8_t*) &((*params)[i]->length), 2);
+		memcpy(buffer + pointer + 2, (*params)[i]->data, (*params)[i]->length);
+		pointer += 2 + (*params)[i]->length;
 	}
-	else{
-		throw SVC_ERROR_NOT_ESTABLISHED;
-	}
+	
+	//--	SEND	--//
+	send(this->svc->svcDaemonSocket, buffer, bufferLength, 0);				
+	//--	free params
+	clearParams(params);
 }
 
+SVCEndPoint::~SVCEndPoint(){
+	delete this->dataQueue;
+}
+
+int SVCEndPoint::sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp){
+}
+
+int SVCEndPoint::readData(uint8_t* data, size_t* len){
+}
 

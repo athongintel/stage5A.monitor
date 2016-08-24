@@ -10,18 +10,18 @@ int main(int argc, char** argv){
 SendFileAppServer::SendFileAppServer(){		
 	
 	SVC* svc = new SVC(this, this);
+	SVCEndPoint* endPoint = svc->listenConnection();
 }
 
 //interface implementation
 
 /*	SVCApp interface	*/
+/*
 string SendFileApp::getAppID(){
 	return string("SEND_FILE_APP");
 }
+*/
 
-bool SendFileApp::isServer(){
-	return true;
-}
 
 /*	SVCAuthenticator interface	*/
 

@@ -1,13 +1,76 @@
 #ifndef __SVC_SHARED_MUTEX__
 #define __SVC_SHARED_MUTEX__
 
-	#include "Queue.h"
+	#include "Node.h"
 	#include <mutex>
 	#include <csignal>
 
 	#define SHARED_MUTEX_SIGNAL SIGUSR1
 
 	using namespace std;
+	
+	/*	this is a normal non-mutexed queue	*/
+	template <class T>
+	class Queue{
+		private:
+			Node<T>* first;
+			Node<T>* last;			
+			int count;
+		
+		public:
+	
+			Queue(){
+				this->first = NULL;
+				this->last = NULL;
+				this->count = 0;
+			}
+		
+			~Queue(){
+				while (this->notEmpty()){
+					this->dequeue();
+				}
+			}
+		
+			bool notEmpty(){				
+				return count>0;
+			}
+
+			void enqueue(T data){
+				Node<T>* element = new Node<T>();
+				element->setData(data);
+				element->setNext(NULL);
+				
+				if (this->notEmpty()){	
+					this->last->setNext(element);
+					this->last = element;
+				}
+				else{
+					this->first = element;
+					this->last = element;			
+				}
+				this->count++;
+			}
+			
+			void dequeue(){
+				if (this->notEmpty()){				
+					Node<T>* tmp = this->first;
+					this->first = tmp->getNext();
+					delete tmp;
+					this->count--;
+				}
+				/*
+				else: queue is empty, do nothing
+				*/				
+			}
+		
+			bool peak(T* data){			
+				if (this->notEmpty()){
+					*data = this->first->getData();				
+					return true;
+				}
+				return false;				
+			}
+	};
 
 	class shared_mutex{	
 	

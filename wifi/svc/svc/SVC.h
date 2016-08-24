@@ -9,52 +9,69 @@
 	#include "SVCHost.h"
 	#include "SVCApp.h"
 
+	#include <unordered_map>
 	#include <sys/un.h>
 	#include <sys/types.h>
 
-	static SignalNotificator signalNotificator;
+	using namespace std;
+	
 	static hash<string> hasher;
 	
-	class SVCEndPoint(){
+	//--	FORWARD DECLARATION		--//
+	class SVC;
+	
+	class SVCEndPoint{	
 		
-		private:
-			Queue<Message*>* dataQueue;
+		friend class SVC;
+			
+		private:			
+			MutexedQueue<Message*>* dataQueue;
+			
+			SVC* svc;
+			uint64_t endPointID;
+			SignalNotificator* signalNotificator;	
+			
+			SVCEndPoint(SVC* svc, uint64_t endPointID, SignalNotificator* sigNot);
+			
+			void sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params);
 		
 		public:
-			SVCEndPoint(){};
 			~SVCEndPoint();
-				
 			int sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp);
-			int readData(uint8_t* data, size_t& len);			
-	}
+			int readData(uint8_t* data, size_t* len);
+	};
 	
 	class SVC{				
-				
-		SVCApp* localApp;
-		SVCAuthenticator* authenticator;
-
-		string svcClientPath;
-		struct sockaddr_un daemonSocketAddress;		/* 	read from	*/
-		struct sockaddr_un svcSocketAddress;		/*	write to	*/
-		int svcSocket;
-		int svcDaemonSocket;
-
-		pthread_t readingThread;
-		volatile bool working;
 		
-		uint32_t sessionID;
+		friend class SVCEndPoint;
 		
-		shared_mutex* connectionRequestMutex;
-		Queue<Message*>* connectionRequest;
+		private:	
 			
-	
-		void destruct();
-		static void* processPacket(void* args);	
+			SVCApp* localApp;
+			SVCAuthenticator* authenticator;
 				
-		public:	
+			shared_mutex* endPointsMutex;
+			unordered_map<uint64_t, SVCEndPoint*> endPoints;
+
+			string svcClientPath;
+			struct sockaddr_un daemonSocketAddress;		//--	write to
+			struct sockaddr_un svcSocketAddress;		//--	read from
+			int svcSocket;
+			int svcDaemonSocket;
+
+			pthread_t readingThread;
+			volatile bool working;		
+		
+			Queue<Message*>* connectionRequest;
+			uint32_t appID;
+
+			void destruct();
+			static void* processPacket(void* args);
+			
+		public:				
+	
 			~SVC();
-			SVC(SVCApp* localApp, SVCAuthenticator* authenticator);
-					
+			SVC(SVCApp* localApp, SVCAuthenticator* authenticator);						
 			SVCEndPoint* establishConnection(SVCHost* remoteHost);
 			SVCEndPoint* listenConnection();					
 	};		

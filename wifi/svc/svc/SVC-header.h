@@ -3,7 +3,7 @@
 #ifndef __SVC_HEADEAR__
 #define __SVC_HEADER__
 
-	#include "shared_mutex.h"
+	#include "MutexedQueue.h"
 
 	#include <unistd.h> //for 'unlink'
 	#include <cstring> 	//for 'memcpy'
@@ -30,6 +30,7 @@
 	#define SVC_ERROR_CRITICAL					"Critical error"
 	#define SVC_ERROR_BINDING					"Error binding socket"
 	#define SVC_ERROR_NOTIFICATOR_DUPLICATED	"Notificator duplicated"	
+	
 
 	/*	SVC CONSTANTS	*/
 	#define SVC_ACQUIRED_SIGNAL					SIGUSR1
@@ -39,15 +40,17 @@
 	#define SVC_DEFAULT_TIMEOUT 				2000
 	#define SVC_SHORT_TIMEOUT					100
 	#define SVC_DEFAULT_BUFSIZ 					65536
-	#define	SVC_DAEPORT			1223
+	#define	SVC_DAEPORT							1221
+	
+	
+	/*	SVC CONSTANTS' LENGTHS	*/
+	#define	SESSIONID_LENGTH					4
+	#define ENDPOINTID_LENGTH					8
 
 	/*	SVC INFO BIT	*/
-	//#define SVC_ROLE_CLIENT						0x00
-	//#define SVC_ROLE_SERVER						0x01
-	//#define SVC_ROLE_UNDEFINED					0x02
-	
+
 	#define SVC_COMMAND_FRAME  					0x80
-	#define SVC_DATA_FRAME  					0x00
+	#define SVC_DAEMON_RESPONSE					0x40
 	#define SVC_ENCRYPTED						0x08
 	#define SVC_USING_TCP						0x04
 	
@@ -56,7 +59,9 @@
 	#define SVC_NORMAL_PRIORITY					0x01
 	#define SVC_LOW_PRIORITY					0x00
 
-	static uint32_t SVC_DEFAULT_SESSIONID = 	0x00000000;
+	static uint32_t SVC_DEFAULT_SESSIONID 	= 	0;
+	//static uint64_t SVC_DEFAULT_ENDPOINTID 	=	0;
+	
 	static string SVC_DAEMON_PATH = 			"/tmp/svc-daemon";
 	static string SVC_CLIENT_PATH_PREFIX = 		"/tmp/svc-client-";
 	
@@ -97,7 +102,6 @@
 			}		
 	};
 
-
 	/*	CLASSES DEFINITIONS	*/
 	class SVCCommandParam{
 	
@@ -105,8 +109,7 @@
 		public:
 			uint16_t length;
 			uint8_t* data;
-			
-			
+						
 			SVCCommandParam(){
 				this->copy = false;
 			}
@@ -119,18 +122,30 @@
 			}
 		
 			~SVCCommandParam(){	
-				//printf("param destructed\n");		
-				if (this->copy) delete this->data;
+				if (this->copy){
+					delete this->data;
+					printf("param destructed\n");
+				}
 			}
 	};
 
 	/*	just make sure that there will be no wait for 2 same cmd on a single list	*/	
 	class SignalNotificator{
-		static void waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args);		
-		public:
+		private:			
 			struct SVCDataReceiveNotificator* notificationArray[_SVC_CMD_COUNT];
 			shared_mutex notificationArrayMutex;
 			
+			static void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
+				struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
+				vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
+				const uint8_t* pointer = buffer+7;
+	
+				extractParams(buffer, params);
+				//signal the thread calling waitCommand
+				pthread_kill(notificator->thread, SVC_ACQUIRED_SIGNAL);
+			}
+			
+		public:
 			SignalNotificator(){
 				/*	need to init this array to NULL, otherwise left memory will cause addNotificator to throw exception	*/
 				for (uint8_t cmd = 0; cmd<_SVC_CMD_COUNT; cmd++){
@@ -169,23 +184,53 @@
 					//printf("noti added, cmd: %d\n", cmd);
 				}					
 			}
-			bool waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout);
+			
+			bool SignalNotificator::waitCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params, int timeout){
+				//--	create new notificator
+				clearParams(params);
+				struct SVCDataReceiveNotificator* notificator = new struct SVCDataReceiveNotificator();
+				notificator->args = params;
+				notificator->thread = pthread_self();
+				notificator->handler = waitCommandHandler;
+	
+				/*
+					add this notificator to notificationList
+					NOTE: To use 'waitCommand', make sure that there is at least one active thread
+					which is processing the message and checking notificationList.
+					use mutex to synchonize multiple threads which may use the list at a same time
+				*/
+
+				this->addNotificator(cmd, notificator);		
+
+				//--	suspend the calling thread and wait for SVC_ACQUIRED_SIGNAL
+				return waitSignal(SVC_ACQUIRED_SIGNAL, SVC_TIMEOUT_SIGNAL, timeout);
+			}
 	};
 			
-	/*	END OF CLASSES DEFINITIONS	*/
-	
+	/*	END OF CLASSES DEFINITIONS	*/	
 
-	bool isEncryptedCommand(enum SVCCommand command);	
-	void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
-	void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);	
-	ssize_t _sendPacket(int socket, const uint8_t* buffer, size_t len);			
+	
+	//void prepareCommand(uint8_t* buffer, size_t* len, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);
+	//void sendCommand(int socket, uint32_t sessionID, enum SVCCommand command, const vector<SVCCommandParam*>* params);	
+	//ssize_t _sendPacket(int socket, const uint8_t* buffer, size_t len);			
 	
 	
-	/*	UTILS FUNCTIONS	*/
-	/*	print current buffer in hex bytes	*/
+	//--	UTILS FUNCTIONS		--//
+	
+	//--	return if the command must be encrypted
+	bool isEncryptedCommand(enum SVCCommand command);
+	
+	//--	clear all params in the vector and call their destructors
+	void clearParams(vector<SVCCommandParam*>* params);
+	
+	//--	extract parameters from a buffer without header
 	void extractParams(const uint8_t* buffer, vector<SVCCommandParam*>* params);
+	
+	//--	print current buffer in hex bytes
 	void printBuffer(const uint8_t* buffer, size_t len);
-	/*	timeoutSignal and waitingSignal must be differrent, or the behavior is undefined*/
+	
+	//--	timeoutSignal and waitingSignal must be differrent, otherwise the behavior is undefined
 	bool waitSignal(int waitingSignal, int timeoutSignal, int timeout);	
+	
 	
 #endif

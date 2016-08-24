@@ -1,8 +1,10 @@
 SVC frame format for daemon
 
-- sessionID : 4 byte (00 00 00 00 for SVC_CMD_CONNECT_STEP*)
+-------------------------SVC level---------------------
+- endpointID : 8 bytes 
 - 1 byte info
     data/command: 7th bit
+    responded from daemon: 6th bit
 	encrypted: 3th bit
 	using tcp: 2th bit	 //used by htp layer
 	priority: 1&0 th bit //used by htp layer
@@ -24,12 +26,12 @@ SVC frame format for daemon
 			- daemon1 to client: 2 argument: [(n byte - sessionID), (4 byte - the same session secret)]
 			
 		° SVC_CMD_CONNECT_STEP1:
-			- client to daemon1: 2 argument: [(4 byte - address), (n bytes - challenge)]
+			- client to daemon1: 2 argument: [(4 bytes - address), (4 bytes - appID), (n bytes - challenge)]
 			- daemon1 to daemon2: 2 argument: [(4 bytes - appID), (n bytes - challenge)]
 			- daemon2 to server: 1 argument: [(n bytes - challenge)]
 			
 		° SVC_CMD_CONNECT_STEP2:
-			- server to daemon: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
+			- server to daemon: 3 argument: [(8 bytes - endpoint), (n bytes - identity), (n bytes - proof), (n bytes - challenge)]
 			- daemon to daemon: 4 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge), (4 bytes - appID)]
 			- daemon to client: 3 argument: [(n bytes - identity), (n bytes - proof), (n bytes - challenge)]
 			

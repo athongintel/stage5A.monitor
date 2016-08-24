@@ -2,7 +2,7 @@
 #define __SVC_QUEUE__
 
 	#include "Node.h"
-	#include "shared_mutex"
+	#include "shared_mutex.h"
 
 	using namespace std;
 
@@ -12,7 +12,7 @@
 	*/
 
 	template <class T>
-	class Queue{
+	class MutexedQueue{
 	
 		private:
 			Node<T>* first;
@@ -25,7 +25,7 @@
 
 		public:
 	
-			Queue(){
+			MutexedQueue(){
 				this->first = NULL;
 				this->last = NULL;
 				this->count = 0;
@@ -34,7 +34,7 @@
 				lastMutex = new shared_mutex();
 			}
 		
-			~Queue(){
+			~MutexedQueue(){
 				while (this->notEmpty()){
 					this->dequeue();
 				}
@@ -42,9 +42,9 @@
 		
 			bool notEmpty(){			
 				bool rs;
-				this->countMutex.lock_shared();
+				this->countMutex->lock_shared();
 				rs = count>0;
-				this->countMutex.unlock_shared();
+				this->countMutex->unlock_shared();
 				return rs;
 			}
 
@@ -79,27 +79,24 @@
 					this->first = tmp->getNext();
 					delete tmp;
 					this->firstMutex->unlock();
+					
+					this->countMutex->lock();
+					this->count--;				
+					this->countMutex->unlock();
 				}
 				/*
 				else: queue is empty, do nothing
 				*/
-				this->countMutex.lock();
-				this->count--;				
-				this->countMutex.unlock();
 			}
 		
-			bool peak(T* data){
-				bool rs;				
+			bool peak(T* data){		
 				if (this->notEmpty()){
 					this->firstMutex->lock_shared();
 					*data = this->first->getData();
 					this->firstMutex->unlock_shared();
-					rs = true;
-				}
-				else{
-					rs = false;
-				}				
-				return rs;				
+					return true;
+				}								
+				return false;
 			}						
 	};
 
