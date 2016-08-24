@@ -17,6 +17,7 @@ SendFileAppServer::SendFileAppServer(){
 		if (endPoint!=NULL){
 			printf("client connected\n");
 		}
+	}
 	while (endPoint == NULL);
 }
 
