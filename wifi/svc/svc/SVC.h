@@ -51,7 +51,7 @@
 			SVCAuthenticator* authenticator;
 				
 			shared_mutex* endPointsMutex;
-			unordered_map<uint64_t, SVCEndPoint*> endPoints;
+			vector<SVCEndPoint*> endPoints;
 
 			string svcClientPath;
 			struct sockaddr_un daemonSocketAddress;		//--	write to
@@ -66,6 +66,8 @@
 			uint32_t appID;
 
 			void destruct();
+			SVCEndPoint* getEndPointByID(uint64_t endPointID);
+			
 			static void* processPacket(void* args);
 			
 		public:				

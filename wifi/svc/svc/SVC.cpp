@@ -70,12 +70,37 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 void SVC::destruct(){
 	this->working = false;	
 	pthread_join(this->readingThread, NULL);
+	
+	//--	remove remaining endpoints
+	this->endPointsMutex->lock();
+	for (SVCEndPoint* endPoint : this->endPoints){
+		if (endPoint!=NULL){
+			delete endPoint;
+		}
+	}
+	this->endPoints.clear();
+	this->endPointsMutex->unlock();
+	
 	unlink(this->svcClientPath.c_str());
 	cout<<"svc destructed\n";
 }
 
 void SVC::stopWorking(){
 	this->working = false;
+}
+
+SVCEndPoint* SVC::getEndPointByID(uint64_t endPointID){
+	this->endPointsMutex->lock_shared();
+	for (SVCEndPoint* endPoint : this->endPoints){
+		if (endPoint!=NULL){
+			if (endPoint->endPointID == endPointID){
+				this->endPointsMutex->unlock_shared();
+				return endPoint;
+			}
+		}
+	}
+	this->endPointsMutex->unlock_shared();
+	return NULL;
 }
 
 SVC::~SVC(){
@@ -109,7 +134,7 @@ void* SVC::processPacket(void* args){
 			uint8_t infoByte = buffer[ENDPOINTID_LENGTH];
 			
 			_this->endPointsMutex->lock_shared();
-			endPoint = _this->endPoints[endPointID];
+			endPoint = _this->getEndPointByID(endPointID);
 			_this->endPointsMutex->unlock_shared();
 		
 			if (infoByte & SVC_COMMAND_FRAME){				
@@ -120,20 +145,19 @@ void* SVC::processPacket(void* args){
 				if (endPoint==NULL){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						//--	add this to connection request
-						printf("SVC_CMD_CONNECT_STEP1, add to connectionRequest\n");
+						printf("SVC_CMD_CONNECT_STEP1\n");
 						if (_this->connectionRequest->notEmpty()){
 							_this->connectionRequest->enqueue(new Message(buffer, byteRead));
 						}
 						else{
 							//--	notify first needing endPoint, no enqueue
 							_this->endPointsMutex->lock_shared();
-							for (auto& it : _this->endPoints){
-								endPoint = it.second;
-								if (endPoint!=NULL){
-									SVCDataReceiveNotificator* notificator = endPoint->signalNotificator->getNotificator(cmd);
+							for (SVCEndPoint* ep : _this->endPoints){
+								if (ep!=NULL){
+									SVCDataReceiveNotificator* notificator = ep->signalNotificator->getNotificator(cmd);
 									if (notificator!=NULL){
 										notificator->handler(buffer, byteRead, notificator);
-										endPoint->signalNotificator->removeNotificator(cmd);
+										ep->signalNotificator->removeNotificator(cmd);
 										break;	//--	we only notify the first
 									}
 									//--	else: this endPoint doesn't wait for this cmd
@@ -184,7 +208,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	endPoint->endPointID = endPointID;
 	
 	endPointsMutex->lock();
-	endPoints[endPointID] = endPoint;
+	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 
 	//--	authentication variables
@@ -248,7 +272,7 @@ SVCEndPoint* SVC::listenConnection(){
 	SVCEndPoint* endPoint;
 	Message* message;
 	uint64_t endPointID;
-	SignalNotificator* sigNot;	
+	SignalNotificator* sigNot;
 
 	//--	authentication variablees	
 	string identity;
@@ -260,7 +284,7 @@ SVCEndPoint* SVC::listenConnection(){
 	endPoint = new SVCEndPoint(this, sigNot);
 	
 	endPointsMutex->lock();
-	endPoints[endPointID] = endPoint;
+	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 	
 	if (this->connectionRequest->peak(&message)){
@@ -285,9 +309,7 @@ SVCEndPoint* SVC::listenConnection(){
 	
 	if (this->working){
 		endPointID = *((uint64_t*)(params[0]->data));
-		endPointsMutex->lock_shared();
-		endPoints[endPointID]->endPointID = endPointID;
-		endPointsMutex->unlock_shared();
+		endPoint->endPointID = endPointID;
 		
 		//--	read the challenge
 		challengeReceived = string((char*)params[0]->data);			
@@ -375,6 +397,7 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 
 SVCEndPoint::~SVCEndPoint(){
 	delete this->dataQueue;
+	printf("end point %016x removed\n", this->endPointID);
 }
 
 int SVCEndPoint::sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp){
