@@ -59,8 +59,8 @@
 	
 		//--	CRYPTO VARIABLES	--//
 			
-		int encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen);		
-		int decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen);
+		bool encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen);		
+		bool decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen);
 	
 		void sendData(const uint8_t* buffer, size_t bufferLen);
 	

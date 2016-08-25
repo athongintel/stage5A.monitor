@@ -2,12 +2,16 @@
 
 //--	class DaemonService
 	
-int DaemonService::encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen){
-	
+bool DaemonService::encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen){
+	memcpy(encryptedMessage, plainMessage, plainLen);
+	*encryptedLen = plainLen;
+	return true;
 }
 	
-int DaemonService::decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen){
-	
+bool DaemonService::decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen){
+	memcpy(plainMessage, encryptedMessage, encryptedLen);
+	*plainLen = encryptedLen;
+	return true;
 }
 	
 void DaemonService::sendData(const uint8_t* buffer, size_t bufferLen){
