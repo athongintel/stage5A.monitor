@@ -213,6 +213,9 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 						//--	TODO:	add key exchange step 3
 						_this->outQueue->enqueue(message);
 						_this->outgoingQueue->dequeue();
+						//--TODO: init crypto variables
+						//--	return SVC_CMD_CONNECT_STEP3 to app
+						_this->inQueue->enqueue(message);
 						break;
 				
 					case SVC_CMD_CONNECT_STEP4:

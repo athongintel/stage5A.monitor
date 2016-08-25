@@ -258,6 +258,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 			printf("server's identity verified\n");
 			clearParams(&params);			
 			endPoint->sendCommand(SVC_CMD_CONNECT_STEP3, &params);
+			printf("send SVC_CMD_CONNECT_STEP3 to daemon\n");
 			//--	wait for daemon. if the connection to this address is already secured, it will return shortly
 			if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){
 				printf("SVC_CMD_CONNECT_STEP3 received from daemon\n");
