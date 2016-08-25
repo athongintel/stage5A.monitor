@@ -211,18 +211,18 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 					
 					case SVC_CMD_CONNECT_STEP3:
 						//--	TODO:	add key exchange step 3
+						tmpMessage = new Message(message->data, message->len);
 						_this->outQueue->enqueue(message);
 						_this->outgoingQueue->dequeue();
 						//--TODO: init crypto variables
 						//--	return SVC_CMD_CONNECT_STEP3 to app
-						_this->inQueue->enqueue(message);
+						_this->inQueue->enqueue(tmpMessage);
 						break;
 				
 					case SVC_CMD_CONNECT_STEP4:
 						//--	this will be encrypted later
 						_this->outQueue->enqueue(message);
-						_this->outgoingQueue->dequeue();
-				
+						_this->outgoingQueue->dequeue();				
 					default:
 						break;
 				}
