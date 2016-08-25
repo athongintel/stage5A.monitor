@@ -170,7 +170,7 @@ bool waitSignal(int waitingSignal, int timeoutSignal, int timeout){
 	time.it_interval.tv_nsec=0;	
 	time.it_value.tv_sec=timeout/1000;
 	time.it_value.tv_nsec=(timeout - time.it_value.tv_sec*1000)*1000000;	
-	timer_settime(timer, 0, &time, NULL);	
+	timer_settime(timer, 0, &time, NULL);
 	
 	/*	wait for either timeoutSignal or watingSignal	*/
 	int caughtSignal;

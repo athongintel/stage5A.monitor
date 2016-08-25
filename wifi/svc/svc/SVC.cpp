@@ -250,6 +250,7 @@ SVCEndPoint* SVC::listenConnection(){
 			if (this->working){
 				//--	remove the notificator before waiting again, otherwise we'll get exception			
 				sigNot->removeNotificator(SVC_CMD_CONNECT_STEP1);
+				printf("retry...\n");
 			}
 			else{
 				//--	no more working, brake from for loop

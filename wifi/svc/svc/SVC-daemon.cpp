@@ -568,16 +568,7 @@ int main(int argc, char** argv){
 	sigfillset(&act.sa_mask);
 	sigdelset(&act.sa_mask, SIGINT);
 	sigaction(SIGINT, &act, NULL);
-	
-	/*
-		add default DaemonService to handle non-encrypted request
-		we can use SVC_DEFAULT_SESSIONID for init DaemonService
-	*/
-	/*appTableMutex->lock();
-	appTable[SVC_DEFAULT_SESSIONID] = new DaemonService(SVC_DEFAULT_SESSIONID);
-	appTable[SVC_DEFAULT_SESSIONID]->startService();
-	appTableMutex->unlock();
-    */
+
     //--	create a thread to read from unix domain socket
     working = true;
     pthread_attr_init(&unixReadingThreadAttr);
@@ -586,16 +577,7 @@ int main(int argc, char** argv){
 	//--	create a thread to read from htp socket
 	pthread_attr_init(&htpReadingThreadAttr);	
 	pthread_create(&htpReadingThread, &htpReadingThreadAttr, htpReadingLoop, NULL);
-	
-	/*
-	//6.	create a thread to process and redirect incoming messages
-	pthread_attr_init(&htpProcessingThreadAttr);	
-	pthread_create(&htpProcessingThread, &htpProcessingThreadAttr, htpRedirectingLoop, NULL);
 
-	//7.	create a thread to process and redirect outgoing messages
-   	pthread_attr_init(&unixProcessingThreadAttr);	
-	pthread_create(&unixProcessingThread, &unixProcessingThreadAttr, unixRedirectingLoop, NULL);
-	*/
     goto initSuccess;
     
     errorInit:

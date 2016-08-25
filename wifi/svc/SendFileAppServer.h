@@ -1,6 +1,6 @@
+#include "svc/SVCApp.h"
 #include "svc/authenticator/SVCAuthenticator.h"
 #include "svc/SVC.h"
-#include "svc/SVCApp.h"
 
 class SendFileAppServer : SVCApp, SVCAuthenticator{
 

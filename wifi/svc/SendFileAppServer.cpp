@@ -5,15 +5,26 @@
 using namespace std;
 
 SVC* svcInstance;
+volatile bool working;
 
 void signal_handler(int signal){
 	if (signal == SIGINT){
+		printf("SIGINT caught, stop working\n");
 		svcInstance->stopWorking();
+		working = false;
 	}
 }
 
 int main(int argc, char** argv){
 
+    //--	set thread signal mask
+    sigset_t sigset;
+    sigemptyset(&sigset);    
+    sigaddset(&sigset, SVC_ACQUIRED_SIGNAL);
+    sigaddset(&sigset, SVC_TIMEOUT_SIGNAL);
+    sigaddset(&sigset, SVC_SHARED_MUTEX_SIGNAL);
+    pthread_sigmask(SIG_BLOCK, &sigset, NULL);
+	
 	//--	trap SIGINT signal
 	struct sigaction act;
 	act.sa_handler = signal_handler;
@@ -21,6 +32,7 @@ int main(int argc, char** argv){
 	sigdelset(&act.sa_mask, SIGINT);
 	sigaction(SIGINT, &act, NULL);
 	
+	working = true;
 	SendFileAppServer* app = new SendFileAppServer();
 }
 
@@ -35,7 +47,7 @@ SendFileAppServer::SendFileAppServer(){
 			printf("client connected\n");
 		}
 	}
-	while (endPoint == NULL);
+	while (endPoint == NULL && working);
 	
 	delete svcInstance;
 }
