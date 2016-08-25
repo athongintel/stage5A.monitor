@@ -147,6 +147,7 @@ void* SVC::processPacket(void* args){
 						//--	add this to connection request
 						printf("SVC_CMD_CONNECT_STEP1\n");
 						//if (_this->connectionRequest->notEmpty()){
+						printf("pthread_t of waker %d\n", pthread_self());
 						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
 						/*}
 						else{

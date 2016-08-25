@@ -30,11 +30,11 @@
 						
 			//--	waitData used in mutex lock, not need to lock again
 			bool waitData(){
-				printf("add pthread self: %d", pthread_self());
-				waitDataThreads->enqueue(pthread_self());
+				printf("add pthread self: %d\n", pthread_self());
+				this->waitDataThreads->enqueue(pthread_self());
 				pthread_t thread;
-				if (waitDataThreads->peak(&thread)){
-					printf("cannot be empty, %d\"", thread);
+				if (this->waitDataThreads->peak(&thread)){
+					printf("cannot be empty, %d\n", thread);
 				}
 				return waitSignal(QUEUE_DATA_SIGNAL);
 			}
@@ -43,15 +43,14 @@
 			void signalThread(){
 				pthread_t thread;
 				
-				if (waitDataThreads->peak(&thread)){
-					waitDataThreads->dequeue();
+				if (this->waitDataThreads->peak(&thread)){
+					this->waitDataThreads->dequeue();
 					pthread_kill(thread, QUEUE_DATA_SIGNAL);
 					printf("sent kill signal\n");
 				}
 				else{
 					printf("signal thread queue empty\n");
-				}
-				
+				}				
 			}
 			
 		public:
@@ -98,7 +97,7 @@
 					this->first = element;
 					this->last = element;
 					this->lastMutex->unlock();
-					printf("first data packet, signal threads\n");
+					printf("first data packet, waker: %d\n", pthread_self());
 					signalThread();
 				}
 				this->countMutex->lock();
