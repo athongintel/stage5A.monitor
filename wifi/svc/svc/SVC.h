@@ -5,13 +5,12 @@
 
 
 	#include "authenticator/SVCAuthenticator.h"
-	#include "SVC-header.h"
+	#include "MutexedQueue.h"
 	#include "host/SVCHost.h"
 	#include "SVCApp.h"
 
-	#include <unordered_map>
+	#include <unistd.h>	//--	for unlink
 	#include <sys/un.h>
-	#include <sys/types.h>
 
 	using namespace std;
 	
@@ -62,7 +61,7 @@
 			pthread_t readingThread;
 			volatile bool working;		
 		
-			Queue<Message*>* connectionRequest;
+			MutexedQueue<Message*>* connectionRequest;
 			uint32_t appID;
 
 			void destruct();

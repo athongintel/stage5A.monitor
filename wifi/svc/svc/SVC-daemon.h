@@ -1,7 +1,7 @@
 #ifndef __SVC_DAEMON_HEADER__
 #define __SVC_DAEMON_HEADER__
 
-	#include "SVC-header.h"
+	#include "MutexedQueue.h"
 
 	#include <string>
 	#include <iostream>

@@ -40,7 +40,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 		goto errorInit;	
 	}
 	
-	this->connectionRequest = new Queue<Message*>();
+	this->connectionRequest = new MutexedQueue<Message*>();
 	
 	//--	create reading thread	
 	sigset_t sig;
@@ -146,9 +146,9 @@ void* SVC::processPacket(void* args){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						//--	add this to connection request
 						printf("SVC_CMD_CONNECT_STEP1\n");
-						if (_this->connectionRequest->notEmpty()){
-							_this->connectionRequest->enqueue(new Message(buffer, byteRead));
-						}
+						//if (_this->connectionRequest->notEmpty()){
+						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
+						/*}
 						else{
 							//--	notify first needing endPoint, no enqueue
 							_this->endPointsMutex->lock_shared();
@@ -165,7 +165,7 @@ void* SVC::processPacket(void* args){
 								//--	else: NULL
 							}
 							_this->endPointsMutex->unlock_shared();				
-						}
+						}*/
 					}
 					//--	else: other commands not allows without endPoint
 				}
@@ -287,36 +287,22 @@ SVCEndPoint* SVC::listenConnection(){
 	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 	
-	if (this->connectionRequest->peak(&message)){
+	if (message = this->connectionRequest->dequeueWait()){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
 		clearParams(&params);
 		extractParams(message->data + ENDPOINTID_LENGTH + 2, &params);
-	}
-	else{
-	//--	no pending request		
-		while (!sigNot->waitCommand(SVC_CMD_CONNECT_STEP1, &params, SVC_DEFAULT_TIMEOUT)){
-			if (this->working){
-				//--	remove the notificator before waiting again, otherwise we'll get exception			
-				sigNot->removeNotificator(SVC_CMD_CONNECT_STEP1);
-				printf("retry...\n");
-			}
-			else{
-				//--	no more working, brake from for loop
-				break;
-			}
-		}
-	}
-	
-	if (this->working){
+				
 		endPointID = *((uint64_t*)(params[0]->data));
 		endPoint->endPointID = endPointID;
-		
+	
 		//--	read the challenge
-		challengeReceived = string((char*)params[0]->data);			
+		char ch[SVC_DEFAULT_BUFSIZ] = "";
+		memcpy(ch, (char*)(params[0]->data), params[0]->len);
+		challengeReceived = string(ch);
 		proof = this->authenticator->generateProof(challengeReceived);
 		identity = this->authenticator->getIdentity();
 		challengeSent = this->authenticator->generateChallenge();
-		
+	
 		printf("challenge received: %s\n", challengeReceived.c_str());
 		//--	send response
 		clearParams(&params);
@@ -324,19 +310,18 @@ SVCEndPoint* SVC::listenConnection(){
 		params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));	
 		endPoint->sendCommand(SVC_CMD_CONNECT_STEP2, &params);
-	
+
 		//--	wait for SVC_CMD_CONNECT_STEP4, step3 is handled by the daemon		
 		if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP4, &params, SVC_DEFAULT_TIMEOUT)){
 			//--	read identity + proof
 			identity = string((char*)params[0]);
 			proof = string((char*)params[1]);
-		
+	
 			//--	verify client's identity
 			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 				rs = endPoint;
 			}
 		}
-		//--	else: time out
 	}
 	//--	else: work is broken
 	return rs;
@@ -359,7 +344,7 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 
 	for (int i=0; i<params->size(); i++){
 		//--	2 bytes for param length, then the param itself
-		bufferLength += 2 + (*params)[i]->length;
+		bufferLength += 2 + (*params)[i]->len;
 	}								
 			
 	//--	ADD HEADER	--//				
@@ -382,9 +367,9 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 	
 	//--	ADD PARAMS	--//
 	for (int i=0; i<params->size(); i++){					
-		memcpy(buffer + pointer, (uint8_t*) &((*params)[i]->length), 2);
-		memcpy(buffer + pointer + 2, (*params)[i]->data, (*params)[i]->length);
-		pointer += 2 + (*params)[i]->length;
+		memcpy(buffer + pointer, (uint8_t*) &((*params)[i]->len), 2);
+		memcpy(buffer + pointer + 2, (*params)[i]->data, (*params)[i]->len);
+		pointer += 2 + (*params)[i]->len;
 	}
 	
 	//--	SEND	--//

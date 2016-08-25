@@ -54,13 +54,10 @@
 			void dequeue(){
 				if (this->notEmpty()){				
 					Node<T>* tmp = this->first;
-					this->first = tmp->getNext();
-					delete tmp;
+					this->first = tmp->getNext();				
 					this->count--;
+					delete tmp;
 				}
-				/*
-				else: queue is empty, do nothing
-				*/				
 			}
 		
 			bool peak(T* data){			
