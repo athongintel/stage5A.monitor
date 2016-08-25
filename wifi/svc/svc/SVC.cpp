@@ -229,19 +229,34 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	params.push_back(new SVCCommandParam(4, (uint8_t*) &serverAddress));
 	endPoint->sendCommand(SVC_CMD_CONNECT_STEP1, &params);
 	
+	printf("SVC_CMD_CONNECT_STEP1 sent\n");
 	//--	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.
 	if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
+		printf("SVC_CMD_CONNECT_STEP2 received\n");
 		//--	get identity, proof, challenge
-		identity = string((char*)params[0]);
-		proof = string((char*)params[1]);
-		challengeReceived = string((char*)params[2]);
+		char ch[SVC_DEFAULT_BUFSIZ] = "";
+		memcpy(ch, params[0]->data, params[0]->len);
+		identity = string(ch);
+		memset(ch, 0, SVC_DEFAULT_BUFSIZ);
+		
+		memcpy(ch, params[1]->data, params[1]->len);
+		proof = string(ch);
+		memset(ch, 0, SVC_DEFAULT_BUFSIZ);
+		
+		memcpy(ch, params[2]->data, params[2]->len);
+		challengeReceived = string(ch);
+		memset(ch, 0, SVC_DEFAULT_BUFSIZ);
+		
+		printf("get identity: %\n proof: %s\n challenge: %s\n", identity.c_str(), proof.c_str(), challengeReceived.c_str());
+		
 		//--	verify server's identity
 		if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 			//--	ok, server's identity verified. request daemon to perform keyexchange. the daemon responds the success of encrypting process
+			printf("server's identity verified\n");
 			clearParams(&params);			
 			endPoint->sendCommand(SVC_CMD_CONNECT_STEP3, &params);
 			//--	wait for daemon. if the connection to this address is already secured, it will return shortly
-			if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){			
+			if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){
 				//a.3 perform SVC_CMD_CONNECT_STEP4, send identity + proof
 				clearParams(&params);
 				identity = this->authenticator->getIdentity();
