@@ -32,6 +32,7 @@
 			bool waitData(){
 				printf("add pthread self: %d", pthread_self());
 				waitDataThreads->enqueue(pthread_self());
+				pthread_t thread;
 				if (waitDataThreads->peak(&thread)){
 					printf("cannot be empty, %d\"", thread);
 				}
