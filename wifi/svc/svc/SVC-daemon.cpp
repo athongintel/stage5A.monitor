@@ -177,6 +177,7 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 void* DaemonEndPoint::processingOutgoingMessage(void* args){
 	DaemonEndPoint* _this = (DaemonEndPoint*)args;
 	Message* message;
+	Message* tmpMessage;
 
 	while (_this->working){		
 		if (_this->outgoingQueue->peak(&message)){
@@ -189,10 +190,12 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 				switch (cmd){
 					case SVC_CMD_CONNECT_STEP1:
 						printf("processing SVC_CMD_CONNECT_STEP1\n");						
-						//--	remove the address param and forward
+						//--	remove the address param (1)
+						tmpMessage = new Message(message->data, message->len - ((2 + 4)*1));
+						tmpMessage->data[ENDPOINTID_LENGTH + 2]--;
 						//--	TODO:	add key exchange step 1
-						_this->outQueue->enqueue(message);
-						_this->outgoingQueue->dequeue();
+						_this->outQueue->enqueue(tmpMessage);
+						delete _this->outgoingQueue->dequeue();
 						break;
 			
 					case SVC_CMD_CONNECT_STEP2:
