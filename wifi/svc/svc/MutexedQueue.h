@@ -30,12 +30,12 @@
 						
 			//--	waitData used in mutex lock, not need to lock again
 			bool waitData(){
-				printf("add pthread self: %d\n", pthread_self());
+				//printf("add pthread self: %d\n", pthread_self());
 				this->waitDataThreads->enqueue(pthread_self());
-				pthread_t thread;
-				if (this->waitDataThreads->peak(&thread)){
-					printf("cannot be empty, %d\n", thread);
-				}
+				//pthread_t thread;
+				//if (this->waitDataThreads->peak(&thread)){
+					//printf("cannot be empty, %d\n", thread);
+				//}
 				return waitSignal(QUEUE_DATA_SIGNAL);
 			}
 			
@@ -85,37 +85,33 @@
 				element->setData(data);
 				element->setNext(NULL);
 				
-				this->firstMutex->lock();
-				if (this->notEmpty()){
-					this->lastMutex->lock();
+				this->lastMutex->lock();
+				if (this->notEmpty()){					
 					this->last->setNext(element);
-					this->last = element;
-					this->lastMutex->unlock();
+					this->last = element;					
 				}
-				else{				
-					this->lastMutex->lock();
+				else{					
 					this->first = element;
-					this->last = element;
-					this->lastMutex->unlock();
-					printf("first data packet, waker: %d\n", pthread_self());
+					this->last = element;					
+					printf("first data packet");//, waker: %d\n", pthread_self());
 					signalThread();
 				}
 				this->countMutex->lock();
 				this->count++;
 				this->countMutex->unlock();
-				this->firstMutex->unlock();
+				this->lastMutex->unlock();
 			}
 			
 			T dequeueWait(){
-				this->firstMutex->lock();
 				bool haveData = true;
+				this->firstMutex->lock();
 				if (!this->notEmpty()){
-					printf("no data, standby to wait\n");
+					printf("no data, standby to wait\n");					
 					haveData = waitData();
 					printf("after waitData\n");
 					//--	after waitData there must be data in queue, 'cause no other can perform dequeue
 				}
-				//--	not empty, have not to wait
+				//--	not empty, have not to wait				
 				if (haveData){
 					Node<T>* tmp = this->first;
 					this->first = tmp->getNext();																				
