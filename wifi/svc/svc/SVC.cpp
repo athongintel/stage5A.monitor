@@ -294,7 +294,7 @@ SVCEndPoint* SVC::listenConnection(){
 				
 		endPointID = *((uint64_t*)(params[0]->data));
 		endPoint->endPointID = endPointID;
-	
+		printf("endPointID: %08x\n", endPointID);
 		//--	read the challenge
 		char ch[SVC_DEFAULT_BUFSIZ] = "";
 		memcpy(ch, (char*)(params[0]->data), params[0]->len);
@@ -303,7 +303,7 @@ SVCEndPoint* SVC::listenConnection(){
 		identity = this->authenticator->getIdentity();
 		challengeSent = this->authenticator->generateChallenge();
 	
-		printf("challenge received: %s\n", challengeReceived.c_str());
+		printf("challenge received: %s - %s\n", ch, challengeReceived.c_str());
 		//--	send response
 		clearParams(&params);
 		params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
