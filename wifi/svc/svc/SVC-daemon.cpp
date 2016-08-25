@@ -422,7 +422,7 @@ void* unixReadingLoop(void* args){
 								size_t sockLen = sizeof(sockAddr);							
 								sockAddr.sin_family = AF_INET;
 								sockAddr.sin_port = htons(SVC_DAEPORT);
-								sockAddr.sin_addr.s_addr = htonl(address);
+								sockAddr.sin_addr.s_addr = address;
 								printf("address order: ");
 								printBuffer((uint8_t*)&sockAddr, sockLen);
 								service = new DaemonService(&sockAddr, sockLen);
