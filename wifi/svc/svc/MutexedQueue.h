@@ -30,7 +30,11 @@
 						
 			//--	waitData used in mutex lock, not need to lock again
 			bool waitData(){
+				printf("add pthread self: %d", pthread_self());
 				waitDataThreads->enqueue(pthread_self());
+				if (waitDataThreads->peak(&thread)){
+					printf("cannot be empty, %d\"", thread);
+				}
 				return waitSignal(QUEUE_DATA_SIGNAL);
 			}
 			
@@ -106,7 +110,9 @@
 				this->firstMutex->lock();
 				bool haveData = true;
 				if (!this->notEmpty()){
+					printf("no data, standby to wait\n");
 					haveData = waitData();
+					printf("after waitData\n");
 					//--	after waitData there must be data in queue, 'cause no other can perform dequeue
 				}
 				//--	not empty, have not to wait
