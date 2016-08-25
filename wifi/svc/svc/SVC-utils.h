@@ -30,7 +30,7 @@
 			
 			~Message(){
 				delete data;
-				printf("message destructed\n");
+				//printf("message destructed\n");
 			}		
 	};
 
@@ -56,7 +56,7 @@
 			~SVCCommandParam(){	
 				if (this->copy){
 					delete this->data;
-					printf("param destructed\n");
+					//printf("param destructed\n");
 				}
 			}
 	};

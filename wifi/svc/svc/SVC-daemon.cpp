@@ -11,7 +11,7 @@ int DaemonService::decryptMessage(const uint8_t* encryptedMessage, size_t encryp
 }
 	
 void DaemonService::sendData(const uint8_t* buffer, size_t bufferLen){
-	send(this->sock, buffer, bufferLen, 0);
+	sendto(daemonInSocket, buffer, bufferLen, 0, (struct sockaddr*) &this->sockAddr, this->sockLen);
 }
 	
 	
@@ -24,8 +24,9 @@ DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockL
 	//--	create socket to sendout data
 	//--TODO: to be changed to htp
 	memcpy(&this->sockAddr, sockaddr, sockLen);
-	this->sock = socket(AF_INET, SOCK_DGRAM, 0);
-	connect(this->sock, (struct sockaddr*) &this->sockAddr, sockLen);
+	this->sockLen = sockLen;
+	//this->sock = socket(AF_INET, SOCK_DGRAM, 0);
+	//connect(this->sock, (struct sockaddr*) &this->sockAddr, sockLen);
 	this->working = true;
 	printf("service started with address: ");
 	printBuffer((uint8_t*) &this->sockAddr, sockLen);
@@ -305,8 +306,8 @@ DaemonEndPoint::DaemonEndPoint(DaemonService* daemonService, uint64_t endPointID
 	memset(&unSockAddr, 0, sizeof(unSockAddr));
 	unSockAddr.sun_family = AF_LOCAL;
 	memcpy(unSockAddr.sun_path, clientPath.c_str(), clientPath.size());
-	unSock = socket(AF_LOCAL, SOCK_DGRAM, 0);
-	connect(unSock, (struct sockaddr*) &unSockAddr, sizeof(unSockAddr));
+	//unSock = socket(AF_LOCAL, SOCK_DGRAM, 0);
+	//(unSock, (struct sockaddr*) &unSockAddr, sizeof(unSockAddr));
 	
 	//--	start the threads
 	this->working = true;

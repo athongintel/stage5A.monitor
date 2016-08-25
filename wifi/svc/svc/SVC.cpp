@@ -148,8 +148,7 @@ void* SVC::processPacket(void* args){
 						printf("SVC_CMD_CONNECT_STEP1\n");
 						//if (_this->connectionRequest->notEmpty()){
 						//printf("pthread_t of waker %d\n", pthread_self());
-						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
-						printf("after connection request enqueue\n");
+						_this->connectionRequest->enqueue(new Message(buffer, byteRead));					
 						/*}
 						else{
 							//--	notify first needing endPoint, no enqueue
@@ -289,7 +288,6 @@ SVCEndPoint* SVC::listenConnection(){
 	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 	
-	printf("before call to dequeueWait()\n");
 	message = this->connectionRequest->dequeueWait();
 	if (message!=NULL){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		

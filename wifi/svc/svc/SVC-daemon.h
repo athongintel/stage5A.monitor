@@ -52,7 +52,7 @@
 		bool working;
 	
 		struct sockaddr_in sockAddr;
-		int sock;
+		socklen_t sockLen;
 	
 		unordered_map<uint64_t, DaemonEndPoint*> endPoints;
 		shared_mutex* endPointsMutex;		
@@ -94,7 +94,7 @@
 			uint64_t endPointID;
 			uint32_t appID;	
 	
-			struct sockaddr_un unSockAddr;
+			struct sockaddr_un unSockAddr;			
 			int unSock;
 			
 			static void* processingIncomingMessage(void* args);	

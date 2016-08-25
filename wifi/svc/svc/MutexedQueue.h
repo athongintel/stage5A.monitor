@@ -29,13 +29,8 @@
 			Queue<pthread_t>* waitDataThreads;
 						
 			//--	waitData used in mutex lock, not need to lock again
-			bool waitData(){
-				//printf("add pthread self: %d\n", pthread_self());
+			bool waitData(){			
 				this->waitDataThreads->enqueue(pthread_self());
-				//pthread_t thread;
-				//if (this->waitDataThreads->peak(&thread)){
-					//printf("cannot be empty, %d\n", thread);
-				//}
 				return waitSignal(QUEUE_DATA_SIGNAL);
 			}
 			
@@ -46,11 +41,8 @@
 				if (this->waitDataThreads->peak(&thread)){
 					this->waitDataThreads->dequeue();
 					pthread_kill(thread, QUEUE_DATA_SIGNAL);
-					printf("sent kill signal\n");
-				}
-				else{
-					printf("signal thread queue empty\n");
-				}				
+				
+				}		
 			}
 			
 		public:
@@ -92,8 +84,7 @@
 				}
 				else{					
 					this->first = element;
-					this->last = element;					
-					printf("first data packet");//, waker: %d\n", pthread_self());
+					this->last = element;									
 					signalThread();
 				}
 				this->countMutex->lock();
@@ -107,8 +98,7 @@
 				this->firstMutex->lock();
 				if (!this->notEmpty()){
 					printf("no data, standby to wait\n");					
-					haveData = waitData();
-					printf("after waitData\n");
+					haveData = waitData();				
 					//--	after waitData there must be data in queue, 'cause no other can perform dequeue
 				}
 				//--	not empty, have not to wait				
