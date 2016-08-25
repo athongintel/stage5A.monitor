@@ -306,8 +306,8 @@ DaemonEndPoint::DaemonEndPoint(DaemonService* daemonService, uint64_t endPointID
 	memset(&unSockAddr, 0, sizeof(unSockAddr));
 	unSockAddr.sun_family = AF_LOCAL;
 	memcpy(unSockAddr.sun_path, clientPath.c_str(), clientPath.size());
-	//unSock = socket(AF_LOCAL, SOCK_DGRAM, 0);
-	//(unSock, (struct sockaddr*) &unSockAddr, sizeof(unSockAddr));
+	unSock = socket(AF_LOCAL, SOCK_DGRAM, 0);
+	connect(unSock, (struct sockaddr*) &unSockAddr, sizeof(unSockAddr));
 	
 	//--	start the threads
 	this->working = true;
