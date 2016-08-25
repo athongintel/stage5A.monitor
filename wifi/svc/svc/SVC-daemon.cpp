@@ -26,7 +26,7 @@ DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockL
 	memcpy(&this->sockAddr, sockaddr, sockLen);
 	this->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	connect(this->sock, (struct sockaddr*) &this->sockAddr, sockLen);
-	this->working = true;
+	this->working = true;	
 }
 		
 bool DaemonService::isWorking(){
@@ -91,7 +91,10 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 
 	while (_this->working){
 		if (_this->incomingQueue->peak(&message)){
+			printf("can peak: ");
+			printBuffer(message->data, message->len);
 			uint8_t infoByte = message->data[ENDPOINTID_LENGTH];
+			printf("info byte: %02x\n", infoByte);
 			bool process = true;
 			if (infoByte & SVC_ENCRYPTED){
 				if (_this->daemonService->decryptMessage(message->data + ENDPOINTID_LENGTH+1, message->len - ENDPOINTID_LENGTH-1, decryptedBuffer, &decryptedLen)){
@@ -408,7 +411,7 @@ void* unixReadingLoop(void* args){
 						extractParams(unixReceiveBuffer + ENDPOINTID_LENGTH + 2, &params);
 						//--	check for service if connect to the same address
 						DaemonService* service;
-						uint32_t address = *((uint32_t*)(params[0]->data));
+						uint32_t address = *((uint32_t*)(params[2]->data));
 						if (address!=0){
 							service = getServiceByAddress(address);
 							if (service == NULL){						
