@@ -234,6 +234,9 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
 		printf("SVC_CMD_CONNECT_STEP2 received\n");
 		//--	get identity, proof, challenge
+		for (int i=0; i<=2; i++){
+			printf("params[%d]: ", i);printBuffer(params[i]->data, params[i]->len);
+		}
 		char ch[SVC_DEFAULT_BUFSIZ] = "";
 		memcpy(ch, params[0]->data, params[0]->len);
 		identity = string(ch);
@@ -283,6 +286,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 
 SVCEndPoint* SVC::listenConnection(){
 
+	
 	vector<SVCCommandParam*> params;
 	SVCEndPoint* rs = NULL;
 	SVCEndPoint* endPoint;
@@ -304,6 +308,8 @@ SVCEndPoint* SVC::listenConnection(){
 	endPointsMutex->unlock();
 	
 	message = this->connectionRequest->dequeueWait();
+
+	//--TODO: detach a new thread to do this
 	if (message!=NULL){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
 		clearParams(&params);
