@@ -490,7 +490,7 @@ void* htpReadingLoop(void* args){
 				if (infoByte & SVC_COMMAND_FRAME){				
 					enum SVCCommand cmd = (enum SVCCommand)htpReceiveBuffer[SESSIONID_LENGTH + ENDPOINTID_LENGTH + 1];
 					if (cmd == SVC_CMD_CONNECT_STEP1){
-						extractParams(htpReceiveBuffer + SESSIONID_LENGTH + ENDPOINTID_LENGTH + 3, &params);
+						extractParams(htpReceiveBuffer + SESSIONID_LENGTH + ENDPOINTID_LENGTH + 2, &params);
 						//--	check if we have service for this sessionID
 						service = getServiceBySessionID(sessionID);
 						if (service==NULL){						
@@ -502,7 +502,7 @@ void* htpReadingLoop(void* args){
 							serviceTableMutex->unlock();
 						}
 						//--	else: use this service
-						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[2]->data)));
+						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[1]->data)));
 						endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
 						clearParams(&params);
 					}
