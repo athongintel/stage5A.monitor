@@ -290,10 +290,12 @@ SVCEndPoint* SVC::listenConnection(){
 		endPointsMutex->unlock_shared();
 		
 		//--	read the challenge
-		challengeReceived = string((char*)params[1]->data);			
+		challengeReceived = string((char*)params[0]->data);			
 		proof = this->authenticator->generateProof(challengeReceived);
 		identity = this->authenticator->getIdentity();
 		challengeSent = this->authenticator->generateChallenge();
+		
+		printf("challenge received: %s\n", challengeReceived);
 		//--	send response
 		clearParams(&params);
 		params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
@@ -364,7 +366,9 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 	}
 	
 	//--	SEND	--//
-	send(this->svc->svcDaemonSocket, buffer, bufferLength, 0);				
+	send(this->svc->svcDaemonSocket, buffer, bufferLength, 0);
+	printf("endpoint send: ");
+	printBuffer(buffer, bufferLength);
 	//--	free params
 	clearParams(params);
 }
