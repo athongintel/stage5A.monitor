@@ -37,10 +37,16 @@
 			//--	signalThread used in mutex lock, not need to lock again
 			void signalThread(){
 				pthread_t thread;
+				
 				if (waitDataThreads->peak(&thread)){
 					waitDataThreads->dequeue();
 					pthread_kill(thread, QUEUE_DATA_SIGNAL);
+					printf("sent kill signal\n");
 				}
+				else{
+					printf("signal thread queue empty\n");
+				}
+				
 			}
 			
 		public:
@@ -87,6 +93,7 @@
 					this->first = element;
 					this->last = element;
 					this->lastMutex->unlock();
+					printf("first data packet, signal threads\n");
 					signalThread();
 				}
 				this->countMutex->lock();

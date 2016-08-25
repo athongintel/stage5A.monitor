@@ -287,6 +287,7 @@ SVCEndPoint* SVC::listenConnection(){
 	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 	
+	printf("before call to dequeueWait()\n");
 	message = this->connectionRequest->dequeueWait();
 	if (message!=NULL){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
