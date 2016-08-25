@@ -120,7 +120,28 @@ void* SVC::processPacket(void* args){
 				if (endPoint==NULL){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						//--	add this to connection request
-						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
+						printf("SVC_CMD_CONNECT_STEP1, add to connectionRequest\n");
+						if (_this->connectionRequest->notEmpty()){
+							_this->connectionRequest->enqueue(new Message(buffer, byteRead));
+						}
+						else{
+							//--	notify first needing endPoint, no enqueue
+							_this->endPointsMutex->lock_shared();
+							for (auto& it : _this->endPoints){
+								endPoint = it.second;
+								if (endPoint!=NULL){
+									SVCDataReceiveNotificator* notificator = endPoint->signalNotificator->getNotificator(cmd);
+									if (notificator!=NULL){
+										notificator->handler(buffer, byteRead, notificator);
+										endPoint->signalNotificator->removeNotificator(cmd);
+										break;	//--	we only notify the first
+									}
+									//--	else: this endPoint doesn't wait for this cmd
+								}
+								//--	else: NULL
+							}
+							_this->endPointsMutex->unlock_shared();				
+						}
 					}
 					//--	else: other commands not allows without endPoint
 				}
@@ -134,8 +155,11 @@ void* SVC::processPacket(void* args){
 				}				
 			}
 			else{
-				//--	forward to dataQueue
-				endPoint->dataQueue->enqueue(new Message(buffer, byteRead));
+				if (endPoint!=NULL){
+					//--	forward to dataQueue
+					endPoint->dataQueue->enqueue(new Message(buffer, byteRead));
+				}
+				//--	else: no data allowed without endPoint				
 			}
 		}
 	}
