@@ -29,9 +29,9 @@
 			
 			SVC* svc;
 			uint64_t endPointID;
-			SignalNotificator* signalNotificator;	
+			SignalNotificator* signalNotificator;
 			
-			SVCEndPoint(SVC* svc, uint64_t endPointID, SignalNotificator* sigNot);
+			SVCEndPoint(SVC* svc, SignalNotificator* sigNot);
 			
 			void sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params);
 		
@@ -45,7 +45,7 @@
 		
 		friend class SVCEndPoint;
 		
-		private:	
+		private:				
 			
 			SVCApp* localApp;
 			SVCAuthenticator* authenticator;
@@ -71,6 +71,7 @@
 		public:				
 	
 			~SVC();
+			void stopWorking();
 			SVC(SVCApp* localApp, SVCAuthenticator* authenticator);						
 			SVCEndPoint* establishConnection(SVCHost* remoteHost);
 			SVCEndPoint* listenConnection();					

@@ -42,7 +42,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	
 	this->connectionRequest = new Queue<Message*>();
 	
-	//1.5	create reading thread	
+	//--	create reading thread	
 	sigset_t sig;
 	sigfillset(&sig);
 	sigaddset(&sig, SIGUSR2);
@@ -55,32 +55,6 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_create(&this->readingThread, &attr, processPacket, this);
-	
-	/*
-	//2.	register localApp to daemon
-	//2.1	send command to daemon
-	params.push_back(new SVCCommandParam(4, (uint8_t*) &hashedID));
-	params.push_back(new SVCCommandParam(4, (uint8_t*) &sessionSecret));
-	sendCommand(this->svcDaemonSocket, this->sessionID, SVC_CMD_REGISTER_APP, &params);
-	
-	params.clear();
-	if (!sigNot->waitCommand(SVC_CMD_REGISTER_APP, &params, SVC_DEFAULT_TIMEOUT)){
-		errorString = SVC_ERROR_REQUEST_TIMEDOUT;
-		goto errorInit;
-	}
-	
-	//2.3 get sessionID from response
-	this->sessionID = *((uint32_t*)(params[0]->data));
-	printf("sessionID: %08x\n", this->sessionID);
-	sessionSecretResponded = *((uint32_t*)(params[1]->data));
-	if (sessionSecretResponded == sessionSecret){
-
-		goto success;
-	}
-	else{
-		goto errorInit;
-	}
-	*/
 	
 	goto success;
 	
@@ -98,6 +72,10 @@ void SVC::destruct(){
 	pthread_join(this->readingThread, NULL);
 	unlink(this->svcClientPath.c_str());
 	cout<<"svc destructed\n";
+}
+
+void SVC::stopWorking(){
+	this->working = false;
 }
 
 SVC::~SVC(){
@@ -178,7 +156,8 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	
 	sigNot = new SignalNotificator();
 	uint64_t endPointID = (uint64_t)hasher(this->localApp->getAppID()+to_string(rand()));	
-	endPoint = new SVCEndPoint(this, endPointID, sigNot);
+	endPoint = new SVCEndPoint(this, sigNot);
+	endPoint->endPointID = endPointID;
 	
 	endPointsMutex->lock();
 	endPoints[endPointID] = endPoint;
@@ -241,11 +220,11 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 SVCEndPoint* SVC::listenConnection(){
 
 	vector<SVCCommandParam*> params;
-	SVCEndPoint* rs;
+	SVCEndPoint* rs = NULL;
 	SVCEndPoint* endPoint;
 	Message* message;
 	uint64_t endPointID;
-	SignalNotificator* sigNot;
+	SignalNotificator* sigNot;	
 
 	//--	authentication variablees	
 	string identity;
@@ -253,20 +232,38 @@ SVCEndPoint* SVC::listenConnection(){
 	string challengeReceived;
 	string proof;
 	
+	sigNot = new SignalNotificator();
+	endPoint = new SVCEndPoint(this, sigNot);
+	
+	endPointsMutex->lock();
+	endPoints[endPointID] = endPoint;
+	endPointsMutex->unlock();
+	
 	if (this->connectionRequest->peak(&message)){
-		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1
-		
+		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
 		clearParams(&params);
 		extractParams(message->data + ENDPOINTID_LENGTH + 2, &params);
+	}
+	else{
+	//--	no pending request		
+		while (!sigNot->waitCommand(SVC_CMD_CONNECT_STEP1, &params, SVC_DEFAULT_TIMEOUT)){
+			if (this->working){
+				//--	remove the notificator before waiting again, otherwise we'll get exception			
+				sigNot->removeNotificator(SVC_CMD_CONNECT_STEP1);
+			}
+			else{
+				//--	no more working, brake from for loop
+				break;
+			}
+		}
+	}
+	
+	if (this->working){
+		endPointID = *((uint64_t*)(params[0]->data));
+		endPointsMutex->lock_shared();
+		endPoints[endPointID]->endPointID = endPointID;
+		endPointsMutex->unlock_shared();
 		
-		endPointID = *((uint64_t*)(params[0]->data));		
-		sigNot = new SignalNotificator();
-		endPoint = new SVCEndPoint(this, endPointID, sigNot);
-		
-		endPointsMutex->lock();
-		endPoints[endPointID] = endPoint;
-		endPointsMutex->unlock();
-			
 		//--	read the challenge
 		challengeReceived = string((char*)params[1]->data);			
 		proof = this->authenticator->generateProof(challengeReceived);
@@ -278,34 +275,29 @@ SVCEndPoint* SVC::listenConnection(){
 		params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));	
 		endPoint->sendCommand(SVC_CMD_CONNECT_STEP2, &params);
-		
+	
 		//--	wait for SVC_CMD_CONNECT_STEP4, step3 is handled by the daemon		
 		if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP4, &params, SVC_DEFAULT_TIMEOUT)){
 			//--	read identity + proof
 			identity = string((char*)params[0]);
 			proof = string((char*)params[1]);
-			
+		
 			//--	verify client's identity
 			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 				rs = endPoint;
 			}
 		}
-		/*
-		else: time out
-		*/
+		//--	else: time out
 	}
-	/*
-	else: no pending request
-	*/
+	//--	else: work is broken
 	return rs;
 }
 
 
 //--	SVCENDPOINT IMPLEMENTATION	//
 
-SVCEndPoint::SVCEndPoint(SVC* svc, uint64_t endPointID, SignalNotificator* sigNot){
+SVCEndPoint::SVCEndPoint(SVC* svc, SignalNotificator* sigNot){
 	this->svc = svc;
-	this->endPointID = endPointID;
 	this->signalNotificator = sigNot;
 	this->dataQueue = new MutexedQueue<Message*>();
 };

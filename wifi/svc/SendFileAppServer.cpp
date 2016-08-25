@@ -4,21 +4,40 @@
 
 using namespace std;
 
+SVC* svcInstance;
+
+void signal_handler(int signal){
+	if (signal == SIGINT){
+		svcInstance->stopWorking();
+	}
+}
+
 int main(int argc, char** argv){
+
+	//--	trap SIGINT signal
+	struct sigaction act;
+	act.sa_handler = signal_handler;
+	sigfillset(&act.sa_mask);
+	sigdelset(&act.sa_mask, SIGINT);
+	sigaction(SIGINT, &act, NULL);
+	
 	SendFileAppServer* app = new SendFileAppServer();
 }
 
 SendFileAppServer::SendFileAppServer(){		
-	
-	SVC* svc = new SVC(this, this);
+	svcInstance = new SVC(this, this);
 	SVCEndPoint* endPoint;
+	
+	printf("waiting for connection request\n");
 	do{
-		endPoint = svc->listenConnection();
+		endPoint = svcInstance->listenConnection();
 		if (endPoint!=NULL){
 			printf("client connected\n");
 		}
 	}
 	while (endPoint == NULL);
+	
+	delete svcInstance;
 }
 
 //interface implementation
