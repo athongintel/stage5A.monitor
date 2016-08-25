@@ -149,6 +149,7 @@ void* SVC::processPacket(void* args){
 						//if (_this->connectionRequest->notEmpty()){
 						printf("pthread_t of waker %d\n", pthread_self());
 						_this->connectionRequest->enqueue(new Message(buffer, byteRead));
+						printf("after connection request enqueue\n");
 						/*}
 						else{
 							//--	notify first needing endPoint, no enqueue
