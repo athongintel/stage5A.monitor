@@ -3,9 +3,8 @@
 void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
 	struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
 	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
-	const uint8_t* pointer = buffer+7;
 
-	extractParams(buffer, params);
+	extractParams(buffer + ENDPOINTID_LENGTH + 2, params);
 	//signal the thread calling waitCommand
 	pthread_kill(notificator->thread, SVC_ACQUIRED_SIGNAL);
 }
