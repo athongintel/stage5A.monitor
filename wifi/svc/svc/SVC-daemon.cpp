@@ -502,7 +502,7 @@ void* htpReadingLoop(void* args){
 							serviceTableMutex->unlock();
 						}
 						//--	else: use this service
-						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[0]->data)));
+						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[2]->data)));
 						endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
 						clearParams(&params);
 					}
