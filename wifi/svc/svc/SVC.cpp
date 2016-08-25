@@ -295,7 +295,7 @@ SVCEndPoint* SVC::listenConnection(){
 		identity = this->authenticator->getIdentity();
 		challengeSent = this->authenticator->generateChallenge();
 		
-		printf("challenge received: %s\n", challengeReceived);
+		printf("challenge received: %s\n", challengeReceived.c_str());
 		//--	send response
 		clearParams(&params);
 		params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
