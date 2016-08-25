@@ -26,7 +26,9 @@ DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockL
 	memcpy(&this->sockAddr, sockaddr, sockLen);
 	this->sock = socket(AF_INET, SOCK_DGRAM, 0);
 	connect(this->sock, (struct sockaddr*) &this->sockAddr, sockLen);
-	this->working = true;	
+	this->working = true;
+	printf("service started with address: ");
+	printBuffer((uint8_t*) &this->sockAddr, sockLen);
 }
 		
 bool DaemonService::isWorking(){
@@ -412,6 +414,7 @@ void* unixReadingLoop(void* args){
 						//--	check for service if connect to the same address
 						DaemonService* service;
 						uint32_t address = *((uint32_t*)(params[2]->data));
+						printf("address: %08x\n", address);
 						if (address!=0){
 							service = getServiceByAddress(address);
 							if (service == NULL){						
