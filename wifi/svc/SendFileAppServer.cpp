@@ -46,6 +46,7 @@ SendFileAppServer::SendFileAppServer(){
 		if (endPoint!=NULL){
 			printf("client connected\n");
 		}
+		printf("retry...\n");
 	}
 	while (endPoint == NULL && working);
 	

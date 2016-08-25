@@ -287,7 +287,8 @@ SVCEndPoint* SVC::listenConnection(){
 	endPoints.push_back(endPoint);
 	endPointsMutex->unlock();
 	
-	if (message = this->connectionRequest->dequeueWait()){
+	message = this->connectionRequest->dequeueWait();
+	if (message!=NULL){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
 		clearParams(&params);
 		extractParams(message->data + ENDPOINTID_LENGTH + 2, &params);
