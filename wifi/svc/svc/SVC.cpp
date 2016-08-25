@@ -296,7 +296,7 @@ SVCEndPoint* SVC::listenConnection(){
 		clearParams(&params);
 		extractParams(message->data + ENDPOINTID_LENGTH + 2, &params);
 				
-		endPointID = *((uint64_t*)(params[0]->data));
+		endPointID = *((uint64_t*)(message->data));
 		endPoint->endPointID = endPointID;
 		printf("endPointID: %08x\n", endPointID);
 		//--	read the challenge
