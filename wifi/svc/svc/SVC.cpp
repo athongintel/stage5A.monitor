@@ -266,6 +266,10 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	/*
 	else: time out
 	*/
+	if (rs == NULL){
+		delete sigNot;
+		delete endPoint;
+	}
 	return rs;
 }
 
@@ -343,6 +347,11 @@ SVCEndPoint* SVC::listenConnection(){
 	else{
 		//--	dequeueWait == NULL means it is interrupted by SIGINT
 		throw SVC_ERROR_SIGNAL_INTERRUPTED;
+	}
+	//--	remove the endpoint
+	if (rs == NULL){
+		delete sigNot;
+		delete endPoint;
 	}
 	return rs;
 }
