@@ -22,6 +22,9 @@
 	class SVCEndPoint{			
 		friend class SVC;			
 		private:			
+			struct sockaddr_un endPointSocketAddress;
+			int endPointSocket;
+			
 			MutexedQueue<Message*>* dataQueue;
 			
 			SVC* svc;
@@ -33,6 +36,8 @@
 		
 		public:
 			~SVCEndPoint();
+			
+			void setEndPointID(uint64_t endPointID);
 			int sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp);
 			int readData(uint8_t* data, size_t* len);
 	};

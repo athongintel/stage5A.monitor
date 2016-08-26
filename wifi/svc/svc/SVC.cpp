@@ -187,9 +187,10 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	vector<SVCCommandParam*> params;
 	
 	sigNot = new SignalNotificator();
+	srand(time(NULL));
 	uint64_t endPointID = (uint64_t)hasher(this->localApp->getAppID()+to_string(rand()));	
 	endPoint = new SVCEndPoint(this, sigNot);
-	endPoint->endPointID = endPointID;
+	endPoint->setEndPointID(endPointID);
 	
 	endPointsMutex->lock();
 	endPoints.push_back(endPoint);
@@ -359,11 +360,25 @@ SVCEndPoint* SVC::listenConnection(){
 
 //--	SVCENDPOINT class	//
 
+
+
 SVCEndPoint::SVCEndPoint(SVC* svc, SignalNotificator* sigNot){
 	this->svc = svc;
 	this->signalNotificator = sigNot;
 	this->dataQueue = new MutexedQueue<Message*>();
 };
+
+void SVCEndPoint::setEndPointID(uint64_t endPointID){
+	this->endPointID = endPointID;
+	//--	create new un socket to write to
+	/*this->endPointSocket = sock(AF_LOCAL, SOCK_DGRAM, 0);
+
+	memset(&this->daemonSocketAddress, 0, sizeof(this->daemonSocketAddress));
+	this->daemonSocketAddress.sun_family = AF_LOCAL;
+	memcpy(this->daemonSocketAddress.sun_path, SVC_DAEMON_PATH.c_str(), SVC_DAEMON_PATH.size());
+	this->svcDaemonSocket = socket(AF_LOCAL, SOCK_DGRAM, 0);
+	connect(this->svcDaemonSocket, (struct sockaddr*) &this->daemonSocketAddress, sizeof(this->daemonSocketAddress));*/
+}
 
 void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params){				
 
