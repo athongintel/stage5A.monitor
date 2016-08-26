@@ -33,13 +33,14 @@ DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockL
 	this->working = true;
 	
 	//--	create periodic worker
-	threadCheckAlive = new PeriodicWorker(SVC_ENDPOINT_LIVETIME, checkEndPointAlive, this);
+	threadCheckAlive = new PeriodicWorker(1000, checkEndPointAlive, this);
 
 	printf("service started with address: ");
 	printBuffer((uint8_t*) &this->sockAddr, sockLen);
 }
 
 void DaemonService::checkEndPointAlive(void* args){
+	printf("\nchecking endpoint alive");
 	DaemonService* _this = (DaemonService*)args;
 	_this->endPointsMutex->lock();
 	for (auto& it : _this->endPoints){
@@ -80,6 +81,9 @@ void DaemonService::stopWorking(){
 	}
 	this->endPointsMutex->unlock();
 	
+	//--	stop the alive checker
+	threadCheckAlive->stopWorking();
+	
 	//--	remove all references to current service
 	serviceTableMutex->lock();
 	for (auto& it : this->endPoints){
@@ -91,7 +95,8 @@ void DaemonService::stopWorking(){
 
 DaemonService::~DaemonService(){
 	//--	TODO:	remove crypto variables
-	delete endPointsMutex;
+	delete this->endPointsMutex;
+	delete this->threadCheckAlive;
 }
 
 
@@ -452,7 +457,6 @@ void* unixReadingLoop(void* args){
 								sockAddr.sin_family = AF_INET;
 								sockAddr.sin_port = htons(SVC_DAEPORT);
 								sockAddr.sin_addr.s_addr = address;
-								printf("address order: ");
 								printBuffer((uint8_t*)&sockAddr, sockLen);
 								service = new DaemonService(&sockAddr, sockLen);
 								service->address = address;
