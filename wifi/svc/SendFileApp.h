@@ -8,6 +8,7 @@ class SendFileApp : SVCApp, SVCAuthenticator{
 
 	public:
 		SendFileApp();
+		~SendFileApp();
 		
 		string getAppID();	
 		std::string getIdentity();

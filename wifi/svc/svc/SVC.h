@@ -19,10 +19,8 @@
 	//--	FORWARD DECLARATION		--//
 	class SVC;
 	
-	class SVCEndPoint{	
-		
-		friend class SVC;
-			
+	class SVCEndPoint{			
+		friend class SVC;			
 		private:			
 			MutexedQueue<Message*>* dataQueue;
 			
@@ -31,7 +29,6 @@
 			SignalNotificator* signalNotificator;
 			
 			SVCEndPoint(SVC* svc, SignalNotificator* sigNot);
-			
 			void sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* params);
 		
 		public:
@@ -40,10 +37,8 @@
 			int readData(uint8_t* data, size_t* len);
 	};
 	
-	class SVC{				
-		
-		friend class SVCEndPoint;
-		
+	class SVC{						
+		friend class SVCEndPoint;		
 		private:				
 			
 			SVCApp* localApp;
@@ -68,6 +63,7 @@
 			SVCEndPoint* getEndPointByID(uint64_t endPointID);
 			
 			static void* processPacket(void* args);
+			//static void* processConnectionRequest(void* args);
 			
 		public:				
 	

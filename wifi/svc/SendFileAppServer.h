@@ -6,7 +6,7 @@ class SendFileAppServer : SVCApp, SVCAuthenticator{
 
 	public:
 		SendFileAppServer();	
-				
+		~SendFileAppServer();
 		//--	inherited interfaces
 		std::string getAppID();
 		std::string getIdentity();

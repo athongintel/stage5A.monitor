@@ -6,6 +6,8 @@
 using namespace std;
 
 int main(int argc, char** argv){
+
+	//--	read and extract IP from argv
 	try{
 		SendFileApp* app = new SendFileApp();
 		cout<<"app initiated!"<<endl;
@@ -13,6 +15,10 @@ int main(int argc, char** argv){
 	catch(const char* err){
 		cout<<err<<endl;
 	}	
+	//--	read file path from argv
+	
+	//--	perfrom send file
+	
 }
 
 SendFileApp::SendFileApp(){
@@ -27,6 +33,11 @@ SendFileApp::SendFileApp(){
 	}
 	
 	printf("connection established!");
+}
+
+SendFileApp::~SendFileApp(){
+	delete this->endPoint;
+	delete this->svc;
 }
 
 //interface implementation

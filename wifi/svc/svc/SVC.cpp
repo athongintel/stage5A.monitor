@@ -193,6 +193,9 @@ void* SVC::processPacket(void* args){
 	printf("svc process packet stopped\n");
 }
 
+/*void* SVC::processConnectionRequest(void* args){
+	
+}*/
 
 /*	SVC PUBLIC FUNCTION IMPLEMENTATION	*/
 
@@ -288,7 +291,6 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 
 
 SVCEndPoint* SVC::listenConnection(){
-
 	
 	vector<SVCCommandParam*> params;
 	SVCEndPoint* rs = NULL;
@@ -312,7 +314,7 @@ SVCEndPoint* SVC::listenConnection(){
 	
 	message = this->connectionRequest->dequeueWait();
 
-	//--TODO: detach a new thread to do this
+	//--TODO: detach a new thread to do this - should or should not?
 	if (message!=NULL){
 		//--	process this connection request, this is a SVC_CMD_CONNECT_STEP1		
 		clearParams(&params);

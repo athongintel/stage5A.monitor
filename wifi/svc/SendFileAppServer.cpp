@@ -16,7 +16,7 @@ void signal_handler(int signal){
 }
 
 int main(int argc, char** argv){
-
+	
     //--	set thread signal mask
     sigset_t sigset;
     sigemptyset(&sigset);    
@@ -45,11 +45,16 @@ SendFileAppServer::SendFileAppServer(){
 		endPoint = svcInstance->listenConnection();
 		if (endPoint!=NULL){
 			printf("client connected\n");
+			//--	give todo work for this endPoint
 		}
-		printf("retry...\n");
+		else{
+			printf("retry...\n");
+		}
 	}
-	while (endPoint == NULL && working);
-	
+	while (working);
+}
+
+SendFileAppServer::~SendFileAppServer(){
 	delete svcInstance;
 }
 
