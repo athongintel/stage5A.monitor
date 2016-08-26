@@ -64,7 +64,7 @@ SVC::SVC(SVCApp* localApp, SVCAuthenticator* authenticator){
 		throw errorString;
 		
 	success:
-		printf("svc created\n");	
+		printf("\nsvc created");
 }
 
 void SVC::destruct(){
@@ -145,28 +145,8 @@ void* SVC::processPacket(void* args){
 				if (endPoint==NULL){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						//--	add this to connection request
-						printf("\nSVC_CMD_CONNECT_STEP1");
-						//if (_this->connectionRequest->notEmpty()){
-						//printf("pthread_t of waker %d\n", pthread_self());
+						printf("\nadd SVC_CMD_CONNECT_STEP1 to queue");
 						_this->connectionRequest->enqueue(new Message(buffer, byteRead));					
-						/*}
-						else{
-							//--	notify first needing endPoint, no enqueue
-							_this->endPointsMutex->lock_shared();
-							for (SVCEndPoint* ep : _this->endPoints){
-								if (ep!=NULL){
-									SVCDataReceiveNotificator* notificator = ep->signalNotificator->getNotificator(cmd);
-									if (notificator!=NULL){
-										notificator->handler(buffer, byteRead, notificator);
-										ep->signalNotificator->removeNotificator(cmd);
-										break;	//--	we only notify the first
-									}
-									//--	else: this endPoint doesn't wait for this cmd
-								}
-								//--	else: NULL
-							}
-							_this->endPointsMutex->unlock_shared();				
-						}*/
 					}
 					//--	else: other commands not allows without endPoint
 				}
@@ -253,18 +233,18 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 		challengeReceived = string(ch);
 		memset(ch, 0, SVC_DEFAULT_BUFSIZ);
 		
-		printf("\nget identity: %s\n proof: %s\n challenge: %s\n", identity.c_str(), proof.c_str(), challengeReceived.c_str());
+		printf("\nget identity: %s\n proof: %s\n challenge: %s", identity.c_str(), proof.c_str(), challengeReceived.c_str());
 		
 		//--	verify server's identity
 		if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 			//--	ok, server's identity verified. request daemon to perform keyexchange. the daemon responds the success of encrypting process
-			printf("server's identity verified\n");
+			printf("\nserver's identity verified\n");
 			clearParams(&params);			
 			endPoint->sendCommand(SVC_CMD_CONNECT_STEP3, &params);
-			printf("send SVC_CMD_CONNECT_STEP3 to daemon\n");
+			printf("\nsend SVC_CMD_CONNECT_STEP3 to daemon\n");
 			//--	wait for daemon. if the connection to this address is already secured, it will return shortly
 			if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP3, &params, SVC_DEFAULT_TIMEOUT)){
-				printf("SVC_CMD_CONNECT_STEP3 received from daemon\n");
+				printf("\nSVC_CMD_CONNECT_STEP3 received from daemon");
 				//a.3 perform SVC_CMD_CONNECT_STEP4, send identity + proof
 				clearParams(&params);
 				identity = this->authenticator->getIdentity();
@@ -272,7 +252,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 				params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
 				params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 				endPoint->sendCommand(SVC_CMD_CONNECT_STEP4, &params);
-				printf("send CONNECT_STEP4 with client's identity: %s\nproof: %s\n", identity.c_str(), proof.c_str());
+				printf("\nsend CONNECT_STEP4 with client's identity: %s\nproof: %s", identity.c_str(), proof.c_str());
 				rs = endPoint;
 			}
 			/*
@@ -322,7 +302,7 @@ SVCEndPoint* SVC::listenConnection(){
 				
 		endPointID = *((uint64_t*)(message->data));
 		endPoint->endPointID = endPointID;
-		printf("endPointID: "); printBuffer((uint8_t*) &endPointID, 8);
+		printf("\nendPointID: "); printBuffer((uint8_t*) &endPointID, 8);
 		//--	read the challenge
 		char ch[SVC_DEFAULT_BUFSIZ] = "";
 		memcpy(ch, (char*)(params[0]->data), params[0]->len);
@@ -338,7 +318,7 @@ SVCEndPoint* SVC::listenConnection(){
 		params.push_back(new SVCCommandParam(proof.size(), (uint8_t*)proof.c_str()));
 		params.push_back(new SVCCommandParam(challengeSent.size(), (uint8_t*)challengeSent.c_str()));
 		endPoint->sendCommand(SVC_CMD_CONNECT_STEP2, &params);
-		printf("send CONNECT_STEP2 with:\nidentity:%s\nproof:%s\nchallenge:%s\n", identity.c_str(), proof.c_str(), challengeSent.c_str());
+		printf("\nsend CONNECT_STEP2 with:\nidentity:%s\nproof:%s\nchallenge:%s", identity.c_str(), proof.c_str(), challengeSent.c_str());
 		
 		//--	wait for SVC_CMD_CONNECT_STEP4, step3 is handled by the daemon		
 		if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP4, &params, SVC_DEFAULT_TIMEOUT)){
@@ -351,11 +331,11 @@ SVCEndPoint* SVC::listenConnection(){
 			memcpy(ch, (char*)(params[1]->data), params[1]->len);
 			proof = string(ch);
 			
-			printf("got CONNECT_STEP4 with:\nidentity:%s\nproof:%s\n", identity.c_str(), proof.c_str());
+			printf("\ngot CONNECT_STEP4 with:\nidentity:%s\nproof:%s", identity.c_str(), proof.c_str());
 	
 			//--	verify client's identity
 			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
-				printf("client's identity verified!\n");
+				printf("\nclient's identity verified!");
 				rs = endPoint;
 			}
 		}
@@ -368,7 +348,7 @@ SVCEndPoint* SVC::listenConnection(){
 }
 
 
-//--	SVCENDPOINT IMPLEMENTATION	//
+//--	SVCENDPOINT class	//
 
 SVCEndPoint::SVCEndPoint(SVC* svc, SignalNotificator* sigNot){
 	this->svc = svc;

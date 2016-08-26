@@ -97,7 +97,7 @@
 				bool haveData = true;
 				this->firstMutex->lock();
 				if (!this->notEmpty()){
-					printf("no data, standby to wait\n");					
+					printf("\nno data, standby to wait");
 					haveData = waitData();				
 					//--	after waitData there must be data in queue, 'cause no other can perform dequeue
 				}

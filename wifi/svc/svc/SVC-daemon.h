@@ -18,15 +18,15 @@
 	#include <sys/types.h>
 	#include <netinet/in.h>
 
-	#define SVC_VERSION 0x01<<6
+	#define SVC_VERSION 0x01<<6	
 
 	using namespace std;
 
 	class DaemonEndPoint;
 	class DaemonService;
 
-	static unordered_map<uint64_t, DaemonService*> serviceTable;
-	static shared_mutex* serviceTableMutex;
+	vector<DaemonService*> serviceTable;
+	shared_mutex* serviceTableMutex;
 
 	struct sockaddr_un daemonSockUnAddress;
 	struct sockaddr_in daemonSockInAddress;
@@ -54,18 +54,20 @@
 		struct sockaddr_in sockAddr;
 		socklen_t sockLen;
 	
-		unordered_map<uint64_t, DaemonEndPoint*> endPoints;
-		shared_mutex* endPointsMutex;		
+
+		PeriodicWorker* periodicWorker;
 	
 		//--	CRYPTO VARIABLES	--//
-			
+		static void checkAliveEndPoint(void* args);
+		void sendData(const uint8_t* buffer, size_t bufferLen);	
 		bool encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen);		
-		bool decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen);
-	
-		void sendData(const uint8_t* buffer, size_t bufferLen);
+		bool decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen);			
 	
 		public:
 	
+			vector<DaemonEndPoint*> endPoints;
+			shared_mutex* endPointsMutex;
+			
 			uint32_t sessionID;
 			uint32_t address;
 		
@@ -75,7 +77,8 @@
 			bool isWorking();		
 			void stopWorking();
 		
-			DaemonEndPoint* addDaemonEndPoint(uint64_t endPointID, uint32_t appID);		
+			DaemonEndPoint* addDaemonEndPoint(uint64_t endPointID, uint32_t appID);
+			void removeDaemonEndPoint(uint64_t endPointID);
 			DaemonEndPoint* getDaemonEndPoint(uint64_t endPointID);
 	};
 
@@ -90,23 +93,28 @@
 			pthread_t sendOutThread;
 			bool working;
 	
-			DaemonService* daemonService;
-			uint64_t endPointID;
-			uint32_t appID;	
+			DaemonService* daemonService;			
 	
-			struct sockaddr_un unSockAddr;			
+			struct sockaddr_un unSockAddr;
 			int unSock;
 			
 			static void* processingIncomingMessage(void* args);	
 			static void* processingOutgoingMessage(void* args);
 			static void* sendPacketToApp(void* args);
 			static void* sendPacketOutside(void* args);
+			
+			static Message* checkAliveMessage;
+			
+			void sendCheckAlive();		
 
 		public:	
 			MutexedQueue<Message*>* incomingQueue;
 			MutexedQueue<Message*>* outgoingQueue;
 			MutexedQueue<Message*>* inQueue;
 			MutexedQueue<Message*>* outQueue;
+			
+			uint64_t endPointID;
+			uint32_t appID;	
 		
 			DaemonEndPoint(DaemonService* daemonService, uint64_t endPointID, uint32_t appID);		
 			~DaemonEndPoint();
@@ -121,6 +129,7 @@
 	//--	HELPER FUNCTIONS	--//
 	DaemonService* getServiceByAddress(uint32_t address);
 	DaemonService* getServiceBySessionID(uint32_t sessionID);
+		DaemonService* getServiceByEndPointID(uint64_t endPOintID);
 	void signal_handler(int sig);
 	//---------------------------//
 	

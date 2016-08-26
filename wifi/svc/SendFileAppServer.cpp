@@ -9,7 +9,7 @@ volatile bool working;
 
 void signal_handler(int signal){
 	if (signal == SIGINT){
-		printf("SIGINT caught, stop working\n");
+		printf("\nSIGINT caught, stop working");
 		svcInstance->stopWorking();
 		working = false;
 	}
@@ -27,20 +27,20 @@ SendFileAppServer::SendFileAppServer(){
 	svcInstance = new SVC(this, this);
 	SVCEndPoint* endPoint;
 	
-	printf("waiting for connection request\n");
+	printf("\nwaiting for connection request");
 	do{
 		try{
 			endPoint = svcInstance->listenConnection();
 			if (endPoint!=NULL){
-				printf("client connected\n");
+				printf("\nclient connected");
 				//--	give todo work for this endPoint in new thread
 			}
 			else{
-				printf("retry...\n");
+				printf("\nretry...");
 			}
 		}
 		catch (const char* ex){
-			printf("Error: %s\n", ex);
+			printf("\nError: %s\n", ex);
 			signal_handler(SIGINT);
 		}
 	}

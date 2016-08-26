@@ -1,5 +1,46 @@
 #include "SVC-utils.h"
 
+//--	MESSAGE class
+			
+Message::Message(const uint8_t* data, size_t len){
+	this->data = (uint8_t*)malloc(SVC_DEFAULT_BUFSIZ);
+	this->len = len;
+	memcpy(this->data, data, this->len);
+}
+
+Message::~Message(){
+	delete data;
+	//printf("message destructed\n");
+}
+
+//--	SVCCOMMANDPARAM class
+SVCCommandParam::SVCCommandParam(){
+	this->copy = false;
+}
+
+SVCCommandParam::SVCCommandParam(uint16_t length, const uint8_t* data){
+	this->len = length;
+	this->data = (uint8_t*)malloc(len);
+	memcpy(this->data, data, len);
+	this->copy = true;
+}
+
+SVCCommandParam::~SVCCommandParam(){	
+	if (this->copy){
+		delete this->data;
+		//printf("param destructed\n");
+	}
+}
+
+//--	SIGNAL NOTIFICATOR class
+
+SignalNotificator::SignalNotificator(){
+	/*	need to init this array to NULL, otherwise left memory will cause addNotificator to throw exception	*/
+	for (uint8_t cmd = 0; cmd<_SVC_CMD_COUNT; cmd++){
+		this->notificationArray[cmd] = NULL;
+	}			
+}
+
 void SignalNotificator::waitCommandHandler(const uint8_t* buffer, size_t datalen, void* args){
 	struct SVCDataReceiveNotificator* notificator = (struct SVCDataReceiveNotificator*)args;	
 	vector<SVCCommandParam*>* params = (vector<SVCCommandParam*>*)notificator->args;
@@ -61,14 +102,69 @@ SVCDataReceiveNotificator* SignalNotificator::getNotificator(enum SVCCommand cmd
 	return rs;
 }
 
+//--	PERIODIC WORKER
+PeriodicWorker::PeriodicWorker(int interval, void (*handler)(void*), void* args){
+	this->interval = interval;
+	this->working = true;
+	this->handler = handler;
+	this->args = args;
+	
+	pthread_attr_t threadAttr;
+	pthread_attr_init(&threadAttr);
+	pthread_create(&this->worker, &threadAttr, handling, this);
+}
+void PeriodicWorker::stopWorking(){
+	//--	disarm automatic
+	working = false;
+	pthread_join(this->worker, NULL);
+	timer_delete(this->timer);
+	printf("\nperiodic worker stopped");
+}
+
+void* PeriodicWorker::handling(void* args){
+	PeriodicWorker* pw = (PeriodicWorker*)args;
+	
+	struct sigevent evt;
+	evt.sigev_notify = SIGEV_SIGNAL;
+	evt.sigev_signo = SVC_PERIODIC_SIGNAL;
+	evt.sigev_notify_thread_id = pthread_self();
+	timer_create(CLOCK_REALTIME, &evt, &pw->timer);
+
+	struct itimerspec time;
+	time.it_interval.tv_sec=pw->interval/1000;
+	time.it_interval.tv_nsec=(pw->interval - time.it_interval.tv_sec*1000)*1000000;
+	time.it_value.tv_sec=pw->interval/1000;
+	time.it_value.tv_nsec=(pw->interval - time.it_value.tv_sec*1000)*1000000;
+	timer_settime(pw->timer, 0, &time, NULL);		
+	
+	bool waitrs;
+	while (pw->working){
+		//--	wait signal then perform handler
+		waitrs = waitSignal(SVC_PERIODIC_SIGNAL);
+		if (waitrs){
+			//--	perform handler
+			pw->handler(pw->args);
+		}
+		else{
+			//--	SIGINT caught
+			printf("\nperiodic worker got SIGINT, stop working");
+			pw->stopWorking();
+		}
+	}
+}
+
+PeriodicWorker::~PeriodicWorker(){
+	printf("\nperiod worker detructed");
+}
+
 //--	UTILS FUNCTION IMPLEMEMTATION	--//
 
 bool isEncryptedCommand(enum SVCCommand command){
 	return (command != SVC_CMD_CHECK_ALIVE 
-					&& command != SVC_CMD_REGISTER_APP 
-					&& command != SVC_CMD_CONNECT_STEP1
-					&& command != SVC_CMD_CONNECT_STEP2
-					&& command != SVC_CMD_CONNECT_STEP3);
+			&& command != SVC_CMD_CHECK_ALIVE
+			&& command != SVC_CMD_CONNECT_STEP1
+			&& command != SVC_CMD_CONNECT_STEP2
+			&& command != SVC_CMD_CONNECT_STEP3);
 }
 
 void extractParams(const uint8_t* buffer, vector<SVCCommandParam*>* params){

@@ -2,10 +2,9 @@
 #define __SVC_SHARED_MUTEX__
 
 	#include "Node.h"
+	#include "SVC-header.h"
 	#include <mutex>
 	#include <csignal>
-
-	#define SHARED_MUTEX_SIGNAL SIGUSR2
 
 	using namespace std;
 	
@@ -85,7 +84,7 @@
 			void waitSignal(){
 				sigset_t sigset;
 				sigemptyset(&sigset);
-				sigaddset(&sigset, SHARED_MUTEX_SIGNAL);
+				sigaddset(&sigset, SVC_SHARED_MUTEX_SIGNAL);
 				/*	no need to check for caughtSignal because we only block only one signal	*/
 				int caughtSignal;
 				/*	TODO: check return value of sigwait	*/
@@ -211,7 +210,7 @@
 							/*	this must be the first writer waiting	*/
 							pthread_t tid;
 							this->writeWaitQueue->peak(&tid);
-							pthread_kill(tid, SHARED_MUTEX_SIGNAL);
+							pthread_kill(tid, SVC_SHARED_MUTEX_SIGNAL);
 							this->writeWaitQueue->dequeue();
 							/*	job done, return	*/
 							writeWaitQueueMutex.unlock();
@@ -247,7 +246,7 @@
 						/*	notify	*/
 						pthread_t tid;
 						this->writeWaitQueue->peak(&tid);
-						pthread_kill(tid, SHARED_MUTEX_SIGNAL);
+						pthread_kill(tid, SVC_SHARED_MUTEX_SIGNAL);
 						this->writeWaitQueue->dequeue();
 						writeWaitQueueMutex.unlock();
 						return;
@@ -260,7 +259,7 @@
 						while (this->readWaitQueue->notEmpty()){
 							pthread_t tid;
 							this->readWaitQueue->peak(&tid);
-							pthread_kill(tid, SHARED_MUTEX_SIGNAL);
+							pthread_kill(tid, SVC_SHARED_MUTEX_SIGNAL);
 							this->readWaitQueue->dequeue();
 						}
 						readWaitQueueMutex.unlock();

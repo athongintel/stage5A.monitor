@@ -10,7 +10,7 @@ int main(int argc, char** argv){
 	//--	read and extract IP from argv
 	try{
 		SendFileApp* app = new SendFileApp();
-		cout<<"app initiated!"<<endl;
+		printf("\napp initiated!");
 	}
 	catch(const char* err){
 		cout<<err<<endl;
@@ -32,7 +32,7 @@ SendFileApp::SendFileApp(){
 		throw "Error establishing connection";
 	}
 	
-	printf("connection established!");
+	printf("\nconnection established!");
 }
 
 SendFileApp::~SendFileApp(){

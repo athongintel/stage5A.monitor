@@ -18,7 +18,8 @@ SVC frame format for daemon
 - command packet structure
 	[encrypted]
 	+ command id: 1 byte		
-			
+		° SVC_CMD_CHECK_ALIVE:	
+		
 		° SVC_CMD_CONNECT_STEP1:
 			- client to daemon1: 3 argument: [(n bytes - challenge), (4 bytes - appID), (4 bytes - address)]
 			- daemon1 to daemon2: 2 argument: [(n bytes - challenge), (4 bytes - appID), (n bytes - key exchange 1)]
