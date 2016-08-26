@@ -53,19 +53,21 @@
 	
 		struct sockaddr_in sockAddr;
 		socklen_t sockLen;
-	
-		unordered_map<uint64_t, DaemonEndPoint*> endPoints;
-		shared_mutex* endPointsMutex;		
-	
+		PeriodicWorker* threadCheckAlive;
+
 		//--	CRYPTO VARIABLES	--//
 			
 		bool encryptMessage(const uint8_t* plainMessage, size_t plainLen, uint8_t* encryptedMessage, size_t* encryptedLen);		
 		bool decryptMessage(const uint8_t* encryptedMessage, size_t encryptedLen, uint8_t* plainMessage, size_t* plainLen);
 	
 		void sendData(const uint8_t* buffer, size_t bufferLen);
+		
+		static void checkEndPointAlive(void* args);
 	
 		public:
 	
+			unordered_map<uint64_t, DaemonEndPoint*> endPoints;
+			shared_mutex* endPointsMutex;
 			uint32_t sessionID;
 			uint32_t address;
 		
@@ -75,22 +77,25 @@
 			bool isWorking();		
 			void stopWorking();
 		
-			DaemonEndPoint* addDaemonEndPoint(uint64_t endPointID, uint32_t appID);		
-			DaemonEndPoint* getDaemonEndPoint(uint64_t endPointID);
+			void removeDaemonEndPoint(uint64_t endPointID);
+			DaemonEndPoint* addDaemonEndPoint(uint64_t endPointID, uint32_t appID);
 	};
 
 	class DaemonEndPoint{
 
 		friend class DaemonService;
 		private:
+			DaemonService* daemonService;
+			
 			pthread_attr_t threadAttr;
 			pthread_t processIncomingThread;
 			pthread_t processOutgoingThread;
 			pthread_t sendInThread;
 			pthread_t sendOutThread;
 			bool working;
-	
-			DaemonService* daemonService;
+			
+			int liveTime;
+			bool isAuthenticated;			
 			uint64_t endPointID;
 			uint32_t appID;	
 	
@@ -103,6 +108,7 @@
 			static void* sendPacketOutside(void* args);
 
 		public:	
+
 			MutexedQueue<Message*>* incomingQueue;
 			MutexedQueue<Message*>* outgoingQueue;
 			MutexedQueue<Message*>* inQueue;

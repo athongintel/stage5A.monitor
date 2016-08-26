@@ -17,23 +17,47 @@ bool DaemonService::decryptMessage(const uint8_t* encryptedMessage, size_t encry
 void DaemonService::sendData(const uint8_t* buffer, size_t bufferLen){
 	sendto(daemonInSocket, buffer, bufferLen, 0, (struct sockaddr*) &this->sockAddr, this->sockLen);
 }
-	
-	
+		
+
 DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockLen){
 	this->isConnected = false;
 	this->sessionID = SVC_DEFAULT_SESSIONID;
 	this->endPointsMutex = new shared_mutex();
 	this->address = 0x00000000;
 	
+	
 	//--	create socket to sendout data
 	//--TODO: to be changed to htp
 	memcpy(&this->sockAddr, sockaddr, sockLen);
-	this->sockLen = sockLen;
-	//this->sock = socket(AF_INET, SOCK_DGRAM, 0);
-	//connect(this->sock, (struct sockaddr*) &this->sockAddr, sockLen);
+	this->sockLen = sockLen;	
 	this->working = true;
+	
+	//--	create periodic worker
+	threadCheckAlive = new PeriodicWorker(SVC_ENDPOINT_LIVETIME, checkEndPointAlive, this);
+
 	printf("service started with address: ");
 	printBuffer((uint8_t*) &this->sockAddr, sockLen);
+}
+
+void DaemonService::checkEndPointAlive(void* args){
+	DaemonService* _this = (DaemonService*)args;
+	_this->endPointsMutex->lock();
+	for (auto& it : _this->endPoints){
+		DaemonEndPoint* ep = it.second;
+		if (ep!=NULL){
+			if (!ep->isAuthenticated){
+				ep->liveTime -= 1000;
+				if (ep->liveTime<=0){
+					//--	remove this endpoint
+					ep->stopWorking();
+					_this->endPoints[ep->endPointID] = NULL;
+					delete ep;
+				}
+			}
+		}
+	}
+	_this->endPointsMutex->unlock();
+	
 }
 		
 bool DaemonService::isWorking(){
@@ -50,8 +74,8 @@ void DaemonService::stopWorking(){
 		DaemonEndPoint* endPoint = it.second;
 		if (endPoint!=NULL){
 			endPoint->stopWorking();
-			delete endPoint;
 			this->endPoints[endPointID] = NULL;
+			delete endPoint;
 		}
 	}
 	this->endPointsMutex->unlock();
@@ -76,14 +100,6 @@ DaemonEndPoint* DaemonService::addDaemonEndPoint(uint64_t endPointID, uint32_t a
 	this->endPointsMutex->lock();
 	this->endPoints[endPointID] = endPoint;
 	this->endPointsMutex->unlock();
-	return endPoint;
-}
-
-DaemonEndPoint* DaemonService::getDaemonEndPoint(uint64_t endPointID){
-	DaemonEndPoint* endPoint;
-	this->endPointsMutex->lock_shared();
-	endPoint = endPoints[endPointID];
-	this->endPointsMutex->unlock_shared();
 	return endPoint;
 }
 
@@ -301,6 +317,8 @@ DaemonEndPoint::DaemonEndPoint(DaemonService* daemonService, uint64_t endPointID
 	this->daemonService = daemonService;
 	this->endPointID = endPointID;
 	this->appID = appID;
+	this->liveTime = SVC_ENDPOINT_LIVETIME;
+	this->isAuthenticated = false;
 	
 	//--	init queues
 	this->incomingQueue = new MutexedQueue<Message*>();
@@ -455,10 +473,10 @@ void* unixReadingLoop(void* args){
 				//--	else: data frame not allowed without service
 			}		
 			else{
-				if (service->isWorking()){
-					DaemonEndPoint* endPoint;
-					endPoint = service->getDaemonEndPoint(endPointID);
-					endPoint->outgoingQueue->enqueue(new Message(unixReceiveBuffer, byteRead));			
+				if (service->isWorking()){					
+					service->endPointsMutex->lock_shared();
+					service->endPoints[endPointID]->outgoingQueue->enqueue(new Message(unixReceiveBuffer, byteRead));
+					service->endPointsMutex->unlock_shared();
 				}
 				//--	else: current service is not working
 			}
@@ -527,8 +545,9 @@ void* htpReadingLoop(void* args){
 			else{
 				//--	service existed with endPointID, remove sessionID before forward
 				if (service->isWorking()){
-					DaemonEndPoint* endPoint = service->getDaemonEndPoint(endPointID);
-					endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
+					service->endPointsMutex->lock_shared();
+					service->endPoints[endPointID]->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
+					service->endPointsMutex->unlock_shared();	
 				}
 				//--	else: current service is not working
 			}
