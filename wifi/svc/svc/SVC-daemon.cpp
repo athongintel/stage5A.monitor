@@ -577,6 +577,7 @@ int main(int argc, char** argv){
     sigemptyset(&sigset);    
     sigaddset(&sigset, SVC_ACQUIRED_SIGNAL);
     sigaddset(&sigset, SVC_TIMEOUT_SIGNAL);
+    sigaddset(&sigset, SHARED_MUTEX_SIGNAL);
     pthread_sigmask(SIG_BLOCK, &sigset, NULL);
     
     //--	handle signals
