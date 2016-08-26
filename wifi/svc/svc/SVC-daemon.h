@@ -18,7 +18,7 @@
 	#include <sys/types.h>
 	#include <netinet/in.h>
 
-	#define SVC_VERSION 0x01<<6
+	#define SVC_VERSION 0x01
 
 	using namespace std;
 
@@ -27,6 +27,7 @@
 
 	static unordered_map<uint64_t, DaemonService*> serviceTable;
 	static shared_mutex* serviceTableMutex;
+	static hash<string> hasher;
 
 	struct sockaddr_un daemonSockUnAddress;
 	struct sockaddr_in daemonSockInAddress;
@@ -42,7 +43,6 @@
 
 	string errorString;
 	volatile bool working;
-
 
 	class DaemonService{
 	

@@ -361,6 +361,9 @@ SVCEndPoint* SVC::listenConnection(){
 			//--	verify client's identity
 			if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
 				printf("client's identity verified!\n");
+				//--	tell the daemon endpoint
+				clearParams(&params);
+				endPoint->sendCommand(SVC_CMD_CONNECT_CLIENT_VERIFIED, &params);
 				rs = endPoint;
 			}
 		}

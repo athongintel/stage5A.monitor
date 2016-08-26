@@ -118,7 +118,7 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 
 	while (_this->working){
 		if (_this->incomingQueue->peak(&message)){
-			printf("can peak: ");
+			printf("\nprocessingIncomingMessage can peak: ");
 			printBuffer(message->data, message->len);
 			uint8_t infoByte = message->data[ENDPOINTID_LENGTH];
 			printf("info byte: %02x\n", infoByte);
@@ -151,11 +151,17 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 					enum SVCCommand cmd = (enum SVCCommand)(message->data[ENDPOINTID_LENGTH + 1]);
 					switch (cmd){
 						case SVC_CMD_CONNECT_STEP1:								
-							//--	TODO:	extract key exchange 1 info
-						
-							//--	forward to SVC connection queue
-							_this->inQueue->enqueue(message);
-							_this->incomingQueue->dequeue();
+							//--	check for version
+							if ((infoByte & 0xC0)>>6 == SVC_VERSION){
+								//--	TODO:	extract key exchange 1 info
+							
+								//--	forward to SVC connection queue
+								_this->inQueue->enqueue(message);
+								_this->incomingQueue->dequeue();
+							}
+							else{
+								delete _this->incomingQueue->dequeue();
+							}
 							break;
 						
 						case SVC_CMD_CONNECT_STEP2:
@@ -175,6 +181,7 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 					
 						case SVC_CMD_CONNECT_STEP4:
 							//--	forward
+							//--	extract sessionID info
 							_this->inQueue->enqueue(message);
 							_this->incomingQueue->dequeue();
 							break;
@@ -207,21 +214,23 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 
 	while (_this->working){		
 		if (_this->outgoingQueue->peak(&message)){
-			printf("can peak: ");
+			printf("\nprocessingOutgoingMessage can peak: ");
 			printBuffer(message->data, message->len);
-			uint8_t infoByte = message->data[ENDPOINTID_LENGTH];
-			printf("info byte: %02x\n", infoByte);
+			uint8_t infoByte = message->data[ENDPOINTID_LENGTH];			
 			if (infoByte & SVC_COMMAND_FRAME){
 				enum SVCCommand cmd = (enum SVCCommand) message->data[ENDPOINTID_LENGTH + 1];
 				switch (cmd){
 					case SVC_CMD_CONNECT_STEP1:
 						printf("processing SVC_CMD_CONNECT_STEP1\n");						
 						//--	remove the address param (1)
-						tmpMessage = new Message(message->data, message->len - ((2 + 4)*1));
-						tmpMessage->data[ENDPOINTID_LENGTH + 2]--;
+						message->len -= ((2 + 4)*1);
+						message->data[ENDPOINTID_LENGTH + 2]--;
+						//--	add version info
+						message->data[ENDPOINTID_LENGTH] = message->data[ENDPOINTID_LENGTH] | SVC_VERSION<<6;
+						
 						//--	TODO:	add key exchange step 1
-						_this->outQueue->enqueue(tmpMessage);
-						delete _this->outgoingQueue->dequeue();
+						_this->outQueue->enqueue(message);
+						_this->outgoingQueue->dequeue();
 						break;
 			
 					case SVC_CMD_CONNECT_STEP2:
@@ -235,6 +244,8 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 						tmpMessage = new Message(message->data, message->len);
 						_this->outQueue->enqueue(message);
 						_this->outgoingQueue->dequeue();
+						//--	server identity authenticated
+						_this->isAuthenticated = true;
 						//--TODO: init crypto variables
 						//--	return SVC_CMD_CONNECT_STEP3 to app
 						_this->inQueue->enqueue(tmpMessage);
@@ -242,8 +253,20 @@ void* DaemonEndPoint::processingOutgoingMessage(void* args){
 				
 					case SVC_CMD_CONNECT_STEP4:
 						//--	this will be encrypted later
+						//--	add the sessionID at the end
+						//--TODO: sessionID to be changed
+						srand(time(NULL));
+						_this->daemonService->sessionID = (uint32_t)hasher(to_string(rand()));						
+						memcpy(message->data+message->len, (uint8_t*)&SESSIONID_LENGTH, 2);
+						memcpy(message->data+message->len + 2, (uint8_t*) &_this->daemonService->sessionID, SESSIONID_LENGTH);
+						message->len += SESSIONID_LENGTH + 2;
 						_this->outQueue->enqueue(message);
-						_this->outgoingQueue->dequeue();				
+						_this->outgoingQueue->dequeue();
+						
+					case SVC_CMD_CONNECT_CLIENT_VERIFIED:
+						_this->isAuthenticated = true;		
+						delete _this->outgoingQueue->dequeue();
+						
 					default:
 						break;
 				}
