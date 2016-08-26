@@ -16,24 +16,11 @@ void signal_handler(int signal){
 }
 
 int main(int argc, char** argv){
-	
-    //--	set thread signal mask
-    sigset_t sigset;
-    sigemptyset(&sigset);    
-    sigaddset(&sigset, SVC_ACQUIRED_SIGNAL);
-    sigaddset(&sigset, SVC_TIMEOUT_SIGNAL);
-    sigaddset(&sigset, SVC_SHARED_MUTEX_SIGNAL);
-    pthread_sigmask(SIG_BLOCK, &sigset, NULL);
-	
-	//--	trap SIGINT signal
-	struct sigaction act;
-	act.sa_handler = signal_handler;
-	sigfillset(&act.sa_mask);
-	sigdelset(&act.sa_mask, SIGINT);
-	sigaction(SIGINT, &act, NULL);
-	
+	   
 	working = true;
 	SendFileAppServer* app = new SendFileAppServer();
+	
+	delete app;
 }
 
 SendFileAppServer::SendFileAppServer(){		
@@ -42,13 +29,19 @@ SendFileAppServer::SendFileAppServer(){
 	
 	printf("waiting for connection request\n");
 	do{
-		endPoint = svcInstance->listenConnection();
-		if (endPoint!=NULL){
-			printf("client connected\n");
-			//--	give todo work for this endPoint
+		try{
+			endPoint = svcInstance->listenConnection();
+			if (endPoint!=NULL){
+				printf("client connected\n");
+				//--	give todo work for this endPoint in new thread
+			}
+			else{
+				printf("retry...\n");
+			}
 		}
-		else{
-			printf("retry...\n");
+		catch (const char* ex){
+			printf("Error: %s\n", ex);
+			signal_handler(SIGINT);
 		}
 	}
 	while (working);

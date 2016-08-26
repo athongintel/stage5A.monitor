@@ -5,7 +5,7 @@
 	#include <mutex>
 	#include <csignal>
 
-	#define SHARED_MUTEX_SIGNAL SIGUSR1
+	#define SHARED_MUTEX_SIGNAL SIGUSR2
 
 	using namespace std;
 	

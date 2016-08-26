@@ -324,7 +324,7 @@ DaemonEndPoint::DaemonEndPoint(DaemonService* daemonService, uint64_t endPointID
 	pthread_create(&sendInThread, &threadAttr, sendPacketToApp, this);
 	pthread_create(&sendOutThread, &threadAttr, sendPacketOutside, this);
 	
-	printf("endpoint %016x for appID %08x started\n", endPointID, appID);
+	printf("endpoint "); printBuffer((uint8_t*)&endPointID, ENDPOINTID_LENGTH); printf("for appID %08x started\n", appID);
 }
 
 void DaemonEndPoint::stopWorking(){
@@ -347,7 +347,7 @@ DaemonEndPoint::~DaemonEndPoint(){
 	delete inQueue;
 	delete outQueue;
 	
-	printf("endpoint %16x for appID %08x stopped\n", endPointID, appID);
+	printf("endpoint "); printBuffer((uint8_t*)&endPointID, ENDPOINTID_LENGTH); printf("for appID %08x destructed\n", appID);
 }		
 
 //--	HELPER FUNCTIONS	--//
@@ -577,7 +577,6 @@ int main(int argc, char** argv){
     sigemptyset(&sigset);    
     sigaddset(&sigset, SVC_ACQUIRED_SIGNAL);
     sigaddset(&sigset, SVC_TIMEOUT_SIGNAL);
-    sigaddset(&sigset, SVC_SHARED_MUTEX_SIGNAL);
     pthread_sigmask(SIG_BLOCK, &sigset, NULL);
     
     //--	handle signals

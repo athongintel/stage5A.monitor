@@ -82,7 +82,7 @@ void SVC::destruct(){
 	this->endPointsMutex->unlock();
 	
 	unlink(this->svcClientPath.c_str());
-	cout<<"svc destructed\n";
+	printf("\nsvc destructed");
 }
 
 void SVC::stopWorking(){
@@ -127,7 +127,7 @@ void* SVC::processPacket(void* args){
 		while((byteRead==-1) && _this->working);
 		
 		if (byteRead>0){
-			printf("read a packet: ");
+			printf("\nread a packet: ");
 			printBuffer(buffer, byteRead);
 			
 			endPointID = *((uint64_t*)buffer);
@@ -145,7 +145,7 @@ void* SVC::processPacket(void* args){
 				if (endPoint==NULL){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						//--	add this to connection request
-						printf("SVC_CMD_CONNECT_STEP1\n");
+						printf("\nSVC_CMD_CONNECT_STEP1");
 						//if (_this->connectionRequest->notEmpty()){
 						//printf("pthread_t of waker %d\n", pthread_self());
 						_this->connectionRequest->enqueue(new Message(buffer, byteRead));					
@@ -190,7 +190,7 @@ void* SVC::processPacket(void* args){
 	}
 	
 	free(buffer);
-	printf("svc process packet stopped\n");
+	printf("\nsvc process packet stopped");
 }
 
 /*void* SVC::processConnectionRequest(void* args){
@@ -232,10 +232,10 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	params.push_back(new SVCCommandParam(4, (uint8_t*) &serverAddress));
 	endPoint->sendCommand(SVC_CMD_CONNECT_STEP1, &params);
 	
-	printf("SVC_CMD_CONNECT_STEP1 sent\n");
+	printf("\nSVC_CMD_CONNECT_STEP1 sent");
 	//--	wait for SVC_CMD_CONNECT_STEP2, identity + proof + challenge, respectively. keyexchange is retained at daemon level.
 	if (sigNot->waitCommand(SVC_CMD_CONNECT_STEP2, &params, SVC_DEFAULT_TIMEOUT)){
-		printf("SVC_CMD_CONNECT_STEP2 received\n");
+		printf("\nSVC_CMD_CONNECT_STEP2 received");
 		//--	get identity, proof, challenge
 		/*for (int i=0; i<=2; i++){
 			printf("params[%d]: ", i);printBuffer(params[i]->data, params[i]->len);
@@ -253,7 +253,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 		challengeReceived = string(ch);
 		memset(ch, 0, SVC_DEFAULT_BUFSIZ);
 		
-		printf("get identity: %s\n proof: %s\n challenge: %s\n", identity.c_str(), proof.c_str(), challengeReceived.c_str());
+		printf("\nget identity: %s\n proof: %s\n challenge: %s\n", identity.c_str(), proof.c_str(), challengeReceived.c_str());
 		
 		//--	verify server's identity
 		if (this->authenticator->verifyIdentity(identity, challengeSent, proof)){
@@ -322,7 +322,7 @@ SVCEndPoint* SVC::listenConnection(){
 				
 		endPointID = *((uint64_t*)(message->data));
 		endPoint->endPointID = endPointID;
-		printf("endPointID: %08x\n", endPointID);
+		printf("endPointID: "); printBuffer((uint8_t*) &endPointID, 8);
 		//--	read the challenge
 		char ch[SVC_DEFAULT_BUFSIZ] = "";
 		memcpy(ch, (char*)(params[0]->data), params[0]->len);
@@ -331,7 +331,7 @@ SVCEndPoint* SVC::listenConnection(){
 		identity = this->authenticator->getIdentity();
 		challengeSent = this->authenticator->generateChallenge();
 	
-		printf("challenge received: %s\n", challengeReceived.c_str());
+		printf("\nchallenge received: %s\n", challengeReceived.c_str());
 		//--	send response
 		clearParams(&params);
 		params.push_back(new SVCCommandParam(identity.size(), (uint8_t*)identity.c_str()));
@@ -360,7 +360,10 @@ SVCEndPoint* SVC::listenConnection(){
 			}
 		}
 	}
-	//--	else: work is broken
+	else{
+		//--	dequeueWait == NULL means it is interrupted by SIGINT
+		throw SVC_ERROR_SIGNAL_INTERRUPTED;
+	}
 	return rs;
 }
 
@@ -411,7 +414,7 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 	
 	//--	SEND	--//
 	send(this->svc->svcDaemonSocket, buffer, bufferLength, 0);
-	printf("endpoint send: ");
+	printf("\nendpoint send: ");
 	printBuffer(buffer, bufferLength);
 	//--	free params
 	clearParams(params);
@@ -419,7 +422,7 @@ void SVCEndPoint::sendCommand(enum SVCCommand cmd, vector<SVCCommandParam*>* par
 
 SVCEndPoint::~SVCEndPoint(){
 	delete this->dataQueue;
-	printf("end point %016x removed\n", this->endPointID);
+	printf("\nend point "); printBuffer((uint8_t*) &this->endPointID, 8);printf(" destructed");
 }
 
 int SVCEndPoint::sendData(const uint8_t* data, size_t dalalen, uint8_t priority, bool tcp){

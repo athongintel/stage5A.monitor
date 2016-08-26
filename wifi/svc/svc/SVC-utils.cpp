@@ -95,10 +95,10 @@ bool waitSignal(int waitingSignal){
 	sigset_t sig;
 	sigemptyset(&sig);
 	sigaddset(&sig, waitingSignal);
+	sigaddset(&sig, SIGINT);	//--	interupt case
 	
-	//--	
 	int caughtSignal;
-	sigwait(&sig, &caughtSignal);
+	sigwait(&sig, &caughtSignal);	
 	return waitingSignal == caughtSignal;
 }
 
@@ -135,5 +135,4 @@ void printBuffer(const uint8_t* buffer, size_t len){
 	for (int i=0; i<len; i++){
 		printf("%02x ", buffer[i]);
 	}
-	printf("\n");
 }

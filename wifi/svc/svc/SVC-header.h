@@ -24,12 +24,11 @@
 	#define SVC_ERROR_CRITICAL					"Critical error"
 	#define SVC_ERROR_BINDING					"Error binding socket"
 	#define SVC_ERROR_NOTIFICATOR_DUPLICATED	"Notificator duplicated"	
-	
+	#define SVC_ERROR_SIGNAL_INTERRUPTED		"Execution interrupted by SIGINT"
 
 	/*	SVC CONSTANTS	*/
 	#define SVC_ACQUIRED_SIGNAL					SIGUSR1
-	#define SVC_TIMEOUT_SIGNAL					SIGUSR2
-	#define SVC_SHARED_MUTEX_SIGNAL				SVC_ACQUIRED_SIGNAL
+	#define SVC_TIMEOUT_SIGNAL					SIGALRM
 
 	#define SVC_DEFAULT_TIMEOUT 				2000
 	#define SVC_SHORT_TIMEOUT					100
