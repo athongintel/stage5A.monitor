@@ -207,6 +207,7 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	vector<SVCCommandParam*> params;
 	
 	sigNot = new SignalNotificator();
+	srand(time(NULL));
 	uint64_t endPointID = (uint64_t)hasher(this->localApp->getAppID()+to_string(rand()));	
 	endPoint = new SVCEndPoint(this, sigNot);
 	endPoint->endPointID = endPointID;
@@ -286,6 +287,10 @@ SVCEndPoint* SVC::establishConnection(SVCHost* remoteHost){
 	/*
 	else: time out
 	*/
+	if (rs == NULL){
+		delete sigNot;
+		delete endPoint;
+	}
 	return rs;
 }
 
@@ -363,6 +368,10 @@ SVCEndPoint* SVC::listenConnection(){
 	else{
 		//--	dequeueWait == NULL means it is interrupted by SIGINT
 		throw SVC_ERROR_SIGNAL_INTERRUPTED;
+	}
+	if (rs == NULL){
+		delete sigNot;
+		delete endPoint;
 	}
 	return rs;
 }

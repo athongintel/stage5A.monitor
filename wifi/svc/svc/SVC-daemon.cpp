@@ -503,7 +503,10 @@ void* htpReadingLoop(void* args){
 					if (cmd == SVC_CMD_CONNECT_STEP1){
 						extractParams(htpReceiveBuffer + SESSIONID_LENGTH + ENDPOINTID_LENGTH + 2, &params);
 						//--	check if we have service for this sessionID
-						service = getServiceBySessionID(sessionID);
+						if (sessionID!=SVC_DEFAULT_SESSIONID){
+							service = getServiceBySessionID(sessionID);
+						}
+						//--else: create new service
 						if (service==NULL){						
 							//--	create new DaemonService
 							service = new DaemonService(&sockAddr, sockLen);
@@ -512,14 +515,14 @@ void* htpReadingLoop(void* args){
 							serviceTable[endPointID] = service;
 							serviceTableMutex->unlock();
 						}
-						//--	else: use this service
+						//--else: use this service
 						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[1]->data)));
 						endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
 						clearParams(&params);
 					}
-					//--	else: other commands not allowed without service
+					//--else: other commands not allowed without service
 				}
-				//--	else: data frame not allowed without service
+				//--else: data frame not allowed without service
 			}
 			else{
 				//--	service existed with endPointID, remove sessionID before forward
