@@ -40,7 +40,7 @@ DaemonService::DaemonService(const struct sockaddr_in* sockaddr, socklen_t sockL
 }
 
 void DaemonService::checkEndPointAlive(void* args){
-	printf("\nchecking endpoint alive");
+	//printf("\nchecking endpoint alive");
 	DaemonService* _this = (DaemonService*)args;
 	_this->endPointsMutex->lock();
 	for (auto& it : _this->endPoints){
@@ -151,17 +151,11 @@ void* DaemonEndPoint::processingIncomingMessage(void* args){
 					enum SVCCommand cmd = (enum SVCCommand)(message->data[ENDPOINTID_LENGTH + 1]);
 					switch (cmd){
 						case SVC_CMD_CONNECT_STEP1:								
-							//--	check for version
-							if ((infoByte & 0xC0)>>6 == SVC_VERSION){
-								//--	TODO:	extract key exchange 1 info
-							
-								//--	forward to SVC connection queue
-								_this->inQueue->enqueue(message);
-								_this->incomingQueue->dequeue();
-							}
-							else{
-								delete _this->incomingQueue->dequeue();
-							}
+							//--	TODO:	extract key exchange 1 info
+						
+							//--	forward to SVC connection queue
+							_this->inQueue->enqueue(message);
+							_this->incomingQueue->dequeue();
 							break;
 						
 						case SVC_CMD_CONNECT_STEP2:
@@ -546,24 +540,30 @@ void* htpReadingLoop(void* args){
 				if (infoByte & SVC_COMMAND_FRAME){				
 					enum SVCCommand cmd = (enum SVCCommand)htpReceiveBuffer[SESSIONID_LENGTH + ENDPOINTID_LENGTH + 1];
 					if (cmd == SVC_CMD_CONNECT_STEP1){
-						extractParams(htpReceiveBuffer + SESSIONID_LENGTH + ENDPOINTID_LENGTH + 2, &params);
-						//--	check if we have service for this sessionID
-						if (sessionID!=SVC_DEFAULT_SESSIONID){
-							service = getServiceBySessionID(sessionID);
+						if ((infoByte & 0xC0)>>6 == SVC_VERSION){
+							extractParams(htpReceiveBuffer + SESSIONID_LENGTH + ENDPOINTID_LENGTH + 2, &params);
+							//--	check if we have service for this sessionID
+							if (sessionID!=SVC_DEFAULT_SESSIONID){
+								service = getServiceBySessionID(sessionID);
+							}
+							//--else: create new service
+							if (service==NULL){						
+								//--	create new DaemonService
+								service = new DaemonService(&sockAddr, sockLen);
+								//--	register this service with endPointID
+								serviceTableMutex->lock();
+								serviceTable[endPointID] = service;
+								serviceTableMutex->unlock();
+							}
+							//--else: use this service
+							DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[1]->data)));
+							endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
+							clearParams(&params);
 						}
-						//--else: create new service
-						if (service==NULL){						
-							//--	create new DaemonService
-							service = new DaemonService(&sockAddr, sockLen);
-							//--	register this service with endPointID
-							serviceTableMutex->lock();
-							serviceTable[endPointID] = service;
-							serviceTableMutex->unlock();
+						else{
+							printf("\nversion mismatch, CONNECT_STEP1 reject");
 						}
-						//--else: use this service
-						DaemonEndPoint* endPoint = service->addDaemonEndPoint(endPointID, *((uint32_t*)(params[1]->data)));
-						endPoint->incomingQueue->enqueue(new Message(htpReceiveBuffer + SESSIONID_LENGTH, byteRead-SESSIONID_LENGTH));
-						clearParams(&params);
+						//--else: version mismatched
 					}
 					//--else: other commands not allowed without service
 				}
