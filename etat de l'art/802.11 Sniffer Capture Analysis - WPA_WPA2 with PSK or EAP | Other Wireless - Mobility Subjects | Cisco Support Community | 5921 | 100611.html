@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html class="js" dir="ltr" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/terms/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:og="http://ogp.me/ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:sioct="http://rdfs.org/sioc/types#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:schema="http://schema.org/" lang="en"><head profile="http://www.w3.org/1999/xhtml/vocab">
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="country" content="US">
+<meta http-equiv="Content-Language" content="en">
+<link rel="shortcut icon" href="https://supportforums.cisco.com/sites/all/themes/ciscotheque_bootstrap/favicon.ico" type="image/vnd.microsoft.icon">
+<meta name="accessLevel" content="Guest">
+<meta name="accessLevel" content="Customer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="userType" content="anonymous">
+<meta name="accessLevel" content="Partner">
+<link rel="shortlink" href="https://supportforums.cisco.com/node/100611">
+<meta name="generator" content="Drupal 7 (http://drupal.org)">
+<meta name="currentCommunityId" content="5921">
+<meta name="currentCommunity" content="Other Wireless - Mobility Subjects">
+<meta name="language" content="en">
+<meta name="parentCommunity" content="Wireless - Mobility">
+<meta name="parentCommunityId" content="4931">
+<meta name="robots" content="follow, index">
+<meta name="rootCommunityId" content="4931">
+<meta name="rootCommunity" content="Wireless - Mobility">
+<link rel="canonical" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap">
+  <title>802.11 Sniffer Capture Analysis - WPA/WPA2 with PSK or EAP  | 
+Other Wireless - Mobility Subjects | Cisco Support Community | 5921 | 
+100611</title>
+  <link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_v2Ao4VpGBYbBatsCENJoN0UB9g7PNvEeVU4v_QicY2s.css" media="all">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_xKDvifEnGOtuK9uJ8EmdS4VRmcHI2NLJ2mex22pHdsc.css" media="all">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_sWrkVOQSGOGz-Z8f5xFMBGrX9nihhMmvoR7OeR_8VzM.css" media="all">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_OR5P3QHFl4Ewp-H4V_qCjlMUSjM5lyt1m--pUO2uo_4.css" media="screen">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css__1XuUSQsJOT5uQF3Nm-FX-zQK-K9JgrrqI0YBKtKpBw.css" media="screen">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_gfF9oDgx0sHtMKRgFlOAyjgKKfnT89DAYNOIskY8BPE.css" media="screen">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/global.css" media="all">
+<link type="text/css" rel="stylesheet" href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/css_HS1ihgXZ6qfUcS5BTehJhV81EZR-I5Q6zx5yGdEqbp0.css" media="all">
+  <!-- HTML5 element support for IE6-8 -->
+  <!--[if IE 8 ]>    <html lang="en" class="ie8">    <![endif]-->
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<link type="text/css" rel="stylesheet" href="/sites/all/themes/ciscotheque_bootstrap/stylesheets/lt-ie9.css" media="screen">
+  <![endif]-->
+  <!--[if IE 9]>
+		<link type="text/css" rel="stylesheet" href="/sites/all/themes/ciscotheque_bootstrap/stylesheets/ie9.css" media="screen">
+  <![endif]-->
+  <script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/elqCfg.js" type="text/javascript"></script><script id="utag_83" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/6si.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_75" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/bat.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_76" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ytc.js" charset="utf-8" async="" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/analytics.js" id="tealium-tag-7110" async=""></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/elqCfg.js" type="text/javascript"></script><script id="utag_58" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/8a1d0a1c4fdd2778014fe08b2202043b.js" charset="utf-8" async="" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/insight.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/analytics.js" async="" type="text/javascript"></script><script async="" data-config-src="cdtm" type="text/javascript" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_011.js"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ados.js" async="" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/gtm.js" async=""></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_Ze6pdcC-6iGGp7-GX-MmUtbEBJ1OtZVYUjVQ1b6mExg.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_ylfwEhl5mfKK9JEGoUwP8uUT10iVhmw0S0WyuzIMXUg.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_i1JUGZzFLh7cxt20SDVTHVyoveSZc7LPBQe0Uprufes.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_DO10TqiNy-fc8Y-oINqEn_DWpOm4H9jx3NBKz3mhW7U.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/BrightcoveExperiences_all.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_n6Dbxm9bfKyrRiZA-qZRGXCF3j1ItZjbLlNFJZibXCQ.js"></script>
+<script>var switchTo5x = true;</script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/buttons.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_JuO_ulWbPjcHInAwCxsPjRe3WdLw6ob_C3ym4YqjFBM.js"></script>
+<script>if (stLight !== undefined) { stLight.options({"publisher":"dr-8bbf8265-d0c9-5a4c-49f1-616fce884325","version":"5x","doNotCopy":true,"hashAddressBar":false,"doNotHash":true}); }</script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_dVvIL6lPVUc6b09Kd3-SrtTTmRJS1SywklQnNhzbWok.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_g_fN7kAZLwhbgfWVrZATD2rrVuSqws6Wzm8u9jMQkY8.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_vkD102GlRUVdcXtWvpiY-Cp5XZ0NXRbTNF5V7lvklm4.js"></script>
+<script>jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":{"theme":"ciscotheque_bootstrap","theme_token":"GwISWkpsUTolfokxvFPdfTaNWFuut1JtJOEH5NFhHE0","jquery_version":"1.7","js":{"sites\/all\/modules\/custom\/cisco_esi\/modules\/cisco_esi_badges\/js\/cisco_esi_badges.min.js":1,"\/\/www.cisco.com\/web\/fw\/m\/metrics.min.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/metrics.js":1,"sites\/all\/modules\/contrib\/jquery_update\/replace\/jquery\/1.7\/jquery.min.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/bootstrap\/js\/bootstrap.js":1,"sites\/all\/modules\/custom\/cisco_esi\/js\/cisco_esi.min.js":1,"misc\/jquery.ba-bbq.js":1,"sites\/all\/libraries\/prettify\/prettify.js":1,"sites\/all\/modules\/contrib\/jquery_update\/replace\/misc\/jquery.form.min.js":1,"sites\/all\/modules\/contrib\/jquery_update\/replace\/ui\/external\/jquery.cookie.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/contrib\/jquery_update\/js\/jquery_update.js":1,"sites\/all\/modules\/custom\/cisco_esi\/modules\/cisco_esi_custom_panels\/js\/cisco_esi_custom_panels.min.js":1,"sites\/all\/modules\/custom\/cisco_activity_stream\/scripts\/cisco_activity_stream.js":1,"sites\/all\/modules\/custom\/cisco_event\/js\/moment.min.js":1,"sites\/all\/modules\/custom\/cisco_flipboard\/scripts\/cisco_flipboard_ajax_validation.js":1,"sites\/all\/modules\/custom\/cisco_flipboard\/scripts\/cisco_flipboard.js":1,"sites\/all\/modules\/custom\/cisco_messaging\/scripts\/cisco_messaging.theme.js":1,"sites\/all\/modules\/custom\/cisco_profile\/js\/cisco_profile.js":1,"sites\/all\/modules\/custom\/cisco_core\/scripts\/cisco_core_survey.js":1,"sites\/all\/themes\/bootstrap\/js\/progress.js":1,"sites\/all\/modules\/contrib\/blockcache_alter\/blockcache_alter.js":1,"https:\/\/sadmin.brightcove.com\/js\/BrightcoveExperiences_all.js":1,"sites\/all\/modules\/contrib\/esi\/js\/esi.js":1,"sites\/all\/modules\/contrib\/esi\/js\/jquery.esi.js":1,"sites\/all\/modules\/contrib\/prettify\/prettify.loader.js":1,"profiles\/commons\/libraries\/timeago\/jquery.timeago.js":1,"sites\/all\/modules\/contrib\/suggestedterms\/suggestedterms.js":1,"profiles\/commons\/modules\/contrib\/views\/js\/base.js":1,"profiles\/commons\/modules\/contrib\/views\/js\/ajax_view.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/functions.js":1,"profiles\/commons\/modules\/contrib\/rate\/rate.js":1,"profiles\/commons\/modules\/contrib\/rate\/templates\/fivestar\/fivestar.js":1,"0":1,"https:\/\/ws.sharethis.com\/button\/buttons.js":1,"profiles\/commons\/modules\/contrib\/timeago\/timeago.js":1,"1":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/node-feature-content.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/node-discussion.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/plugins\/styles\/collapsible\/collapsible.js":1,"sites\/all\/modules\/custom\/cisco_core\/scripts\/cisco_core_activity_pane.js":1,"profiles\/commons\/modules\/contrib\/ctools\/js\/auto-submit.js":1,"sites\/all\/modules\/custom\/cisco_messaging\/scripts\/cisco_messaging.js":1,"profiles\/commons\/modules\/contrib\/flag\/theme\/flag.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/dropdown.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/plugins\/snap\/snap.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/plugins\/masonry.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/modals.js":1,"sites\/all\/themes\/ciscotheque_bootstrap\/scripts\/site.js":1,"sites\/all\/themes\/bootstrap\/js\/bootstrap_ajax_view.js":1,"sites\/all\/themes\/bootstrap\/js\/bootstrap_ajax.js":1},"css":{"modules\/system\/system.base.css":1,"sites\/all\/modules\/custom\/cisco_admin_bar\/cisco_admin_bar.css":1,"sites\/all\/modules\/custom\/cisco_knowledge_base\/css\/cisco-knowledge-base.css":1,"profiles\/commons\/modules\/contrib\/date\/date_api\/date.css":1,"profiles\/commons\/modules\/contrib\/date\/date_popup\/themes\/datepicker.1.7.css":1,"modules\/field\/theme\/field.css":1,"profiles\/commons\/modules\/contrib\/mollom\/mollom.css":1,"sites\/all\/modules\/contrib\/toc_filter\/toc_filter.css":1,"profiles\/commons\/modules\/contrib\/views\/css\/views.css":1,"profiles\/commons\/modules\/contrib\/rate\/templates\/fivestar\/fivestar.css":1,"profiles\/commons\/modules\/contrib\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/contrib\/linkedin\/linkedin_profile\/linkedin_profile.css":1,"profiles\/commons\/modules\/contrib\/panels\/css\/panels.css":1,"sites\/all\/modules\/contrib\/tagclouds\/tagclouds.css":1,"sites\/all\/modules\/contrib\/suggestedterms\/suggestedterms.css":1,"public:\/\/ctools\/css\/8de30d394db248a5ce10249d7d04475d.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/layouts\/cisco_twocol\/cisco_twocol.css":1,"public:\/\/cpn\/document.css":1,"profiles\/commons\/modules\/contrib\/radioactivity\/css\/radioactivity.css":1,"profiles\/commons\/modules\/contrib\/commons_like\/commons-like.css":1,"profiles\/commons\/modules\/contrib\/rate\/rate.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/plugins\/styles\/collapsible\/collapsible.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/plugins\/styles\/title_inside\/title_inside.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/plugins\/styles\/basic\/basic.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/bootstrap\/css\/bootstrap.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/stylesheets\/global.styles.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/stylesheets\/li.css":1,"sites\/all\/themes\/ciscotheque_bootstrap\/stylesheets\/responsive.css":1,"cpn_global":1,"sites\/all\/libraries\/prettify\/prettify.css":1}},"new-message-modal":{"modalSize":{"type":"fixed","width":500,"height":300,"addWidth":20,"addHeight":15},"modalTheme":"CiscoModalDialog"},"delete-message-style":{"modalSize":{"type":"fixed","width":400,"height":150,"addWidth":20,"addHeight":15},"modalTheme":"CiscoModalDialog"},"prettify":{"linenums":false,"match":".content","nocode":"no-code","custom":[],"markup":{"code":true,"pre":true,"precode":true}},"cisco_core":{"content_token":"aU5BkcUutz2BR3d2krI5kLrLHAsepTuHlSvbFbX8FZg","comment_token_10295866":"_y11rUCgxMwGDP-tjMd_4flkyA4ym6lG9VMhN2uy6H0","comment_token_10297306":"QFZup43C72g-n7IN-A9LDdhvTqWVcHm1phcj1TSyiII","comment_token_10689561":"WikhJBDvcOZrEq9kPI-2Uq8PQRZeHKqseBVLAbTcXO4","comment_token_10945816":"VS8dLwbO62tEGUs_kt9aU2mvvIjt5PmFaE-9n7RCLwA","language":"en","popupDelay":"420000","surveyCommunity":"5921","popupFrequency":"1","surveyTarget":"overlay","surveyMinWidth":"600","surveyRetakeDelay":"324000000"},"rate":{"basePath":"\/rate\/vote\/js","destination":"node\/100611"},"admin_comments":0,"urlIsAjaxTrusted":{"\/":true,"\/document\/100611\/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap":true},"views":{"ajax_path":"\/views\/ajax","ajaxViews":{"views_dom_id:50bfd3f1cf109c6ee65c3dd01ad2ce21":{"view_name":"cisco_notification_user_notifications","view_display_id":"embed_2","view_args":"0","view_path":"node\/11638596","view_base_path":null,"view_dom_id":"50bfd3f1cf109c6ee65c3dd01ad2ce21","pager_element":0}}},"user":0,"ogContext":{"groupType":"node","gid":"5921"}});</script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/cdtm.js"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/getAllAppDefault.esi" type="text/javascript"></script><script id="utag_cisco.support_27" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_010.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_58" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_63" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_005.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_64" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_006.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_65" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_009.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_66" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_008.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_67" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_002.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_75" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_007.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_76" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_004.js" charset="utf-8" async="" type="text/javascript"></script><script id="utag_cisco.support_83" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/utag_003.js" charset="utf-8" async="" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/zsizzle.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ztrack.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/8a32ad344fd6b7c8014fe0949ffa3b44" type="text/javascript"></script><link href="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/buttons-secure.css" type="text/css" rel="stylesheet"></head>
+<body class="html not-front not-logged-in no-sidebars page-node page-node- page-node-100611 node-type-document og-context og-context-node og-context-node-5921 i18n-en responsive user-menu-resize-processed notification-actions-processed">
+          <!-- Google Tag Manager -->
+        <noscript>
+          <iframe src="//www.googletagmanager.com/ns.html?id=GTM-M5XNGM" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        </noscript>
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-M5XNGM');
+        function analyticsEvent(eventName, category,action,opt_label,opt_value,opt_noninteractive) { dataLayer.push({ 'event': eventName, 'eventCategory': category, 'eventAction': action, 'eventLabel': opt_label, 'eventValue': opt_value, 'eventNonInt': opt_noninteractive }); }</script>
+        <!-- End Google Tag Manager -->  <!-- This is the sidebar menu that flies out on tablet and mobile -->
+<div class="snap-drawers hidden-desktop">
+  <div class="snap-drawer snap-drawer-right">
+        <div class="region region-navigation-touch">
+    <section id="block-cisco-profile-cisco-profile-user-menu-touch" class="block block-cisco-profile clearfix"></section> <!-- /.block -->
+<section id="block-cisco-search-cisco-search-form-touch" class="block block-cisco-search clearfix">
+
+      
+  <form class="form-search content-search search-controls-toggle-processed" action="/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap" method="post" id="search-block-form" accept-charset="UTF-8"><div><div class="container-inline">
+      <h2 class="element-invisible">Search form</h2>
+    <div class="input-append"><input title="Enter the terms you wish to search for." class="search-query span2 form-text" placeholder="Search" id="edit-search-block-form--2" name="search_block_form" size="15" maxlength="128" type="text"><button type="submit" class="btn"><i class="icon-search"></i><span class="element-invisible">Search</span></button></div><div class="control-group form-type-radios form-item-search-env form-item">
+  <label for="edit-search-env" class="control-label"><i class="search-filter"></i> </label>
+<div style="display: none;" class="controls"> <div id="edit-search-env" class="form-radios"><div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-community"> <input id="edit-search-env-community" name="search_env" value="community" checked="checked" class="form-radio" type="radio">Search Other Wireless - Mobility Subjects </label>
+
+</div>
+<div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-csc"> <input id="edit-search-env-csc" name="search_env" value="csc" class="form-radio" type="radio">Cisco Support Community </label>
+
+</div>
+<div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-ciscocom"> <input id="edit-search-env-ciscocom" name="search_env" value="ciscocom" class="form-radio" type="radio">Cisco.com </label>
+
+</div>
+</div>
+</div></div>
+<button class="element-invisible btn btn-primary form-submit" id="edit-submit" name="op" value="Search" type="submit">Search</button>
+<input name="form_build_id" value="form-8FlddIGwUYhQ-gY5vSh-9TNZbGXP6jCSoOO_hSd-Amg" type="hidden">
+<input name="form_id" value="search_block_form" type="hidden">
+</div>
+</div></form>  
+</section> <!-- /.block -->
+  </div>
+    <div id="mobile-fol-links">
+    <ul class="inline">
+      <li class="dropdown molanguage">
+                  Language: <a class="dropdown-toggle language-dropper-processed" data-toggle="dropdown">English<span class="caret"></span></a><ul role="menu" aria-labelledby="dLabel" class="dropdown-menu language-switcher-locale-url"><li class="5411 first"><a href="https://supportforums.cisco.com/community/5411/cisco-support-community" class="selected">English</a></li>
+<li class="5036"><a href="https://supportforums.cisco.com/ja">日本語 (Japanese)</a></li>
+<li class="5591"><a href="https://supportforums.cisco.com/es/community/5591/comunidad-de-soporte-de-cisco-en-espanol">Español (Spanish)</a></li>
+<li class="5141"><a href="https://supportforums.cisco.com/community/5141/comunidade-de-suporte-cisco-em-portugues">Português (Portuguese)</a></li>
+<li class="3611 last"><a href="https://supportforums.cisco.com/ru/community/3611/russian">Pусский (Russian)</a></li>
+<li class="chineseLink"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': 'www.csc-china.com.cn/', 'eventVal': 0});" href="http://www.csc-china.com.cn/">简体中文 (Chinese)</a></li></ul>              </li>
+      <li>
+      <ul class="menu nav"><li class="first leaf"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': 'www.ciscofeedback.vovici.com/se.ashx?s=6A5348A7439AF098&amp;url=https%3A%2F%2Fsupportforums.cisco.com%2Findex.jspa&amp;space=Home', 'eventVal': 0});" href="https://www.ciscofeedback.vovici.com/se.ashx?s=6A5348A7439AF098&amp;url=https%3A%2F%2Fsupportforums.cisco.com%2Findex.jspa&amp;space=Home">Contact Us</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5781/support-community-help">Help</a></li>
+</ul>      </li>
+      <li class="btn-inverse fol-soc dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">Follow Us <span class="caret"></span></a>
+        
+  
+<ul class="dropdown-menu soc-icons-small" role="menu" aria-labelledby="dLabel">      <li class="views-row-odd views-row-first cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/youtube_3.jpg" alt="" height="15" width="15"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'youtube Profile', 'eventLbl': 'www.youtube.com/user/ciscosupportchannel', 'eventVal': 0});" href="https://www.youtube.com/user/ciscosupportchannel" target="_blank">YouTube</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/facebook.png" alt="" height="14" width="14"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'facebook Profile', 'eventLbl': 'www.facebook.com/CiscoSupportCommunity', 'eventVal': 0});" href="https://www.facebook.com/CiscoSupportCommunity" target="_blank">Facebook</a></span></li>
+      <li class="views-row-odd cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/twitter.png" alt="" height="15" width="15"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'twitter Profile', 'eventLbl': 'twitter.com/cisco_support', 'eventVal': 0});" href="https://twitter.com/cisco_support" target="_blank">Twitter</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/google.png" alt="" height="14" width="14"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'plus Profile', 'eventLbl': 'plus.google.com/+CiscoSupportChannel/posts', 'eventVal': 0});" href="https://plus.google.com/+CiscoSupportChannel/posts" target="_blank">Google +</a></span></li>
+      <li class="views-row-odd cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/linkedin-in-logo_2x.png" alt="" height="64" width="64"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'linkedin Profile', 'eventLbl': 'www.linkedin.com/company/cisco-support-community', 'eventVal': 0});" href="https://www.linkedin.com/company/cisco-support-community" target="_blank">LinkedIn</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/mail_icon.png" alt="" height="15" width="15"></div>  <span class="media-link"><a href="https://grs.cisco.com/grsx/cust/grsCustomerSurvey.html?KeyCode=000283745&amp;SurveyCode=7719" target="_blank">Newsletter</a></span></li>
+      <li class="views-row-odd views-row-last cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/instagram_20x20.png" alt="" height="20" width="20"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'instagram Profile', 'eventLbl': 'instagram.com/ciscosupportcommunity/', 'eventVal': 0});" href="https://instagram.com/ciscosupportcommunity/" target="_blank">Instagram</a></span></li>
+  </ul>            </li>
+    </ul>
+  </div><!-- /#fol-links -->
+  <div class="mobile-menu-wrapper">
+    <ul class="menu nav"><li class="first expanded dropdown" id="c-dir-toggle"><a href="https://supportforums.cisco.com/community" class="community-toggle submenu-trigger menu-expand">Directory<i class="icon-plus-sign icon-swap-processed"></i></a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li class="first expanded"><a href="https://supportforums.cisco.com/community/4461/network-infrastructure" title="Network Infrastructure" class="submenu-trigger menu-expand">Network Infrastructure</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4461/network-infrastructure">Network Infrastructure Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5991/wan-routing-and-switching">WAN, Routing and Switching</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/6016/lan-switching-and-routing">LAN, Switching and Routing</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5931/network-management">Network Management</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5536/remote-access">Remote Access</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5486/optical-networking" title="Optical Networking">Optical Networking</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5896/getting-started-lans">Getting Started with LANs</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5531/ipv6-integration-and-transition">IPv6 Integration and Transition</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5941/eem-scripting">EEM Scripting</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5981/other-network-infrastructure-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4561/security" class="submenu-trigger menu-expand">Security</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4561/security">Security Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/6001/vpn">VPN</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5521/security-management">Security Management</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5966/firewalling">Firewalling</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5851/intrusion-prevention-systemsids">Intrusion Prevention Systems/IDS</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5936/aaa-identity-and-nac">AAA, Identity and NAC</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5736/physical-security">Physical Security</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5671/mars">MARS</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5756/email-security">Email Security</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5786/web-security">Web Security</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5806/other-security-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4441/service-providers" class="submenu-trigger menu-expand">Service Providers</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4441/service-providers">Service Providers Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5651/metro">Metro</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5891/mpls">MPLS</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5716/voice-over-ip">Voice Over IP</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5996/xr-os-and-platforms">XR OS and Platforms</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4981/sp-video">Video</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5841/other-service-provider-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4691/collaboration-voice-and-video" class="submenu-trigger menu-expand">Collaboration, Voice and Video</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4691/collaboration-voice-and-video">Collaboration, Voice and Video Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5961/ip-telephony">IP Telephony</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5881/video-over-ip" title="Voice Over IP Support Community">Video Over IP</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5831/jabber-clients">Jabber Clients</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5971/unified-communications-applications">Unified Communications Applications</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5886/telepresence">TelePresence</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5501/digital-media-system">Digital Media System</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5926/contact-center">Contact Center</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5726/conferencing">Conferencing</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5426/uc-migrations">UC Migrations</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5791/other-collaboration-voice-and-video-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4931/wireless-mobility" class="submenu-trigger menu-expand">Wireless - Mobility</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4931/wireless-mobility">Wireless - Mobility Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5906/security-and-network-management">Security and Network Management</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5771/wireless-ip-voice-and-video">Wireless IP Voice and Video</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5956/getting-started-wireless">Getting Started with Wireless</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/12168506/wireless-lan-controller-config-analyzer-wlcca">WLCCA</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5921/other-wireless-mobility-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4676/services" class="submenu-trigger menu-expand">Services</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4676/services">Services Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/11933756/cisco-servicegrid" title="Cisco ServiceGrid">Cisco ServiceGrid</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/12223636/connected-analytics" title="Connected Analytics">Connected Analytics</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4816/smart-call-home">Smart Call Home</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4891/smart-net-total-care">Smart Net Total Care</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5986/operations-exchange">Operations Exchange</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/12156346/mobile-applications" title="Cisco Mobile Applications Community" class="submenu-trigger menu-expand">Mobile Applications</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/12156346/mobile-applications">Mobile Applications Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/12156681/cisco-proximity" title="Cisco Proximity on the Cisco Support Community">Cisco Proximity</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5006/cisco-support-mobile">Cisco Technical Support </a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/5011/online-tools-and-resources" class="submenu-trigger menu-expand">Online Tools and Resources</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/5011/online-tools-and-resources">Online Tools and Resources Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5451/cisco-bug-discussions">Cisco Bug Discussions</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4886/technical-documentation-ideas">Technical Documentation Ideas</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/13013216/cisco-cli-analyzer">Cisco CLI Analyzer</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5781/support-community-help">Support Community Help</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/4436/data-center" class="submenu-trigger menu-expand">Data Center</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/4436/data-center">Data Center Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/12206936/application-centric-infrastructure">Application Centric Infrastructure</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5876/application-networking">Application Networking</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5811/intelligent-automation" title="Intelligent Automation">Intelligent Automation</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/9038031/server-networking" title="Server Networking Support Community">Server Networking</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5636/storage-networking">Storage Networking</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/6011/unified-computing">Unified Computing</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5871/wide-area-application-services-waas">Wide Area Application Services (WAAS)</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5696/other-data-center-subjects">Other Subjects</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/5541/small-business-support-community" class="submenu-trigger menu-expand">Small Business</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/5541/small-business-support-community">Small Business Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5051/small-business-network-and-smart-storage">Network Storage</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5951/small-business-routers">Routers</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5901/small-business-security">Security</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4531/small-business-surveillance">Surveillance</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/5976/small-business-switches">Switches</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/2571/small-business-voice-and-conferencing">Voice and Conferencing</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5946/small-business-wireless">Wireless</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/5066/solutions-and-architectures" class="submenu-trigger menu-expand">Solutions and Architectures</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/5066/solutions-and-architectures">Solutions and Architectures Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/5556/borderless-networks">Borderless Networks</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/4946/collaboration">Collaboration</a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/5071/cisco-user-groups" class="submenu-trigger menu-expand">Cisco User Groups</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li><a href="https://supportforums.cisco.com/community/5071/cisco-user-groups">Cisco User Groups Home</a></li><li class="first leaf"><a href="https://supportforums.cisco.com/community/4351/seattle-cisco-user-group-seacug">Seattle Cisco User Group (SEACUG)</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4826/silicon-valley-cisco-user-group-svcug">Silicon Valley Cisco User Group (SVCUG)</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/4916/southern-california-cisco-user-group-sccug">Southern California Cisco User Group (SCCUG)</a></li>
+</ul></li>
+<li class="leaf"><a href="https://learningnetwork.cisco.com/community/certifications/" title="Cisco Certifications">Cisco Certifications</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4126/ciscocom-idea-center" title="Cisco Idea Center">Cisco.com Idea Center</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5676/cisco-cafe" title="Cisco Cafe">Cisco Cafe </a></li>
+</ul></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/expert-corner" class="submenu-trigger menu-expand">Expert Corner</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li class="first leaf"><a href="https://supportforums.cisco.com/expert-corner/top-contributors">Top Contributors</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/leaderboards" title="Leaderboards">Leaderboards</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5026/cisco-live-events">Cisco Live! Events</a></li>
+</ul></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/expert-corner/events">Events</a></li>
+<li class="expanded"><a href="https://supportforums.cisco.com/community/12061451/community-corner" class="submenu-trigger menu-expand">Community Corner</a><i class="icon-plus-sign icon-swap-processed"></i><ul class="mobile-submenu" style="display: none;"><li class="first leaf"><a href="https://supportforums.cisco.com/community/3071/community-awards-and-recognition">Awards &amp; Recognition</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/4021/behind-scenes-cisco-support-community">Behind the Scenes</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/12122176/community-feedback-forum">Feedback Forum</a></li>
+<li class="leaf"><a href="https://learningnetwork.cisco.com/community/certifications/">Cisco Certifications</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/community/12607196/cisco-press-cafe">Cisco Press Café</a></li>
+<li class="last leaf"><a href="https://ondemand.cisco.com/" target="_blank">Cisco On Demand</a></li>
+</ul></li>
+<li class="last leaf"><a href="http://www.cisco.com/c/en/us/support/index.html">Support &amp; Downloads</a></li>
+</ul>  </div>  <ul class="menu nav">
+        <li class="expanded"><a class="submenu-trigger menu-expand" href="#">Community Resources</a><i class="icon-plus-sign icon-swap-processed"></i>
+      <ul class="mobile-submenu" style="display: none;">
+        <li class="collapsed phoneable"><a href="http://tools.cisco.com/security/center/mhome.x">Security Alerts</a></li>
+        <li class="collapsed tabletable"><a href="http://tools.cisco.com/security/center/home.x">Security Alerts</a></li>
+        <li class="collapsed phoneable"><a href="http://newsroom.cisco.com/web/mobile-community/topics?topics=all&amp;type=all">News</a></li>
+        <li class="collapsed tabletable"><a href="http://newsroom.cisco.com/">News</a></li>
+        <li class="expanded"><a class="submenu-trigger menu-expand" href="#">Video</a><i class="icon-plus-sign icon-swap-processed"></i>
+          <ul class="mobile-submenu" style="display: none;">
+            <li><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'youtube Profile', 'eventLbl': 'www.youtube.com/user/ciscosupportchannel', 'eventVal': 0});" href="http://www.youtube.com/user/ciscosupportchannel">Cisco Support YouTube</a></li>
+            <li><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': 'www.youtube.com/user/Cisco', 'eventVal': 0});" href="http://www.youtube.com/user/Cisco">Cisco YouTube</a></li>
+          </ul>        </li>
+        <li class="collapsed tabletable"><a href="http://blogs.cisco.com/">Blogs</a></li>
+        <li class="collapsed"><a href="http://www.cisco.com/web/mobile/td/index.html">Technical Documentation</a></li>
+      </ul>    </li>
+    <li class="expanded"><a class="submenu-trigger menu-expand" href="#">Cisco</a><i class="icon-plus-sign icon-swap-processed"></i>
+      <ul class="mobile-submenu" style="display: none;">
+        <li class="collapsed phoneable"><a href="http://products.mcisco.com/en/US/products/">Products</a></li>
+        <li class="collapsed tabletable"><a href="http://www.cisco.com/en/US/products/index.html">Products</a></li>
+        <li class="collapsed phoneable"><a href="http://products.mcisco.com/web/services/index.html">Services</a></li>
+        <li class="collapsed tabletable"><a href="http://www.cisco.com/web/services/index.html">Services</a></li>
+        <li class="collapsed phoneable"><a href="http://www.cisco.com/web/mobile/sol/index.html">Solutions</a></li>
+        <li class="collapsed tabletable"><a href="http://www.cisco.com/en/US/netsol/index.html">Solutions</a></li>
+        <li class="collapsed"><a href="http://www.cisco.com/web/mobile/support/numbers.html">Global Support Numbers</a></li>
+      </ul>    </li>
+      </ul>    </div><!-- /. snap-drawer-right -->
+</div><!-- /.snap-drawers -->
+
+<div style="width: auto; left: 0px;" class="jquery-once-2-processed" id="viewport">
+
+<header id="navbar" role="banner" class="navbar navbar-inverse navbar-static-top clearfix">
+  <div class="navbar-inner gradient">
+    <div class="container">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <a class="btn-navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+            <div id="site-logo" class="pull-left">
+        <a href="http://cisco.com/" title="Cisco" target="_blank"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/logo.png" alt="Cisco" title="Cisco"></a>      </div>
+      <div id="site-name-nav" class="pull-left">
+        <div id="site-name">
+                    <a href="https://supportforums.cisco.com/" title="Cisco Support Community" class="">Cisco Support Community</a>
+                  </div>
+
+                <div class="nav-collapse collapse">
+          <nav role="navigation">
+              <div class="region region-navigation">
+    <section id="block-cisco-community-directory-community-directory-menu" class="block block-cisco-community-directory clearfix">
+
+      
+  <ul class="nav menu">
+    <li class="dropdown">
+        <a href="https://supportforums.cisco.com/community" class="dropdown-toggle">Directory</a>    <div id="community" class="directory-listing">
+    <ul style="position: relative; height: 804.3px;" class="community-container js-masonry">
+        <li style="position: absolute; left: 0px; top: 0px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4461/network-infrastructure">Network Infrastructure</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5991/wan-routing-and-switching">WAN, Routing and Switching</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/6016/lan-switching-and-routing">LAN, Switching and Routing</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5931/network-management">Network Management</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5536/remote-access">Remote Access</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5486/optical-networking">Optical Networking</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5896/getting-started-lans">Getting Started with LANs</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5531/ipv6-integration-and-transition">IPv6 Integration and Transition</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5941/eem-scripting">EEM Scripting</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5981/other-network-infrastructure-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 266px; top: 0px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4561/security">Security</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/6001/vpn">VPN</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5521/security-management">Security Management</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5966/firewalling">Firewalling</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5851/intrusion-prevention-systemsids">Intrusion Prevention Systems/IDS</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5936/aaa-identity-and-nac">AAA, Identity and NAC</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5736/physical-security">Physical Security</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5671/mars">MARS</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5756/email-security">Email Security</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5786/web-security">Web Security</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5806/other-security-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 532px; top: 0px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4441/service-providers">Service Providers</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5651/metro">Metro</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5891/mpls">MPLS</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5716/voice-over-ip">Voice Over IP</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5996/xr-os-and-platforms">XR OS and Platforms</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4981/sp-video">Video</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5841/other-service-provider-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 532px; top: 176px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4691/collaboration-voice-and-video">Collaboration, Voice and Video</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5961/ip-telephony">IP Telephony</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5881/video-over-ip">Video Over IP</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5831/jabber-clients">Jabber Clients</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5971/unified-communications-applications">Unified Communications Applications</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5886/telepresence">TelePresence</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5501/digital-media-system">Digital Media System</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5926/contact-center">Contact Center</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5726/conferencing">Conferencing</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5426/uc-migrations">UC Migrations</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5791/other-collaboration-voice-and-video-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 0px; top: 240px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4931/wireless-mobility">Wireless - Mobility</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5906/security-and-network-management">Security and Network Management</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5771/wireless-ip-voice-and-video">Wireless IP Voice and Video</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5956/getting-started-wireless">Getting Started with Wireless</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/12168506/wireless-lan-controller-config-analyzer-wlcca">WLCCA</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5921/other-wireless-mobility-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 266px; top: 262px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4676/services">Services</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/11933756/cisco-servicegrid">Cisco ServiceGrid</a>        </li>
+                <li>
+                      <span class="private"></span>
+                    <a href="https://supportforums.cisco.com/community/11933761/compliance-management-and-configuration-service">Compliance Management and Configuration Service</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/12223636/connected-analytics">Connected Analytics</a>        </li>
+                <li>
+                      <span class="private"></span>
+                    <a href="https://supportforums.cisco.com/community/4701/cisco-technical-support-service-cpe">Customer Premises Equipment (CPE) Support</a>        </li>
+                <li>
+                      <span class="private"></span>
+                    <a href="https://supportforums.cisco.com/community/12298251/data-virtualization-software-cis">Data Virtualization Software (CIS)</a>        </li>
+                <li>
+                      <span class="private"></span>
+                    <a href="https://supportforums.cisco.com/community/5456/partner-support-service">Partner Support Service</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4816/smart-call-home">Smart Call Home</a>        </li>
+                <li>
+                      <span class="private"></span>
+                    <a href="https://supportforums.cisco.com/community/5621/smart-care">Smart Care</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4891/smart-net-total-care">Smart Net Total Care</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5986/operations-exchange">Operations Exchange</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 0px; top: 396px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/12156346/mobile-applications">Mobile Applications</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/12156681/cisco-proximity">Cisco Proximity</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5006/cisco-support-mobile">Cisco Technical Support </a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 532px; top: 438px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/5011/online-tools-and-resources">Online Tools and Resources</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5451/cisco-bug-discussions">Cisco Bug Discussions</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4886/technical-documentation-ideas">Technical Documentation Ideas</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/13013216/cisco-cli-analyzer">Cisco CLI Analyzer</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5781/support-community-help">Support Community Help</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 0px; top: 487px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4436/data-center">Data Center</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/12206936/application-centric-infrastructure">Application Centric Infrastructure</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5876/application-networking">Application Networking</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5811/intelligent-automation">Intelligent Automation</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/9038031/server-networking">Server Networking</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5636/storage-networking">Storage Networking</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/6011/unified-computing">Unified Computing</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5871/wide-area-application-services-waas">Wide Area Application Services (WAAS)</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5696/other-data-center-subjects">Other Subjects</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 266px; top: 550px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/5541/small-business-support-community">Small Business</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5051/small-business-network-and-smart-storage">Network Storage</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5951/small-business-routers">Routers</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5901/small-business-security">Security</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4531/small-business-surveillance">Surveillance</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5976/small-business-switches">Switches</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/2571/small-business-voice-and-conferencing">Voice and Conferencing</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5946/small-business-wireless">Wireless</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 532px; top: 572px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/5066/solutions-and-architectures">Solutions and Architectures</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/5556/borderless-networks">Borderless Networks</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4946/collaboration">Collaboration</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 532px; top: 664px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/5071/cisco-user-groups">Cisco User Groups</a>      </h2>
+            <ul class="community-subs">
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4351/seattle-cisco-user-group-seacug">Seattle Cisco User Group (SEACUG)</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4826/silicon-valley-cisco-user-group-svcug">Silicon Valley Cisco User Group (SVCUG)</a>        </li>
+                <li>
+                      <span class="no-privacy"></span>
+                    <a href="https://supportforums.cisco.com/community/4916/southern-california-cisco-user-group-sccug">Southern California Cisco User Group (SCCUG)</a>        </li>
+              </ul>
+          </li>
+        <li style="position: absolute; left: 0px; top: 706px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://learningnetwork.cisco.com/community/certifications/">Cisco Certifications</a>      </h2>
+          </li>
+        <li style="position: absolute; left: 266px; top: 748px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/4126/ciscocom-idea-center">Cisco.com Idea Center</a>      </h2>
+          </li>
+        <li style="position: absolute; left: 0px; top: 755px;" class="community-group">
+      <h2 class="community-main">
+                  <span class="no-privacy"></span>
+                <a href="https://supportforums.cisco.com/community/5676/cisco-cafe">Cisco Cafe </a>      </h2>
+          </li>
+      </ul>
+</div>
+  </li>
+    <li class="dropdown">
+        <a href="https://supportforums.cisco.com/expert-corner" class="dropdown-toggle">Expert Corner</a>    <ul class="nav dropdown-menu pull-right">
+    <li>
+        <a href="https://supportforums.cisco.com/expert-corner/top-contributors">Top Contributors</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/leaderboards">Leaderboards</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/community/5026/cisco-live-events">Cisco Live! Events</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/community/4621/experts-bureau">Experts Bureau</a>      </li>
+  </ul>
+  </li>
+    <li>
+        <a href="https://supportforums.cisco.com/expert-corner/events" class="">Events</a>      </li>
+    <li class="dropdown">
+        <a href="https://supportforums.cisco.com/community/12061451/community-corner" class="dropdown-toggle">Community Corner</a>    <ul class="nav dropdown-menu pull-right">
+    <li>
+        <a href="https://supportforums.cisco.com/community/3071/community-awards-and-recognition">Awards &amp; Recognition</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/community/4021/behind-scenes-cisco-support-community">Behind the Scenes</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/community/12122176/community-feedback-forum">Feedback Forum</a>      </li>
+    <li>
+        <a href="https://learningnetwork.cisco.com/community/certifications/">Cisco Certifications</a>      </li>
+    <li>
+        <a href="https://supportforums.cisco.com/community/12607196/cisco-press-cafe">Cisco Press Café</a>      </li>
+    <li>
+        <a href="https://ondemand.cisco.com/">Cisco On Demand</a>      </li>
+  </ul>
+  </li>
+    <li>
+        <a href="http://www.cisco.com/c/en/us/support/index.html" class="">Support &amp; Downloads</a>      </li>
+  </ul>
+  
+</section> <!-- /.block -->
+  </div>
+          </nav>
+        </div>
+              </div>
+      <div class="visible-desktop">
+          <div class="region region-header">
+    <section id="block-cisco-profile-cisco-profile-user-menu" class="block block-cisco-profile clearfix user-menu-processed">
+
+      
+    <div class="logged-out"><a href="https://supportforums.cisco.com/user/login" class="js-login-link login-link-destination-processed">Login</a> | <a href="https://supportforums.cisco.com/user/register">Register</a></div>
+  
+</section> <!-- /.block -->
+<section id="block-search-form" class="block block-search clearfix">
+
+      
+  <form class="form-search content-search search-controls-toggle-processed" action="/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap" method="post" id="search-block-form--2" accept-charset="UTF-8"><div><div class="container-inline">
+      <h2 class="element-invisible">Search form</h2>
+    <div class="input-append"><input title="Enter the terms you wish to search for." class="search-query span2 form-text" placeholder="Search" id="edit-search-block-form--4" name="search_block_form" size="15" maxlength="128" type="text"><button type="submit" class="btn"><i class="icon-search"></i><span class="element-invisible">Search</span></button></div><div class="control-group form-type-radios form-item-search-env form-item">
+  <label for="edit-search-env--2" class="control-label"><i class="search-filter"></i> </label>
+<div style="display: none;" class="controls"> <div id="edit-search-env--2" class="form-radios"><div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-community--2"> <input id="edit-search-env-community--2" name="search_env" value="community" checked="checked" class="form-radio" type="radio">Search Other Wireless - Mobility Subjects </label>
+
+</div>
+<div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-csc--2"> <input id="edit-search-env-csc--2" name="search_env" value="csc" class="form-radio" type="radio">Cisco Support Community </label>
+
+</div>
+<div class="form-type-radio form-item-search-env form-item">
+  <label class="option radio" for="edit-search-env-ciscocom--2"> <input id="edit-search-env-ciscocom--2" name="search_env" value="ciscocom" class="form-radio" type="radio">Cisco.com </label>
+
+</div>
+</div>
+</div></div>
+<button class="element-invisible btn btn-primary form-submit" id="edit-submit--2" name="op" value="Search" type="submit">Search</button>
+<input name="form_build_id" value="form-HusW5qslv1jzuoZ2-nb4K19gjRUrNJPWBsKRAKC3VBs" type="hidden">
+<input name="form_id" value="search_block_form" type="hidden">
+</div>
+</div></form>  
+</section> <!-- /.block -->
+  </div>
+      </div>
+          </div>
+  </div>
+</header>
+
+<div id="breadcrumb">
+  <div class="container">
+    <span class="pull-left"><ul class="breadcrumb"><li><a href="https://supportforums.cisco.com/">Home</a><span class="divider">/</span></li><li class="has-children"><a href="https://supportforums.cisco.com/community/4931/wireless-mobility">Wireless - Mobility</a><ul><li><a href="https://supportforums.cisco.com/community/4571/additional-communities">Additional Communities</a></li><li><span class="private"></span><a href="https://supportforums.cisco.com/community/13015971/cisco-ready">Cisco Ready</a></li><li><a href="https://supportforums.cisco.com/community/12061451/community-corner">Community Corner</a></li><li><a href="https://supportforums.cisco.com/community/4436/data-center">Data Center</a></li><li><a href="https://supportforums.cisco.com/community/12156346/mobile-applications">Mobile Applications</a></li><li><a href="https://supportforums.cisco.com/community/4461/network-infrastructure">Network Infrastructure</a></li><li><a href="https://supportforums.cisco.com/community/4441/service-providers">Service Providers</a></li><li><a href="https://supportforums.cisco.com/community/4691/collaboration-voice-and-video">Collaboration, Voice and Video</a></li><li><a href="https://supportforums.cisco.com/community/5541/small-business-support-community">Small Business Support Community</a></li><li><a href="https://supportforums.cisco.com/community/4561/security">Security</a></li><li><a href="https://supportforums.cisco.com/community/5066/solutions-and-architectures">Solutions and Architectures</a></li><li><a href="https://supportforums.cisco.com/community/4676/services">Services</a></li><li><a href="https://supportforums.cisco.com/community/4646/top-contributors">Top Contributors</a></li><li><a href="https://supportforums.cisco.com/community/5071/cisco-user-groups">Cisco User Groups</a></li><li><a href="https://supportforums.cisco.com/community/5061/demand">On Demand</a></li><li><a href="https://supportforums.cisco.com/community/5011/online-tools-and-resources">Online Tools and Resources</a></li><li><span class="private"></span><a href="https://supportforums.cisco.com/community/5406/private">Private</a></li></ul><span class="divider">/</span></li><li class="has-children"><a href="https://supportforums.cisco.com/community/5921/other-wireless-mobility-subjects">Other Wireless - Mobility Subjects</a><ul><li><a href="https://supportforums.cisco.com/community/12168506/wireless-lan-controller-config-analyzer-wlcca">WLCCA</a></li><li><a href="https://supportforums.cisco.com/community/5906/security-and-network-management">Security and Network Management</a></li><li><a href="https://supportforums.cisco.com/community/5771/wireless-ip-voice-and-video">Wireless IP Voice and Video</a></li><li><a href="https://supportforums.cisco.com/community/5956/getting-started-wireless">Getting Started with Wireless</a></li></ul></li></ul></span>    <!-- TODO: Move this markup into a block or something -->
+
+    <div id="fol-links" class="pull-right">
+      <ul class="inline">
+        <li class="dropdown border-right">
+                      Language: <a class="dropdown-toggle" data-toggle="dropdown">English<span class="caret"></span></a><ul role="menu" aria-labelledby="dLabel" class="dropdown-menu language-switcher-locale-url"><li class="5411 first"><a href="https://supportforums.cisco.com/community/5411/cisco-support-community" class="selected">English</a></li>
+<li class="5036"><a href="https://supportforums.cisco.com/ja">日本語 (Japanese)</a></li>
+<li class="5591"><a href="https://supportforums.cisco.com/es/community/5591/comunidad-de-soporte-de-cisco-en-espanol">Español (Spanish)</a></li>
+<li class="5141"><a href="https://supportforums.cisco.com/community/5141/comunidade-de-suporte-cisco-em-portugues">Português (Portuguese)</a></li>
+<li class="3611 last"><a href="https://supportforums.cisco.com/ru/community/3611/russian">Pусский (Russian)</a></li>
+<li class="chineseLink"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': 'www.csc-china.com.cn/', 'eventVal': 0});" href="http://www.csc-china.com.cn/">简体中文 (Chinese)</a></li></ul>                  </li>
+        <li>
+                  <ul class="menu nav"><li class="first leaf"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': 'www.ciscofeedback.vovici.com/se.ashx?s=6A5348A7439AF098&amp;url=https%3A%2F%2Fsupportforums.cisco.com%2Findex.jspa&amp;space=Home', 'eventVal': 0});" href="https://www.ciscofeedback.vovici.com/se.ashx?s=6A5348A7439AF098&amp;url=https%3A%2F%2Fsupportforums.cisco.com%2Findex.jspa&amp;space=Home">Contact Us</a></li>
+<li class="last leaf"><a href="https://supportforums.cisco.com/community/5781/support-community-help">Help</a></li>
+</ul>                </li>
+        <li class="btn-inverse fol-soc dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">Follow Us <span class="caret"></span></a>
+          
+  
+<ul class="dropdown-menu soc-icons-small" role="menu" aria-labelledby="dLabel">      <li class="views-row-odd views-row-first cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/youtube_3.jpg" alt="" height="15" width="15"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'youtube Profile', 'eventLbl': 'www.youtube.com/user/ciscosupportchannel', 'eventVal': 0});" href="https://www.youtube.com/user/ciscosupportchannel" target="_blank">YouTube</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/facebook.png" alt="" height="14" width="14"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'facebook Profile', 'eventLbl': 'www.facebook.com/CiscoSupportCommunity', 'eventVal': 0});" href="https://www.facebook.com/CiscoSupportCommunity" target="_blank">Facebook</a></span></li>
+      <li class="views-row-odd cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/twitter.png" alt="" height="15" width="15"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'twitter Profile', 'eventLbl': 'twitter.com/cisco_support', 'eventVal': 0});" href="https://twitter.com/cisco_support" target="_blank">Twitter</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/google.png" alt="" height="14" width="14"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'plus Profile', 'eventLbl': 'plus.google.com/+CiscoSupportChannel/posts', 'eventVal': 0});" href="https://plus.google.com/+CiscoSupportChannel/posts" target="_blank">Google +</a></span></li>
+      <li class="views-row-odd cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/linkedin-in-logo_2x.png" alt="" height="64" width="64"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'linkedin Profile', 'eventLbl': 'www.linkedin.com/company/cisco-support-community', 'eventVal': 0});" href="https://www.linkedin.com/company/cisco-support-community" target="_blank">LinkedIn</a></span></li>
+      <li class="views-row-even cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/mail_icon.png" alt="" height="15" width="15"></div>  <span class="media-link"><a href="https://grs.cisco.com/grsx/cust/grsCustomerSurvey.html?KeyCode=000283745&amp;SurveyCode=7719" target="_blank">Newsletter</a></span></li>
+      <li class="views-row-odd views-row-last cf">
+  <div class="media-icon"><img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/instagram_20x20.png" alt="" height="20" width="20"></div>  <span class="media-link"><a onmousedown="dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': 'instagram Profile', 'eventLbl': 'instagram.com/ciscosupportcommunity/', 'eventVal': 0});" href="https://instagram.com/ciscosupportcommunity/" target="_blank">Instagram</a></span></li>
+  </ul>                </li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="container">
+    <div class="row">
+      
+      <section class="span12">
+                                        <div id="page-content">
+        
+
+<div class="cisco-twocol panel-display clearfix">
+  		
+	<div class="container">
+		<div class="row">
+			<div class="region region-cisco-twocol-first span8 span12-tablet">
+
+		    <div class="region-inner clearfix">
+		      <div class="panel-pane pane-node-full-content">
+  
+      
+  
+  <div class="pane-content">
+    
+
+<article itemscope="" itemtype="http://schema.org/CreativeWork" id="node-100611" class="node node-document clearfix" about="/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap" typeof="sioc:Item foaf:Document">
+
+  <header>
+    <h1 itemprop="name">802.11 Sniffer Capture Analysis - WPA/WPA2 with PSK or EAP </h1>
+  </header>
+
+  <div class="document-content-wrapper node-content-wrapper">
+
+    <div class="document-content node-content">
+      <div class="content-header-bar">
+        <h4>Document</h4>
+        <div class="publish-date">Thu, 11/19/2015 - 22:39</div>
+      </div>
+
+      <div class="row-fluid">
+                <div class="userpic pull-left">
+          <img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/default-avatar.png" alt="" height="50" width="50">        </div>
+                <div class="authoring-info">
+          <span class="fullname" itemprop="author"><a href="https://supportforums.cisco.com/users/timsmith" title="View user profile." class="username" xml:lang="" about="/users/timsmith" typeof="sioc:UserAccount" property="foaf:name" datatype="">timsmith</a></span>
+          <span class="created" itemprop="dateModified"><abbr class="timeago" title="May 16th, 2012">4 years ago</abbr></span>
+        </div>
+        <div class="badges">
+          <div class="view view-cisco-badges-awarded view-id-cisco_badges_awarded view-display-id-designations badges view-dom-id-3948edd5f2c8ce743f4f8d9ef946904d">
+        
+  
+      <div class="attachment attachment-before">
+      
+
+      <ul class="inline">
+      <li>
+        <div class="views-field views-field-field-rep-rank-image">
+          <img data-original-title="Cisco Employee" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/cisco-employee.gif" alt="" class="has-tooltip" title="">
+        </div>
+      </li>
+    </ul>
+
+    </div>
+  
+  
+  
+  
+  
+  
+  
+</div></div>
+      </div>
+
+      <div class="node-body document-body" itemprop="text">
+        <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><div><p></p><p><span style="font-size:14pt; color:#3366ff"><strong>WPA-PSK(TKIP)</strong></span></p><p><strong><br></strong></p><p>1.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span>Beacon
+ frames are transmitted periodically to anonunce presence of wireless 
+network and contain all information about it(data rates, channels, 
+security ciphers, key management etc):</span></p><p><span><br></span></p><p><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89723-WPA-PSK-TKIP-Beacon.png" alt="WPA-PSK-TKIP-Beacon.png" width="620"><br></span></p><p><span> </span></p><p><span> </span></p><p>2.<span>&nbsp;&nbsp;&nbsp;&nbsp; </span><span>Probe request, is sent by STA to obtain information from AP:</span></p><p></p><p><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89724-WPA-PSK-TKIP-Probe-req.png" alt="WPA-PSK-TKIP-Probe-req.png" width="620"><br></span></p><p><span><br></span></p><p><span> </span></p><span style="font-size:12.0pt"><br></span><p><span> </span></p><p>3.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span>Probe response, AP responds with </span>with
+ a probe response frame, containing capability information, supported 
+data rates, etc., when after it receives a probe request frame from STA<span>:</span></p><p></p><p><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89725-WPA-PSK-TKIP-Probe-res.png" alt="WPA-PSK-TKIP-Probe-res.png" width="620"><br></span></p><p><span> </span></p><p>4.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>802.11
+ authentication is a process whereby the access point either accepts or 
+rejects the identity of a radio NIC. The NIC begins the process by 
+sending an authentication frame containing its identity to the access 
+point. With open system authentication (the default), the radio NIC 
+sends only one authentication frame, and the access point responds with 
+an authentication frame as a response indicating acceptance (or 
+rejection).<span>:</span></p><p></p><p style="margin-left:1.0in"><span>a.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>Dot11 authentication request:</span></p><p style="margin-left:1.0in"><span><br></span></p><p style="margin-left:1.0in"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89726-WPA-PSK-TKIP-Auth-req.png" alt="WPA-PSK-TKIP-Auth-req.png" width="620"><br></span></p><p><span> </span></p><p style="margin-left:1.0in"><span>b.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>Dot11 authentication response:</span></p><p style="margin-left:1.0in"><span><br></span></p><p style="margin-left:1.0in"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89734-WPA-PSK-TKIP-Assos-res.png" alt="WPA-PSK-TKIP-Assos-res.png" width="620"><br></span></p><p style="margin-left:1.0in"><span> </span></p><p>5.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p><p>802.11
+ association enables the access point to allocate resources for and 
+synchronize with a radio NIC. A NIC begins the association process by 
+sending an association request to an access point. This frame carries 
+information about the NIC (e.g., supported data rates) and the SSID of 
+the network it wishes to associate with. </p><p></p><p style="margin-left:40.5pt"><span>a.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>Dot11 association request:</span></p><p style="margin-left:40.5pt"><span><br></span></p><p style="margin-left:40.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89728-WPA-PSK-TKIP-Assos-req.png" alt="WPA-PSK-TKIP-Assos-req.png" width="620"><span> </span></p><p style="margin-left:40.5pt">After
+ receiving the association request, the access point considers 
+associating with the NIC, and (if accepted) reserves memory space and 
+establishes an association ID for the NIC.</p><p></p><p style="margin-left:40.5pt"><span>b.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>Dott11 association response:</span></p><p style="margin-left:40.5pt"><span><br></span></p><p style="margin-left:40.5pt"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89729-WPA-PSK-TKIP-Auth-res.png" alt="WPA-PSK-TKIP-Auth-res.png" width="620"></span></p><p>6.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span>4-way handshake, during this phase PTK is created, PSK is used as PMK to construct those values:</span></p><p></p><p style="margin-left:1.0in"><span>a.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>AP sends 802.1x authentication frame with ANonce, STA now has all information to construct PTK:</span></p><p style="margin-left:1.0in"><span><br></span></p><p style="margin-left:1.0in"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89730-WPA-PSK-TKIP-Key-1.png" alt="WPA-PSK-TKIP-Key-1.png" width="620"></span></p><span style="font-size:12.0pt"><br></span><p style="margin-left:1.0in"><span> </span></p><p style="margin-left:1.0in"><span>b.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>STA responds with 802.1x authentication frame with SNonce and MIC:</span></p><p style="margin-left:1.0in"><span><br></span></p><p style="margin-left:1.0in"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89731-WPA-PSK-TKIP-Key-2.png" alt="WPA-PSK-TKIP-Key-2.png" width="620"></span></p><p style="margin-left:1.0in"><span>c.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>AP constructs 802.1x frame with new MIC and GTK with sequence number, </span>This
+ sequence number will be used in the next multicast or broadcast frame, 
+so that the receiving STA can perform basic replay detection:</p><p></p><p style="margin-left:1.0in"><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89732-WPA-PSK-TKIP-Key-3.png" alt="WPA-PSK-TKIP-Key-3.png" width="620"></span></p><p style="margin-left:1.0in"><span> </span></p><p style="margin-left:1.0in"><span>d.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>STA sends ACK:</span></p><p style="margin-left:1.0in"><span><br></span></p><p style="margin-left:.75in"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/89733-WPA-PSK-TKIP-Key-4.png" alt="WPA-PSK-TKIP-Key-4.png" width="620"><span> </span></p><p style="margin-left:.75in"><span>From that point all data is sent encrypted.</span></p><strong style="font-size:12.0pt"><br></strong><p></p><p><span style="font-size:14pt; color:#3366ff"><strong>WPA2-PSK(AES/TKIP)</strong></span></p><p><span style="font-size:14pt; color:#3366ff"><strong><br></strong></span></p><p><span> </span></p><p><span>The process if fairly the same as in previous section, I’ll highlight only information that is different.</span></p><p><span> </span></p><p><span>1.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>WPA2
+ AP management frame include RSN element that included unicast cipher 
+suite, AKM information and GTK cipher suite (if both AES and TKIP are 
+selected, then less stronger encryption method will be used for GTK).</span></p><p></p><p><span><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90198-image012.png" alt="image012.png" height="394" width="719"><br></span></p><p><span><br></span></p><p><span>2.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span>During 4-way handshake frames contain version information for WPA2 in “Type” fields.</span></p><p></p><p><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90199-image013.png" alt="image013.png" height="393" width="718"></p><p><span><br></span></p><p><span> </span></p><p style="margin-left:4.5pt"><span> </span></p><p style="margin-left:4.5pt"><span>Note:
+ you can decrypt WEP/WPA-PSK/WPA2-PSK encrypted wireless traffic if 
+4-way handshake key exchange frames are included in trace and PSK is 
+known.</span></p><p style="margin-left:4.5pt"><span> </span></p><p></p><p style="margin-left:4.5pt"><span>In order to encrypt wireless traffic in wireshark open </span><em><strong>Preferences-&gt; Protocols-&gt;IEEE 802.11</strong> and provide PSK information and select “Enable decryption option”.</em></p><p style="margin-left:4.5pt"><em> </em></p><p></p><p style="margin-left:4.5pt"><em>To decrypt WPA/WPA2 encrypted traffic specify Key in format:</em></p><p style="margin-left:4.5pt"><em><span style="font-style:normal"> “</span><strong>wpa-psk:PSK:SSID</strong></em><em>”</em></p><p style="margin-left:4.5pt"><em> </em></p><p style="margin-left:4.5pt"><em> </em></p><p style="margin-left:4.5pt"><em>Note: In order to filter out WLAN traffic from specific STA in wireshark you could use <strong>“WLAN Statistic”</strong> option. </em></p><p></p><p style="margin-left:4.5pt"><em>In
+ order to filter traffic from specific STA go to “Statistics -&gt; WLAN 
+Traffic”, from the list of SSIDs select corresponding SSID STA is 
+associated with, and apply filter based on the STA.</em></p><p></p><p style="margin-left:4.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90191-image014.jpg" alt="image014.jpg" height="366" width="710"></p><p style="margin-left:4.5pt"><em><br></em></p><p style="margin-left:4.5pt"><em> </em></p><p style="margin-left:4.5pt"><em> </em></p><span style="font-size:12.0pt"><br></span><p style="margin-left:4.5pt"><strong style="color:#3366ff; font-size:14pt">WPA/WPA2 Enterprise</strong></p><p></p><p style="margin-left:22.5pt">1)<span>&nbsp;&nbsp;&nbsp;&nbsp; </span>WPA(TKIP)/WPA2(AES) with dot1x (PEAP)</p><p style="margin-left:22.5pt">This
+ process follows the same steps like previous except for the AKM method 
+and deriving PTK/GTK and AP advertised attributes in 802.11 management 
+frames. </p><p style="margin-left:58.5pt">a.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>In
+ this example AP advertises WPA(TKIP)/WPA2(AES) with dot1x 
+authentication, both RSN and WPA tag attributes for AKM contain WPA 
+value, whether in case of PSK authentication this field contains “PSK”. 
+Also in this example TKIP is used for WPA and AES is used for WPA2</p><p></p><p style="margin-left:58.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90177-dot1x.png" alt="dot1x.png" height="597" width="684"></p><span style="font-size:12.0pt"><br></span><p style="margin-left:58.5pt">b.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>STA
+ selects one of authentication methods and cipher suites advertised by 
+AP. In this case WPA2 with AES was selected, that can be seen in RSN IE 
+parameters.</p><p></p><p style="margin-left:58.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90178-WPA2PEAP.png" alt="WPA2PEAP.png" height="412" width="690"></p><p></p><p style="margin-left:58.5pt">c.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>After
+ successful dot11 association dot1x authentication takes place, during 
+this process we can see what EAP method is used by STA for 
+authentication and certificate(s) exchange information between 
+supplicant and AAA server.</p><p></p><p style="margin-left:58.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90188-dot1x-PEAP-1.png" alt="dot1x-PEAP-1.png" height="228" width="702"></p><p></p><p style="margin-left:58.5pt">d.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>After
+ successful dot1x authentication PMK is trasmited to AP in 
+“Access-Accept” message from AAA server and the same PMK is derived on 
+the client, next 4-way handshake takes place and PTK and GTK 
+establishment.</p><p></p><p></p><p></p><p>Radius exchange between WLC and AAA server:</p><p></p><p><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90189-image018.jpg" alt="image018.jpg" height="171" width="765"></p><p></p><p>General flow diagram:</p><p></p><p><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90190-image019.jpg" alt="image019.jpg" height="319" width="759"></p><p></p><p><br><span style="color:#3366ff"><strong style="font-size:14pt">WPA(TKIP)/WPA2(AES) with dot1x (EAP-TLS)</strong></span></p><p></p><p>Difference
+ for this type of authentication compared to the previous one is that 
+client provides its certificate in “Client Hello” message and mutual 
+authentication is performed between client and AAA server based on 
+certificates.</p><p></p><p style="margin-left:22.5pt">EAP exchange between STA and WLC:</p><p></p><p style="margin-left:22.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90192-image020.jpg" alt="image020.jpg" height="191" width="699"></p><p></p><p style="margin-left:22.5pt">Radius exchange between WLC and AAA server:</p><p></p><p style="margin-left:22.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90193-image021.jpg" alt="image021.jpg" height="113" width="697"></p><p></p><p style="margin-left:22.5pt">General flow diagram:</p><p></p><p style="margin-left:22.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90194-image022.jpg" alt="image022.jpg" height="300" width="699"></p><p></p><p style="margin-left:22.5pt">2)<span>&nbsp;&nbsp;&nbsp;&nbsp; </span>WPA(TKIP)/WPA2(AES) with dot1x (FAST)</p><p style="margin-left:22.5pt">Only
+ dot1x authentication stage is a bit different comparing to the previous
+ example. After successful dot11 association dot1x authentication takes 
+place, AP sends dot1x identity request to the STA and STA provides 
+identity response, the response depends on what PAC provisioning is been
+ in use (in-band PAC provisioning (phase 0) or out-of-band PAC 
+provisioning). In case of in-band provisioning PAC is sent to the client
+ from AAA server, once client has PAC it goes to EAP-FAST phase1 from 
+this point TLS tunnel establishment starts (phase 1)</p><p></p><p style="margin-left:22.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90195-image023.jpg" alt="image023.jpg" height="391" width="715"></p><p></p><p style="margin-left:22.5pt">After
+ TLS tunnel is established inner authentication method (phase 2) starts 
+inside encrypted tunnel. On successful authentication PMK is send in 
+“Access-Accept” message to AP from AAA server, the same key is derived 
+based on dot1x exchange on STA. This key (PMK) is used to calculate PTK 
+during 4-way handshake that will be used to secure communication between
+ STA and AP.</p><p></p><p style="margin-left:22.5pt">General flow diagram:</p><p></p><p style="margin-left:22.5pt"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/90196-image024.jpg" alt="image024.jpg" height="319" width="732"></p><p></p></div></div></div></div>      </div>
+
+
+      
+      
+      
+      
+    </div>
+
+    <footer class="document-footer node-footer">
+
+      <div class="row-fluid">
+        <div class="node-rate pull-left">
+            <div class="control-group form-type-item form-item">
+  <label class="control-label">Rating </label>
+<div class="controls"> <div class="rate-widget-2 rate-widget clear-block rate-average rate-widget-fivestar rate-71783314abb0aac111512680796de704 rate-node-100611-2-1 rate-processed" id="rate-node-100611-2-1"><ul class="rate-fivestar-processed"><li class="first"><a class="rate-button rate-fivestar-btn-filled rate-fivestar-1" id="rate-button-11" rel="nofollow" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?rate=8v5HyCWmBW1wwuSe86jNUKC_BWqmLie9n28Ywn-yTTE" title="1">1</a></li>
+<li><a class="rate-button rate-fivestar-btn-filled rate-fivestar-2" id="rate-button-12" rel="nofollow" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?rate=NwloWijt7J4jhxP-yJeqHCOUOEWT9FHCFIZaFx_sR2c" title="2">2</a></li>
+<li><a class="rate-button rate-fivestar-btn-filled rate-fivestar-3" id="rate-button-13" rel="nofollow" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?rate=5MGPUXqc1G0M7BEoTHImxqTcn0VKxXt41K8EGEpoQ6o" title="3">3</a></li>
+<li><a class="rate-button rate-fivestar-btn-filled rate-fivestar-4" id="rate-button-14" rel="nofollow" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?rate=suX_GysuXYNfFrIE2iFSjrXUKrJuReQZ_vhjSptCEfk" title="4">4</a></li>
+<li class="last"><a class="rate-button rate-fivestar-btn-filled rate-fivestar-5" id="rate-button-15" rel="nofollow" href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?rate=rW2kBcG-C62rWVnmKeip7JvL2WryPcbTc2ZnrIgtaPQ" title="5">5</a></li>
+</ul><div class="rate-info">Overall Rating: 5 (4 ratings)</div></div>
+</div></div>
+        </div>
+
+        <div class="reply pull-right">
+          <ul class="links inline"><li class="comment_forbidden first"><span><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-form">Log in</a> or <a href="https://supportforums.cisco.com/user/register?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-form">register</a> to post comments</span></li>
+<li class="sharethis last"><span class="share"><div class="share-wrapper"><div class="share"><h6>Share:</h6><div st_processed="yes" st_url="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap" st_title="802.11 Sniffer Capture Analysis - WPA/WPA2 with PSK or EAP " class="st_sharethis_large" displaytext="sharethis"><span class="stButton" style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;"><span style="background-image: url(&quot;https://ws.sharethis.com/images/sharethis_32.png&quot;);" class="stLarge"></span></span></div>
+</div></div></span></li>
+</ul>                  </div>
+      </div>
+
+    </footer>
+    <div id="comment-form-container-100611" class="comment-form-container hide">
+      <img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+    </div>
+
+  </div>
+
+</article> <!-- /.node -->
+
+<section id="comments" class="comment-wrapper">
+          <div class="cf replies-toolbar replies-toolbar-processed">
+      <h2 class="title pull-left">Comments</h2>
+        <ul class="inline pull-right">
+        <li><a href="https://supportforums.cisco.com/%23" class="collapse-all collapse-trigger collapse-trigger-processed">Collapse all</a></li>
+                  <li><a href="https://supportforums.cisco.com/document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap?recent=1">Recent replies first</a></li>
+              </ul>
+  </div>
+      
+      <div class="threaded-view">
+      <a id="comment-10295866"></a>
+<div class="handle"></div>
+<article class="comment odd parent-comment comment-actions-processed" uid="2739266" about="/comment/10295866#comment-10295866" typeof="sioc:Post sioct:Comment" cid="10295866">
+
+	<header>
+
+	</header>
+
+  <div class="discussion-content comment-content">
+    		<div class="row-fluid">
+			<div class="userpic pull-left">
+				<img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/default-avatar.png" alt="" height="50" width="50">	    </div>
+			<div class="authoring-info">
+				<span class="fullname"><span rel="sioc:has_creator"><a href="https://supportforums.cisco.com/users/joghsonorense" title="View user profile." class="username" xml:lang="" about="/users/joghsonorense" typeof="sioc:UserAccount" property="foaf:name" datatype="">Jogh</a></span></span>
+				<span class="created"><span property="dc:date dc:created" content="2015-02-22T23:53:45-08:00" datatype="xsd:dateTime"><span class="timeago" title="Sun, 02/22/2015 - 23:53">about a year ago</span></span></span>
+			</div>
+			<div class="badges">
+		    <div class="view view-cisco-badges-awarded view-id-cisco_badges_awarded view-display-id-designations badges view-dom-id-4fcff31c97a7b7d43a7dedfe2bd9d0e4">
+        
+  
+      <div class="attachment attachment-before">
+      
+
+
+
+    </div>
+  
+  
+  
+  
+  
+  
+  
+</div></div>
+		</div>
+
+		<div class="comment-body discussion-body">
+			<div class="field field-name-comment-body field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><p>Hello,</p><p>&nbsp;</p><p>What costing tool was used to capture WPA2-Enterprise?</p><p>&nbsp;</p><p>Thanks,</p><p>Joghson</p></div></div></div>			
+			        <div class="answer-actions">
+          <ul class="inline">
+                                                            </ul>
+        </div>
+      		</div>
+
+  </div>
+
+	<footer class="discussion-footer comment-footer">
+
+		<div class="row-fluid">
+			<div class="col-rate pull-left">
+				<a href="#" class="pull-left collapse-toggle collapsed collapse-toggle-processed">See More</a>
+							</div>
+
+			<div class="links pull-right">
+				<ul class="links inline"><li class="comment_forbidden first last"><span><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10295866">Log in</a> or <a href="https://supportforums.cisco.com/user/register?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10295866">register</a> to post comments</span></li>
+</ul>			</div>
+		</div>
+
+	</footer>
+	<div id="comment-form-container-100611-10295866" class="comment-form-container hide">
+		<img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+
+	</div>
+
+
+</article> <!-- /.node -->
+
+<div class="indented expanded"><a id="comment-10297306"></a>
+<div class="handle"></div>
+<article class="comment comment-by-node-author even parent-comment comment-actions-processed" uid="2861186" about="/comment/10297306#comment-10297306" typeof="sioc:Post sioct:Comment" cid="10297306">
+
+	<header>
+
+	</header>
+
+  <div class="discussion-content comment-content">
+    		<div class="row-fluid">
+			<div class="userpic pull-left">
+				<img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/default-avatar.png" alt="" height="50" width="50">	    </div>
+			<div class="authoring-info">
+				<span class="fullname"><span rel="sioc:has_creator"><a href="https://supportforums.cisco.com/users/timsmith" title="View user profile." class="username" xml:lang="" about="/users/timsmith" typeof="sioc:UserAccount" property="foaf:name" datatype="">timsmith</a></span></span>
+				<span class="created"><span property="dc:date dc:created" content="2015-02-23T08:41:08-08:00" datatype="xsd:dateTime"><span class="timeago" title="Mon, 02/23/2015 - 08:41">about a year ago</span></span></span>
+			</div>
+			<div class="badges">
+		    <div class="view view-cisco-badges-awarded view-id-cisco_badges_awarded view-display-id-designations badges view-dom-id-3948edd5f2c8ce743f4f8d9ef946904d">
+        
+  
+      <div class="attachment attachment-before">
+      
+
+      <ul class="inline">
+      <li>
+        <div class="views-field views-field-field-rep-rank-image">
+          <img data-original-title="Cisco Employee" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/cisco-employee.gif" alt="" class="has-tooltip" title="">
+        </div>
+      </li>
+    </ul>
+
+    </div>
+  
+  
+  
+  
+  
+  
+  
+</div></div>
+		</div>
+
+		<div class="comment-body discussion-body">
+			<div class="field field-name-comment-body field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><p>Joghson,</p><p>&nbsp;
+ I'm not sure what you mean by costing tool.&nbsp; Are you talking about
+ what sniffer was used to capture the frames?&nbsp; These frames were 
+captured using an AP in sniffer mode, and being viewed in wireshark.</p></div></div></div>			
+			        <div class="answer-actions">
+          <ul class="inline">
+                                                            </ul>
+        </div>
+      		</div>
+
+  </div>
+
+	<footer class="discussion-footer comment-footer">
+
+		<div class="row-fluid">
+			<div class="col-rate pull-left">
+				<a href="#" class="pull-left collapse-toggle collapsed collapse-toggle-processed">See More</a>
+							</div>
+
+			<div class="links pull-right">
+				<ul class="links inline"><li class="comment_forbidden first last"><span><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10297306">Log in</a> or <a href="https://supportforums.cisco.com/user/register?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10297306">register</a> to post comments</span></li>
+</ul>			</div>
+		</div>
+
+	</footer>
+	<div id="comment-form-container-100611-10297306" class="comment-form-container hide">
+		<img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+
+	</div>
+
+
+</article> <!-- /.node -->
+
+<div class="indented expanded"><a id="comment-10689561"></a>
+<div class="handle"></div>
+<article class="comment odd parent-comment comment-actions-processed" uid="2739266" about="/comment/10689561#comment-10689561" typeof="sioc:Post sioct:Comment" cid="10689561">
+
+	<header>
+
+	</header>
+
+  <div class="discussion-content comment-content">
+    		<div class="row-fluid">
+			<div class="userpic pull-left">
+				<img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/default-avatar.png" alt="" height="50" width="50">	    </div>
+			<div class="authoring-info">
+				<span class="fullname"><span rel="sioc:has_creator"><a href="https://supportforums.cisco.com/users/joghsonorense" title="View user profile." class="username" xml:lang="" about="/users/joghsonorense" typeof="sioc:UserAccount" property="foaf:name" datatype="">Jogh</a></span></span>
+				<span class="created"><span property="dc:date dc:created" content="2015-08-02T19:36:22-07:00" datatype="xsd:dateTime"><span class="timeago" title="Sun, 08/02/2015 - 19:36">10 months ago</span></span></span>
+			</div>
+			<div class="badges">
+		    <div class="view view-cisco-badges-awarded view-id-cisco_badges_awarded view-display-id-designations badges view-dom-id-4fcff31c97a7b7d43a7dedfe2bd9d0e4">
+        
+  
+      <div class="attachment attachment-before">
+      
+
+
+
+    </div>
+  
+  
+  
+  
+  
+  
+  
+</div></div>
+		</div>
+
+		<div class="comment-body discussion-body">
+			<div class="field field-name-comment-body field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><p>Hi Tim,</p><p>Apologies. Yes, that was what I was talking about. Thanks for that.</p></div></div></div>			
+			        <div class="answer-actions">
+          <ul class="inline">
+                                                            </ul>
+        </div>
+      		</div>
+
+  </div>
+
+	<footer class="discussion-footer comment-footer">
+
+		<div class="row-fluid">
+			<div class="col-rate pull-left">
+				<a href="#" class="pull-left collapse-toggle collapsed collapse-toggle-processed">See More</a>
+							</div>
+
+			<div class="links pull-right">
+				<ul class="links inline"><li class="comment_forbidden first last"><span><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10689561">Log in</a> or <a href="https://supportforums.cisco.com/user/register?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10689561">register</a> to post comments</span></li>
+</ul>			</div>
+		</div>
+
+	</footer>
+	<div id="comment-form-container-100611-10689561" class="comment-form-container hide">
+		<img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+
+	</div>
+
+
+</article> <!-- /.node -->
+
+<div class="indented expanded"><a id="comment-10945816"></a>
+<div class="handle"></div>
+<article class="comment even comment-actions-processed" uid="5129451" about="/comment/10945816#comment-10945816" typeof="sioc:Post sioct:Comment" cid="10945816">
+
+	<header>
+
+	</header>
+
+  <div class="discussion-content comment-content">
+    		<div class="row-fluid">
+			<div class="userpic pull-left">
+				<img typeof="foaf:Image" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/default-avatar.png" alt="" height="50" width="50">	    </div>
+			<div class="authoring-info">
+				<span class="fullname"><span rel="sioc:has_creator"><a href="https://supportforums.cisco.com/users/nagarajkmurthy" title="View user profile." class="username" xml:lang="" about="/users/nagarajkmurthy" typeof="sioc:UserAccount" property="foaf:name" datatype="">nagaraj.kmurthy</a></span></span>
+				<span class="created"><span property="dc:date dc:created" content="2015-11-19T22:39:04-08:00" datatype="xsd:dateTime"><span class="timeago" title="Thu, 11/19/2015 - 22:39">6 months ago</span></span></span>
+			</div>
+			<div class="badges">
+		    <div class="view view-cisco-badges-awarded view-id-cisco_badges_awarded view-display-id-designations badges view-dom-id-9a69079bd77bc4f9df8e0d0e0dbb50c9">
+        
+  
+      <div class="attachment attachment-before">
+      
+
+
+
+    </div>
+  
+  
+  
+  
+  
+  
+  
+</div></div>
+		</div>
+
+		<div class="comment-body discussion-body">
+			<div class="field field-name-comment-body field-type-text-long field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><p>In <span style="font-size:14pt; color:#3366ff"><strong>WPA-PSK(TKIP) </strong></span>6c,
+ the GTK is created only if it is required. If a GTK already exists, 
+then the same is supplied. Also the GTK is ecrypted using the PTK and 
+sent. </p>
+<p>Regards, Nagaraj</p></div></div></div>			
+			        <div class="answer-actions">
+          <ul class="inline">
+                                                            </ul>
+        </div>
+      		</div>
+
+  </div>
+
+	<footer class="discussion-footer comment-footer">
+
+		<div class="row-fluid">
+			<div class="col-rate pull-left">
+				<a href="#" class="pull-left collapse-toggle collapsed collapse-toggle-processed">See More</a>
+							</div>
+
+			<div class="links pull-right">
+				<ul class="links inline"><li class="comment_forbidden first last"><span><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10945816">Log in</a> or <a href="https://supportforums.cisco.com/user/register?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap%23comment-10945816">register</a> to post comments</span></li>
+</ul>			</div>
+		</div>
+
+	</footer>
+	<div id="comment-form-container-100611-10945816" class="comment-form-container hide">
+		<img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+
+	</div>
+
+
+</article> <!-- /.node -->
+</div></div></div>    </div>
+  
+  </section> <!-- /#comments -->
+
+  <div id="lb_container_popup_survey"></div>
+  </div>
+
+  
+  </div>
+	
+		    </div>
+		  </div>
+		  <div class="region region-cisco_twocol-second span4">
+					    <div class="region-inner clearfix">
+		      <div class="cisco-collapsible-pane"><div class="pane-content clearfix"><h2 class="pane-title slide-toggle-processed">Actions<i class="pull-right icon-plus-sign icon-swap-processed"></i></h2><div class="pane-content-toggle" style="display: block;"><div class="cisco-actions"><a href="https://supportforums.cisco.com/user/login">Login</a> or <a href="https://supportforums.cisco.com/user/register">Register</a> to take actions</div></div></div></div><div class="panel-separator"></div><div class="cisco-title_inside-pane"><div class="pane-content clearfix"><h2 class="pane-title">This Document</h2><div class="node-activity-top">
+  <div class="node-activity-published published-date">Posted May 16, 2012 at 7:46 AM</div>
+      <div class="node-activity-published updated-date">Updated May 25, 2012 at 1:47 PM</div>
+    <div class="node-activity-author author">By <a href="https://supportforums.cisco.com/users/timsmith">timsmith</a></div>
+  <div class="node-activity-label">Stats:</div>
+</div>
+
+<div class="node-activity-stats">
+  <table class="table table-striped">
+<tbody>
+ <tr class="odd"><td>Comments:</td><td>4</td><td>&nbsp;</td><td>Overall Rating:</td><td>5</td> </tr>
+ <tr class="even"><td>Views:</td><td><span>35139</span></td><td>&nbsp;</td><td>Contributors:</td><td>3</td> </tr>
+ <tr class="odd"><td>Shares:</td><td><span>2</span></td><td 0="&amp;nbsp;" colspan="3"></td> </tr>
+</tbody>
+</table>
+  <div class="node-activity-tags tags">
+    <div class="more-less">
+      <i class="tag"></i>Tags: No tags    </div>
+      </div>
+
+  </div>
+<div class="node-activity-actions clearfix">
+  <ul class="clearfix"><li class="follow-action first"><a href="https://supportforums.cisco.com/user/login?destination=node/100611">Follow</a></li>
+<li class="shortcut-action"><a href="https://supportforums.cisco.com/user/login?destination=node/100611">Shortcut</a></li>
+<li class="report-action"><a href="https://supportforums.cisco.com/user/login?destination=node/100611">Abuse</a></li>
+<li class="save-action last"><a href="https://supportforums.cisco.com/user/login?destination=document/100611/80211-sniffer-capture-analysis-wpawpa2-psk-or-eap">PDF</a></li>
+</ul></div></div></div><div class="panel-separator"></div><div class="panel-pane pane-block pane-block-191">
+  
+      
+  
+  <div class="pane-content">
+    <style type="text/css">
+<!--/*--><![CDATA[/* ><!--*/
+<!--
+@media screen and (max-width: 979px){
+	.pane-block {
+	    display: block !important;
+	}
+}
+@media screen and (min-width:401px){
+	#azk86459 {
+		display: none;
+	}
+	#azk89423 {
+		display: none;
+	}
+}
+@media screen and (max-width:400px){
+	azk88708 {
+		display: none;
+	}
+	azk86554 {
+		display: none;
+	}
+}
+-->
+/*--><!]]>*/
+</style><div id="azk88708"></div>
+<div id="azk86459"></div>
+<div style="height: 10px; width: 300px;">&nbsp;</div>
+<div id="azk86554"></div>
+<div id="azk89423"></div>
+<p></p>
+<p></p>
+<p>
+<script type="text/javascript">
+<!--//--><![CDATA[// ><!--
+// <![CDATA[
+var p="http",d="static";if(document.location.protocol=="https:"){p+="s";d="engine";}var z=document.createElement("script");z.type="text/javascript";z.async=true;z.src=p+"://"+d+".adzerk.net/ados.js";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(z,s);
+// ]]]]><![CDATA[>
+//--><!]]>
+</script><script type="text/javascript">
+<!--//--><![CDATA[// ><!--
+// <![CDATA[
+var ados = ados || {};
+ados.run = ados.run || [];
+ados.run.push(function() {
+/* load placement for account: Neudesic Media Group, site: Cisco, size: 300x250 - Medium Rectangle, zone: CSC Wireless Mobility*/
+ados_add_placement(2072, 18119, "azk88708", 5).setZone(7579);
+/* load placement for account: Neudesic Media Group, site: Cisco, size: 300x250 - Medium Rectangle, zone: CSC Wireless Mobility*/
+ados_add_placement(2072, 18119, "azk86554", 5).setZone(7579);
+/* load placement for account: Neudesic Media Group, site: Cisco, size: 300x50 - Mobile: 300x50*/
+ados_add_placement(2072, 18119, "azk86459", 22);
+/* load placement for account: Neudesic Media Group, site: Cisco, size: 320x50 - Mobile: 320x50*/
+ados_add_placement(2072, 18119, "azk89423", 23);
+ados_load();
+});
+// ]]]]><![CDATA[>
+//--><!]]>
+</script></p>  </div>
+
+  
+  </div>
+<div class="panel-separator"></div><div class="panel-pane pane-block pane-block-1021">
+  
+      
+  
+  <div class="pane-content">
+    <div style="display:none;">&nbsp;</div>  </div>
+
+  
+  </div>
+<div class="panel-separator"></div><div class="cisco-basic-pane"><h2 class="pane-title">Trending Topics: Other Wireless Mobility</h2><div class="pane-content clearfix"><style type="text/css">
+<!--/*--><![CDATA[/* ><!--*/
+#panels-ipe-paneid-51516 .cisco-basic-pane .pane-title {
+    font-size: 0.9em;
+}
+
+/*--><!]]>*/
+</style><table width="290" border="0"><tbody><tr><td height="30" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/document/142901/cant-connect-wireless-using-certificate-android-device"><strong>client could not be authenticated</strong></a></td></tr><tr><td height="30" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/discussion/11704161/cisco-prime-network-analysis-module-cisco-asr-1000"><strong>Network Analysis Module (NAM) Products</strong></a></td></tr><tr><td height="23" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/discussion/11854346/download-pkg-file-asasm-nam-6500"><strong>Cisco 6500 nam</strong></a></td></tr><tr><td height="23" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/discussion/9776551/reason-440-driver-failure"><strong>reason 440 driver failure</strong></a></td></tr><tr><td height="30" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/discussion/11756896/cisco-switch-29603560-password-recovery-and-factory-default-mode-button"><strong>Cisco password cracker</strong></a></td></tr><tr><td height="30" valign="middle" width="23"><img alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/132912-white-paper-22.png" height="21" width="18"></td><td valign="middle" width="257"><a href="https://supportforums.cisco.com/discussion/12069556/monitor-mode-ap-submode"><strong>Cisco Wireless mode</strong></a></td></tr></tbody></table></div></div>		    </div>
+		  </div>
+		</div>
+	</div>
+
+  </div>
+        </div>
+      </section>
+
+          </div>
+  </div>
+</div>
+<div class="footer container">
+    <div class="region region-footer">
+    <section id="block-menu-menu-cisco-footer-col-1" class="block block-menu clearfix">
+
+      
+  <ul class="menu nav"><li class="first leaf"><a href="http://www.cisco.com/en/US/netsol/index.html" class="title-level" target="_blank">Information For</a></li>
+<li class="leaf"><a href="http://www.cisco.com/cisco/web/solutions/small_business/index.html" target="_blank">Small Business</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/midsize/index.html" target="_blank">Midsize Business</a></li>
+<li class="leaf"><a href="http://www.cisco.com/en/US/netsol/ns1168/index.html" target="_blank">Executives</a></li>
+<li class="leaf"><a href="http://home.cisco.com/" target="_blank">Home</a></li>
+<li class="leaf"><a href="http://www.cisco.com/en/US/netsol/ns341/networking_solutions_service_provider_home.html" target="_blank">Service Provider</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/strategy/index.html" class="title-level" target="_blank">Industries</a></li>
+<li class="leaf"><a href="http://www.cisco.com/cisco/web/siteassets/contacts/index.html" class="title-level" target="_blank">Contacts</a></li>
+<li class="last leaf"><a href="http://www.cisco.com/cisco/web/siteassets/contacts/index.html" target="_blank">Contact Cisco</a></li>
+</ul>  
+</section> <!-- /.block -->
+<section id="block-menu-menu-cisco-footer-col-2" class="block block-menu clearfix">
+
+      
+  <ul class="menu nav"><li class="first leaf"><a href="http://newsroom.cisco.com/" class="title-level" target="_blank">News &amp; Alerts</a></li>
+<li class="leaf"><a href="http://newsroom.cisco.com/" target="_blank">Newsroom</a></li>
+<li class="leaf"><a href="http://blogs.cisco.com/" target="_blank">Blogs</a></li>
+<li class="leaf"><a href="http://www.cisco.com/en/US/support/tsd_products_field_notice_summary.html" target="_blank">Field Notices</a></li>
+<li class="leaf"><a href="http://tools.cisco.com/security/center/publicationListing.x" target="_blank">Security Advisories</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/tech_trends.html" class="title-level" target="_blank">Technology Trends</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/trends/cloud/index.html" target="_blank">Cloud</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/trends/ipv6/index.html" target="_blank">IPv6</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/trends/mobility/index.html" target="_blank">Mobility</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/trends/open_network_environment/index.html" target="_blank">Open Network Environment</a></li>
+<li class="last leaf"><a href="http://www.cisco.com/web/solutions/trends/trustworthy_systems/index.html" target="_blank">Trustworthy Systems</a></li>
+</ul>  
+</section> <!-- /.block -->
+<section id="block-menu-menu-cisco-footer-col-3" class="block block-menu clearfix">
+
+      
+  <ul class="menu nav"><li class="first leaf"><a href="http://www.cisco.com/en/US/support/index.html" class="title-level" target="_blank">Support</a></li>
+<li class="leaf"><a href="http://www.cisco.com/cisco/software/navigator.html?i=%21ch" target="_blank">Downloads</a></li>
+<li class="leaf"><a href="http://www.cisco.com/cisco/web/psa/default.html" target="_blank">Documentation</a></li>
+<li class="leaf"><a href="https://communities.cisco.com/welcome" class="title-level" target="_blank">Communities</a></li>
+<li class="leaf"><a href="http://developer.cisco.com/" target="_blank">Developer Network</a></li>
+<li class="leaf"><a href="https://learningnetwork.cisco.com/" target="_blank">Learning Network</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/" target="_blank">Support Community</a></li>
+<li class="last leaf"><a href="http://video.cisco.com/" class="title-level" target="_blank">Video Portal</a></li>
+</ul>  
+</section> <!-- /.block -->
+<section id="block-menu-menu-cisco-footer-col-4" class="block block-menu clearfix">
+
+      
+  <ul class="menu nav"><li class="first leaf"><a href="http://www.cisco.com/web/about/index.html" class="title-level" target="_blank">About Cisco</a></li>
+<li class="leaf"><a href="http://investor.cisco.com/" target="_blank">Investor Relations</a></li>
+<li class="leaf"><a href="http://csr.cisco.com/" target="_blank">Corporate Social Responsibility</a></li>
+<li class="leaf"><a href="http://csr.cisco.com/pages/environment" target="_blank">Environmental Sustainability</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/tomorrow-starts-here/index.html?CAMPAIGN=tomorrowstartshere&amp;COUNTRY_SITE=us&amp;POSITION=link&amp;REFERRING_SITE=Cisco.com+homepage&amp;CREATIVE=homepage+fat+footer" target="_blank">Tomorrow Starts Here</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/about/ac40/about_cisco_careers_home.html" target="_blank">Career Opportunities</a></li>
+<li class="leaf"><a href="https://supportforums.cisco.com/" class="title-level" target="_blank">Programs</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/communities/vip/index.html" target="_blank">Cisco Designated VIP Program</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/solutions/trends/cisco-powered/index.html" target="_blank">Cisco Powerered</a></li>
+<li class="last leaf"><a href="http://www.cisco.com/web/ordering/ciscocapital/index.html" target="_blank">Financing Options</a></li>
+</ul>  
+</section> <!-- /.block -->
+  </div>
+</div>
+
+<footer class="footer footer-menu"><ul class="menu nav"><li class="first leaf"><a href="https://supportforums.cisco.com/document/29951/cisco-support-community-acceptable-use-agreement" target="_blank">Terms &amp; Conditions</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/siteassets/legal/privacy.html" target="_blank">Privacy Statement</a></li>
+<li class="leaf"><a href="http://www.cisco.com/web/siteassets/legal/privacy.html#cookies" target="_blank">Cookie Policy</a></li>
+<li class="last leaf"><a href="http://www.cisco.com/web/siteassets/legal/trademark.html" target="_blank">Trademarks of Cisco Systems, Inc.</a></li>
+</ul></footer>
+
+</div>
+  <script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_2qkt9MYcu1Tfpb32OJkm6wROnmMqQhbhGQDyO4rUXTk.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/metrics.js"></script>
+<script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/js_GqDT9GsfBICst289B1wWFng-A75bYE3qZjV1_si3Bp4.js"></script>
+
+
+<script>
+</script>
+
+<div id="pageModal" class="modal hide fade" tabindex="-1" role="dialog">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">×</button>
+			<h3></h3>
+	</div>
+	<div class="modal-body">
+		<div class="modal-load">
+		<img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ajax-loader.gif">
+		</div>
+	</div>
+
+</div>
+<iframe style="display:none;" scrolling="no" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/getSegment.html" name="stSegmentFrame" id="stSegmentFrame" frameborder="0" height="0px" width="0px"></iframe><script id="" type="text/javascript">var domains_to_track=["cisco.com"],extDoc=".doc .docx .xls .xlsx .xlsm .ppt .pptx .exe .zip .pdf .js .txt .csv".split(" "),socSites="facebook.com/ciscosupportcommunity twitter.com/cisco_support twitter.com/#!/cisco_support plus.google.com/+ciscosupportchannel/posts linkedin.com/company/cisco-support-community instagram.com/ciscosupportcommunity youtube.com/user/ciscosupportchannel".split(" "),mainDomain=document.location.hostname.match(/(([^.\/]+\.[^.\/]{2,3}\.[^.\/]{2})|(([^.\/]+\.)[^.\/]{2,4}))(\/.*)?$/)[1],
+mainDomain=mainDomain.toLowerCase(),arr=document.getElementsByTagName("a");
+for(i=0;i<arr.length;i++){var flag=0,flagExt=0,flagOut=0,tmp=arr[i].getAttribute("onmousedown"),doname="",mailPattern=/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/,urlPattern=/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;if(mailPattern.test(arr[i].href)||urlPattern.test(arr[i].href)){try{doname=arr[i].hostname.match(/(([^.\/]+\.[^.\/]{2,3}\.[^.\/]{2})|(([^.\/]+\.)[^.\/]{2,4}))(\/.*)?$/)[1],doname=doname.toLowerCase()}catch(err){doname=arr[i].href,doname=doname.toLowerCase()}if(null!=
+tmp&&(tmp=String(tmp),-1<tmp.indexOf("dataLayer.push")))continue;if(doname==mainDomain||-1!=doname.indexOf(mainDomain))if(-1!=arr[i].href.toLowerCase().indexOf("mailto:")){var gaUri=arr[i].href.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/);arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Email Clicks', 'eventAct': 'Click', 'eventLbl': '"+gaUri+"', 'eventVal': 0});")}else{if(-1==arr[i].href.toLowerCase().indexOf("mailto:"))for(var j=
+0;j<extDoc.length;j++){var arExt=arr[i].href.split("."),ext=arExt[arExt.length-1].split(/[#?&?]/);if("."+ext[0].toLowerCase()==extDoc[j]){var intGaUri=arr[i].href.split(doname),gaUri=intGaUri[1].split(extDoc[j]);arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Assets', 'eventAct': '"+ext[0].toLowerCase()+"', 'eventLbl': '"+gaUri[0]+extDoc[j]+"', 'eventVal': 0});");break}}}else if(doname!=mainDomain&&-1==doname.indexOf(mainDomain))for(var k=
+0;k<domains_to_track.length;k++)if(-1==doname.indexOf(domains_to_track[k])){if(flag++,flag==domains_to_track.length&&-1==arr[i].href.toLowerCase().indexOf("mailto:"))for(var gaUri=arr[i].href.split("//"),socCount=0;socCount<socSites.length;socCount++)if(-1!=arr[i].href.toLowerCase().indexOf(socSites[socCount].toLowerCase())){arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Social Profiles', 'eventAct': '"+socSites[socCount].split(".")[0]+
+" Profile', 'eventLbl': '"+gaUri[1]+"', 'eventVal': 0});");break}else-1==arr[i].href.toLowerCase().indexOf(socSites[socCount].toLowerCase())&&(flagOut++,flagOut==socSites.length&&arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Outbound Links', 'eventAct': 'Click', 'eventLbl': '"+gaUri[1]+"', 'eventVal': 0});"))}else if(-1!=doname.indexOf(domains_to_track[k])&&-1==arr[i].href.toLowerCase().indexOf("mailto:"))for(var l=0;l<extDoc.length;l++)if(arExt=
+arr[i].href.split("."),ext=arExt[arExt.length-1].split(/[#?&?]/),"."+ext[0].toLowerCase()==extDoc[l]){intGaUri=arr[i].href.split(doname);gaUri=intGaUri[1].split(extDoc[l]);arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Assets', 'eventAct': '"+ext[0].toLowerCase()+"', 'eventLbl': '"+gaUri[0]+extDoc[l]+"', 'eventVal': 0});");break}else"."+ext[0].toLowerCase()!=extDoc[l]&&flagExt++;else-1!=doname.indexOf(domains_to_track[k])&&-1!=arr[i].href.toLowerCase().indexOf("mailto:")&&
+(gaUri=arr[i].href.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/),arr[i].setAttribute("onmousedown",""+(null!=tmp?tmp+"; ":"")+"dataLayer.push({'event': 'eventTracker', 'eventCat': 'Email Clicks', 'eventAct': 'Click', 'eventLbl': '"+gaUri+"', 'eventVal': 0});"))}};</script><iframe src="javascript:void(0)" style="border: 0px none; width: 0px; height: 0px;" title="bk" id="__bkframe" name="__bkframe"></iframe><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/sp.pl" defer="defer" class="ywa-1000177780039" id="ywa-1464098846744-981759" type="application/javascript"></script><div id="batBeacon0.7150164279425483" style="width:0px; height:0px; display:none; visibility:hidden;"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/0.asc" alt="" id="batBeacon0.37686669768938186" style="width:0px; height:0px; display:none; visibility:hidden;" height="0" width="0"><img src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/0_002.asc" alt="" id="batBeacon0.5367265809317475" style="width:0px; height:0px; display:none; visibility:hidden;" height="0" width="0"></div><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/zpanel_20140825.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/zsizzle.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ztrack.js" type="text/javascript"></script><script src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/ztrackingembed.js" type="text/javascript"></script><div class="z_panel_base z_p_Tracking z_ps_Default" id="pw_8a32ad344fd6b7c8014fe0949ffa3b44"><span><br> </span></div><span></span><div style="display: none;" class="stwrapper stwrapper5x" id="stwrapper"><iframe src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/index.html" scrolling="no" name="stLframe" class="stLframe" id="stLframe" allowtransparency="true" frameborder="0"></iframe></div><div onclick="javascript:stWidget.closeWidget();" id="stOverlay"></div><script type="text/javascript" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/a"></script><img style="display: none;" alt="" src="802.11%20Sniffer%20Capture%20Analysis%20-%20WPA_WPA2%20with%20PSK%20or%20EAP%20%7C%20Other%20Wireless%20-%20Mobility%20Subjects%20%7C%20Cisco%20Support%20Community%20%7C%205921%20%7C%20100611_files/l.gif" height="1" width="1" border="0"></body></html>

@@ -1,0 +1,40 @@
+{
+	"networks" : [ 
+		{
+			"ssid" : "eRISCS",
+			"enabled" : false,
+			"encryption" : {
+				"auth_alg" : "OPEN",
+				"key_mgmt" : "WPA-PSK",
+				"psk" : "\"wireless\""
+			},
+			"aps" : [
+				{
+					"mac" : "3C:46:D8:BC:A2:F8",
+					"frequency" : 2412,
+					"lat" : 0,
+					"long" : 0
+				}
+			]			
+		},
+		{
+			"ssid" : "eduroam",
+			"enabled" : true,
+			"encryption" : {
+				"key_mgmt" : "WPA-EAP",
+				"eap" : "TTLS",
+				"identity" : "\"xuan-thong.dang@etu.univ-amu.fr\"",
+				"password" : "\"!vinamilk100G!\"",
+				"phase2" : "\"auth=MSCHAPV2\""
+			},
+			"aps" : [
+				{
+					"mac" : "AC:A3:1E:22:77:01",
+					"frequency" : 2412,
+					"lat" : 0,
+					"long" : 0
+				}	
+			]
+		}
+	]
+}

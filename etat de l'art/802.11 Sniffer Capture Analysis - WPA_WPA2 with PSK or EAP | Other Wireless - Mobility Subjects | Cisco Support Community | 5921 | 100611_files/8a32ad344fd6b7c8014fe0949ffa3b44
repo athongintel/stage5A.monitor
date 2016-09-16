@@ -1,0 +1,129 @@
+/* Pushed : Thu, 5 May 2016 12:32 PM UTC */
+
+
+/*Putting onload function - ensuring visibility */
+function zAddOnLoad(func)  {var o = window.onload;if (typeof window.onload != 'function') {window.onload = func;} else {window.onload = function() { try { if (o) { o(); } } catch (err) {} func(); }}};
+
+/*Identifying script location - parent tag */
+var scriptTag = document.scripts[document.scripts.length - 1];var pt_8a32ad344fd6b7c8014fe0949ffa3b44 = scriptTag.parentNode;
+if(zQStringValue('zBase')){window['pt_'+zQStringValue('zBase')]=pt_8a32ad344fd6b7c8014fe0949ffa3b44;}
+
+try{
+if (document.getElementById('8a32ad344fd6b7c8014fe0949ffa3b44')) { 
+	pt_8a32ad344fd6b7c8014fe0949ffa3b44 = document.getElementById('8a32ad344fd6b7c8014fe0949ffa3b44'); 
+}
+} catch (err) {}
+
+/*writing core script includes */
+var s_758 = document.createElement('script');s_758.type = 'text/javascript';s_758.async = false;s_758.src = 'https://s3.amazonaws.com/static.ziftsolutions.com/widgets/js/zpanel_20140825.js';pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_758);
+var s_986 = document.createElement('script');s_986.type = 'text/javascript';s_986.async = false;s_986.src = 'https://s3.amazonaws.com/static.ziftsolutions.com/widgets/js/zsizzle.20110528.js';pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_986);
+var s_1215 = document.createElement('script');s_1215.type = 'text/javascript';s_1215.async = false;s_1215.src = 'https://s3.amazonaws.com/dynamic.ziftsolutions.com/widgets/js/ztrack.20131013.js';pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_1215);
+
+
+/*adding key variables */
+var zBaseUrl = 'https://s3.amazonaws.com/widgets.ziftsolutions.com/cisco.ziftsolutions.com/js/8a32ad344fd6b7c8014fe0949ffa3b44';
+var zBaseKey = 'cisco.ziftsolutions.com/js/';
+var zStandaloneBaseUrl = 'https://s3.amazonaws.com/sites.ziftsolutions.com/cisco.ziftsolutions.com/8a32ad344fd6b7c8014fe0949ffa3b44';
+
+
+/*adding panel loading via analytics */
+var s_1810 = document.createElement('script');s_1810.type = 'text/javascript';s_1810.async = false;s_1810.src = 'https://s3.amazonaws.com/static.ziftsolutions.com/widgets/js/ztrackingembed.20140911.js';pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_1810);
+if (!zBaseComplete) var zBaseComplete = false; 
+
+
+/*writing core js */
+var zPanele0008;
+var zPanelLoadCalls = new Array();
+var zLoaded = false;
+var zLoadInterval;
+function zDoPanelLoad() {
+zLoadInterval = window.setInterval(zDoPanelLoadInternal, 500);
+}
+function zDoPanelLoadInternal() {
+if (!zLoaded) {
+try {
+zPanele0008 = new zwPanel('zPage','zFormId',"zFormValidation(this.getForm())",'ziftc','zSubmissionRefId','zift.trackback', 'https://s3.amazonaws.com/sites.ziftsolutions.com/cisco.ziftsolutions.com/8a32ad344fd6b7c8014fe0949ffa3b44', 'zPanele0008');
+zPanele0008.setEmailKey();
+zPanele0008.loadSerialized();
+zPanele0008.defaultForm();
+zPanele0008.setTrackbacks();
+zSetDynamicPanelAttributes();
+for (var i = 0; i < zPanelLoadCalls.length; i++) eval(zPanelLoadCalls[i]);
+zLoaded = true;
+clearInterval(zLoadInterval);
+} catch (err) {
+zLoaded = false;
+}
+} else {
+clearInterval(zLoadInterval);
+}
+}
+function zAddPanelLoadEvent(func) {
+zPanelLoadCalls[zPanelLoadCalls.length] = func;
+}
+function zQStringValue(param) {
+var query=document.location.search.substring(1);
+if (query.length > 0){
+var params=query.split('&');
+for (var i=0 ; i<params.length ; i++){
+var pos = params[i].indexOf('=');
+var name = params[i].substring(0, pos);
+var value = params[i].substring(pos + 1);
+if (name == param) {
+return value;
+break;
+}
+}
+}
+return null;
+}
+var zPage = zQStringValue('zPage');
+try { if (typeof(zPageOverride) != 'undefined') zPage = zPageOverride; } catch (err) {} 
+
+var zBaseSkipTrack = false; 
+var zBase = zQStringValue('zBase');
+try { if (typeof(zBase) != 'undefined' && zBase != null) { zBaseUrl = 'https://s3.amazonaws.com/widgets.ziftsolutions.com/' + zBaseKey + zBase; zBaseSkipTrack = true; }} catch (err) {} 
+
+function addZiftLoadEvent(func) { 
+  if (window.attachEvent){    return window.attachEvent('onload', func);  }else{    return window.addEventListener('load', func, false);  }}
+function zScriptInclude(page) {
+var el = document.createElement('script');
+el.type = 'text/javascript';
+el.src = page ;
+el.async = false;
+return el;}
+function zWriteScriptInclude(page) {
+pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(zScriptInclude(zBaseUrl + '/' + zPage));
+}
+function zWriteElementInclude(el) {
+pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(el);
+}
+
+
+/*processing dynamic step rules and routing */
+var ztrack_8a32ad344fd6b7c8014fe0949ffa3b44;if (typeof(zBase) == 'undefined' || zBase == null || zBase == 'null' || (zBase != null && zBaseComplete)) {addZiftLoadEvent(function() { ztrack_8a32ad344fd6b7c8014fe0949ffa3b44 = new ZTrack({ h: 'https://analytics.ziftsolutions.com/', i: (zBase?zBase:'8a32ad344fd6b7c8014fe0949ffa3b44'), p: '8a1d0a1c4fdd2778014fe08b68f1043f', c: '8a12350747c4c06e0147c691962f772a', t: 't'} );}); zTS = 'https://cisco.ziftsolutions.com/';}
+var zroute = zQStringValue('zroute');
+
+if (zroute != null && zroute != 'null') setTimeout(function() {window.location = decodeURIComponent(zroute);}, 500);
+
+
+/*writing panel body */
+if (zBase != null && zBase != 'null' && !zBaseComplete) {  zBaseComplete=true; zWriteElementInclude(zScriptInclude(zBaseUrl)); } else {
+var zContent = {"content":"<span><br/> <\/span>","baseJS":"<script type='text/javascript'>\nfunction zGetNextPageInternal(param, link) {\nreturn '8a9e43b148006f48014800743567000a';\n}\nfunction zGotoNextPageInternal(param, link) {\nzPanele0008.setPageCookieForNextPage(zQStringValue('zPage'));\nzPanele0008.incrementPageCount();\nzPanele0008.gotoPage(param, zNextPage, link, true);\nreturn zNextPage;\n}\nfunction zSetDynamicPanelAttributes() { \nzPanele0008.setExternalFormUrl('https://form.ziftsolutions.com/open/ExternalFormProcessor.html');\n}\n<\/script>","onloadJS":"<script type='text/javascript'>\nzDoPanelLoad();\n<\/script>","scriptIncludes":""};
+var s_5766 = document.createElement('div');s_5766.id = 'pw_8a32ad344fd6b7c8014fe0949ffa3b44';s_5766.className = 'z_panel_base z_p_Tracking z_ps_Default';pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_5766);
+s_5766.innerHTML = zContent.content;
+var s_6013 = document.createElement('span');pt_8a32ad344fd6b7c8014fe0949ffa3b44.appendChild(s_6013);
+}
+function zGetNextPageInternal(param, link) {
+return '8a9e43b148006f48014800743567000a';
+}
+function zGotoNextPageInternal(param, link) {
+zPanele0008.setPageCookieForNextPage(zQStringValue('zPage'));
+zPanele0008.incrementPageCount();
+zPanele0008.gotoPage(param, zNextPage, link, true);
+return zNextPage;
+}
+function zSetDynamicPanelAttributes() { 
+zPanele0008.setExternalFormUrl('https://form.ziftsolutions.com/open/ExternalFormProcessor.html');
+}
+zDoPanelLoad();
