@@ -5,15 +5,6 @@
 using namespace std;
 
 SVC* svcInstance;
-volatile bool working;
-
-void signal_handler(int signal){
-	if (signal == SIGINT){
-		printf("\nSIGINT caught, stop working");
-		svcInstance->stopWorking();
-		working = false;
-	}
-}
 
 int main(int argc, char** argv){
 	   
@@ -26,25 +17,15 @@ int main(int argc, char** argv){
 SendFileAppServer::SendFileAppServer(){		
 	svcInstance = new SVC(this, this);
 	SVCEndPoint* endPoint;
-	
-	printf("\nwaiting for connection request");
-	do{
-		try{
-			endPoint = svcInstance->listenConnection();
-			if (endPoint!=NULL){
-				printf("\nclient connected");
-				//--	give todo work for this endPoint in new thread
-			}
-			else{
-				printf("\nretry...");
-			}
-		}
-		catch (const char* ex){
-			printf("\nError: %s\n", ex);
-			signal_handler(SIGINT);
-		}
+		
+	printf("Listening for incoming connection...");
+	endPoint = svcInstance->listenConnection();
+	if (endPoint!=NULL){
+		printf("\nclient connected");		
 	}
-	while (working);
+	else{
+		printf("\nConnection attempt failed");
+	}
 }
 
 SendFileAppServer::~SendFileAppServer(){
